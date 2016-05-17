@@ -18,7 +18,7 @@ defmodule Watcher do
 
   def init(_) do
     :ok = Application.ensure_started(:fs)
-    :ok = :fs.subscribe
+    :ok = :fs.subscribe()
     {:ok, []}
   end
 

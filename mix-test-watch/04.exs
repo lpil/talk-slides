@@ -16,7 +16,7 @@ defmodule Watcher do
 
   def init(_) do
     :ok = Application.ensure_started(:fs)
-    :ok = :fs.subscribe
+    :ok = :fs.subscribe()
     {:ok, []}
   end
 
@@ -65,6 +65,3 @@ defmodule Runner do
     end
   end
 end
-
-# And that's more or less what this project looked like at the begining.
-# It does the job.
