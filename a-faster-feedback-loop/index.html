@@ -1,8 +1,13 @@
----
-layout: presentation
-title: A Faster Feedback Loop
----
-class: center, middle
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>lpil - A Faster Feedback Loop</title>
+  <link rel="stylesheet" href="style.css" type="text/css" charset="utf-8">
+</head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse
 
 # A Faster Feedback Loop
 
@@ -17,15 +22,12 @@ Hi.
 I'm Louis Pilfold, and I'm a exceptionally lazy developer.
 
 ---
-
 class: center, middle
 
 Write some unit tests<br>
 Write some code<br>
 Tests pass<br>
 GOTO 10<br>
-<br>
-<br>
 <br>
 <br>
 <br>
@@ -52,10 +54,8 @@ class: center, middle
 
 Write some unit tests<br>
 Write some code<br>
-Tests **FAIL**<br>
-Write some code<br>
-Tests pass<br>
-GOTO 10<br>
+Tests **.red[FAIL]**<br>
+<br>
 <br>
 <br>
 <br>
@@ -74,12 +74,10 @@ class: center, middle
 
 Write some unit tests<br>
 Write some code<br>
-Tests **FAIL**<br>
+Tests **.red[FAIL]**<br>
 Write some code<br>
-Tests **FAIL**<br>
-Write some code<br>
-Tests pass<br>
-GOTO 10<br>
+Tests **.red[FAIL]**<br>
+<br>
 <br>
 <br>
 <br>
@@ -98,14 +96,12 @@ class: center, middle
 
 Write some unit tests<br>
 Write some code<br>
-Tests **FAIL**<br>
+Tests **.red[FAIL]**<br>
 Write some code<br>
-Tests **FAIL**<br>
+Tests **.red[FAIL]**<br>
 Write some code<br>
-Tests **FAIL**<br>
-Write some code<br>
-Tests pass<br>
-GOTO 10<br>
+Tests **.red[FAIL]**<br>
+<br>
 <br>
 <br>
 
@@ -124,16 +120,14 @@ class: center, middle
 
 Write some unit tests<br>
 Write some code<br>
-Tests **FAIL**<br>
+Tests **.red[FAIL]**<br>
 Write some code<br>
-Tests **FAIL**<br>
+Tests **.red[FAIL]**<br>
 Write some code<br>
-Tests **FAIL**<br>
+Tests **.red[FAIL]**<br>
 Write some code<br>
-Tests **FAIL**<br>
-Write some code<br>
-Tests pass<br>
-GOTO 10<br>
+Tests **.red[FAIL]**<br>
+...<br>
 
 ???
 
@@ -149,13 +143,13 @@ each time you save a source file in your project, solving this problem.
 ---
 class: middle
 
-|  |  |  |
-| -- | -- | -- |
-| Haskell    | => | Stack |
-| Ruby       | => | Guard |
-| Erlang     | => | Rebar autotest |
-| Javascript | => | Karma, Grunt, Gulp |
-| &nbsp;     |    |              |
+<table class="centered">
+  <tr><td>Haskell</td>   <td>=&gt;</td><td>Stack</td></tr>
+  <tr><td>Ruby</td>      <td>=&gt;</td><td>Guard</td></tr>
+  <tr><td>Erlang</td>    <td>=&gt;</td><td>Rebar autotest</td></tr>
+  <tr><td>Javascript</td><td>=&gt;</td><td>Karma, Grunt, Gulp</td></tr>
+  <tr><td>&nbsp;</td>    <td>     </td><td></td></tr>
+</table>
 
 ???
 
@@ -172,13 +166,13 @@ But what did Elixir have back when v1.0 was new?
 ---
 class: middle
 
-|  |  |  |
-| -- | -- | -- |
-| Haskell    | => | Stack |
-| Ruby       | => | Guard |
-| Erlang     | => | Rebar autotest |
-| Javascript | => | Karma, Grunt, Gulp |
-| Elixir     | => | `nil` |
+<table class="centered">
+  <tr><td>Haskell</td>   <td>=&gt;</td><td>Stack</td></tr>
+  <tr><td>Ruby</td>      <td>=&gt;</td><td>Guard</td></tr>
+  <tr><td>Erlang</td>    <td>=&gt;</td><td>Rebar autotest</td></tr>
+  <tr><td>Javascript</td><td>=&gt;</td><td>Karma, Grunt, Gulp</td></tr>
+  <tr><td>Elixir</td>    <td>=&gt;</td><td>???</td></tr>
+</table>
 
 ???
 
@@ -191,3 +185,14 @@ So I did. And I've been using it every day since.
 I'm going to walk you through roughly how it works.
 
 Hopefully at the end you'll have some thoughts as to how we can make it better.
+    </textarea>
+    <script src="../vendor/remark-0.11.0.min.js"></script>
+    <script>
+var slideshow = remark.create({
+  highlightStyle: 'monokai',
+  highlightLanguage: 'remark',
+  highlightLines: true,
+});
+    </script>
+  </body>
+</html>

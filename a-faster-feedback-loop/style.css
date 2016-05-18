@@ -1,0 +1,89 @@
+@import url(https://fonts.googleapis.com/css?family=Droid+Sans);
+@import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+body {
+  font-family: 'Droid Sans';
+  line-height: 1.6;
+}
+.remark-slide-content    { font-size: 1.6em; }
+.remark-slide-content h1 { font-size: 2em; }
+.remark-slide-content h2 { font-size: 1.6em; }
+.remark-slide-content h3 { font-size: 1.2em; }
+.footnote {
+  position: absolute;
+  bottom: 3em;
+}
+li p {
+  line-height: 1.25em;
+}
+td {
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+}
+.red {
+  color: #fa0000;
+}
+.large {
+  font-size: 2em;
+}
+a, a > code {
+  color: rgb(249, 38, 114);
+  text-decoration: none;
+}
+code {
+  background: #e7e8e2;
+  border-radius: 5px;
+}
+.remark-code, .remark-inline-code {
+  font-family: 'Ubuntu Mono';
+}
+.remark-code-line-highlighted {
+  background-color: #373832;
+}
+.centered {
+  margin-right: auto;
+  margin-left: auto;
+}
+.pull-left {
+  float: left;
+  width: 47%;
+}
+.pull-right {
+  float: right;
+  width: 47%;
+}
+.pull-right ~ p {
+  clear: both;
+}
+#slideshow .slide .content code {
+  font-size: 0.8em;
+}
+#slideshow .slide .content pre code {
+  font-size: 0.9em;
+  padding: 15px;
+}
+.inverse {
+  background: #272822;
+  color: #777872;
+  text-shadow: 0 0 20px #333;
+}
+.inverse h1, .inverse h2 {
+  color: #f3f3f3;
+  line-height: 0.8em;
+}
+
+/* Two-column layout */
+.left-column {
+  color: #777;
+  width: 20%;
+  height: 92%;
+  float: left;
+}
+  .left-column h2:last-of-type, .left-column h3:last-child {
+    color: #000;
+  }
+.right-column {
+  width: 75%;
+  float: right;
+  padding-top: 1em;
+}
