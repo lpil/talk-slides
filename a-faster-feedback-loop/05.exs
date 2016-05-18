@@ -1,4 +1,4 @@
-# If you try this you'll find that  the tests run multiple times in a row when
+# If you try this you'll find that the tests run multiple times in a row when
 # you save one file.
 # This is because there are actually many events occuring when a file is saved,
 # and thus many messages sent to our Watcher.
@@ -29,7 +29,7 @@ defmodule Watcher do
 
   ### changes ###
 
-  def handle_info({_pid, {:fs, :file_event}, {path, _event}}, state) do
+  def handle_info({_, {:fs, :file_event}, {path, _}}, state) do
     if Regex.match?(@source_file_pattern, path) do
       Runner.run_tests()
       discard_messages() # Empty inbox after a test run
