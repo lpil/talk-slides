@@ -31,8 +31,15 @@ a, a > code {
   text-decoration: none;
 }
 code {
-  background: #e7e8e2;
+  background: #272822;
+}
+.remark-code {
+  display: block;
+  padding: 0.5em;
   border-radius: 5px;
+}
+.remark-code.plain {
+  color: #ddd;
 }
 .remark-code, .remark-inline-code {
   font-family: 'Ubuntu Mono', monospace;
@@ -69,7 +76,7 @@ code {
 }
 .inverse h1, .inverse h2 {
   color: #f3f3f3;
-  line-height: 0.8em;
+  line-height: 1.1em;
 }
 
 /* Two-column layout */

@@ -9,7 +9,7 @@
     <textarea id="source">
 class: center, middle, inverse
 
-# A Faster Feedback Loop
+# Building a Faster<br>Feedback Loop
 
 Louis Pilfold<br>
 http://lpil.uk/
@@ -20,6 +20,9 @@ http://lpil.uk/
 Hi.
 
 I'm Louis Pilfold, and I'm a exceptionally lazy developer.
+
+Today I'd like to talk a little bit about my experience building a faster
+feedback loop for Elixir development.
 
 ---
 class: center, middle
@@ -49,6 +52,10 @@ behaviour I expect.
 For me this is much faster than checking in the REPL, and an
 order of magnitude faster than actually running the app.
 
+...
+
+In reality it normally looks more like this.
+
 ---
 class: center, middle
 
@@ -64,8 +71,6 @@ Tests **.red[FAIL]**<br>
 <br>
 
 ???
-
-In reality it normally looks more like this.
 
 I write some code. The test fails.
 
@@ -84,8 +89,6 @@ Tests **.red[FAIL]**<br>
 <br>
 
 ???
-
-In reality it normally looks more like this.
 
 I write some code. The test fails.
 
@@ -106,8 +109,6 @@ Tests **.red[FAIL]**<br>
 <br>
 
 ???
-
-In reality it normally looks more like this.
 
 I write some code. The test fails.
 
@@ -147,7 +148,6 @@ class: middle
   <tr><td>Haskell</td>   <td>=&gt;</td><td>Stack</td></tr>
   <tr><td>Ruby</td>      <td>=&gt;</td><td>Guard</td></tr>
   <tr><td>Erlang</td>    <td>=&gt;</td><td>Rebar autotest</td></tr>
-  <tr><td>Clojure</td>   <td>=&gt;</td><td>lein-test-refresh</td></tr>
   <tr><td>Javascript</td><td>=&gt;</td><td>Karma, Grunt, Gulp</td></tr>
   <tr><td>&nbsp;</td>    <td>     </td><td></td></tr>
 </table>
@@ -158,13 +158,11 @@ Haskell has Stack.
 
 Ruby has Guard.
 
-Erlang has rebar autotest.
+Erlang has Rebar autotest.
 
-Clojure has the wordy lein-test-refresh.
+Javascript has Karma.
 
-Javascript has Karma, Grunt, Gulp and so on.
-
-But what did Elixir have back when v1.0 was new?
+But what did Elixir have?
 
 ---
 class: middle
@@ -182,13 +180,16 @@ class: middle
 
 Nothing.
 
-"I'll have to write one" I thought.
+When I started learning Elixir this was a problem for me, so I decided to make
+this test runner one of my first Elixir projects. After some confusion about
+processes and applications I had something that worked, and I've been using it
+every day since.
 
-So I did. And I've been using it every day since.
+I'm going to walk through two implementations, and then at the end maybe you'll
+have some thoughts as to how we can make it better.
 
-I'm going to walk you through roughly how it works.
-
-Hopefully at the end you'll have some thoughts as to how we can make it better.
+If at any point you'd like me to clarify anything please call out and let me
+know. I'm very happy to answer questions.
 
 ---
 class: middle
@@ -196,12 +197,13 @@ class: middle
 When a file is saved -&gt;
   If the file is an Elixir file -&gt;
     Recompile the project
-    Run the "test" mix task
+    Run the tests
 </pre>
 <br>
 
+**fs** by Vladimir Kirillov and Maxim Sokhatsky<br>
 [https://github.com/synrc/fs](https://github.com/synrc/fs)<br>
-by Vladimir Kirillov and Maxim Sokhatsky
+[https://hex.pm/packages/fs](https://hex.pm/packages/fs)
 
 ???
 This is our method.
@@ -209,11 +211,13 @@ This is our method.
 When a file is saved<br>
 If the file is an Elixir file<br>
 Recompile the project<br>
-Run the "test" mix task<br>
+Run the tests<br>
 
-Watching file system events to detect when a file has been changed is the
-tricky part. Luckily Vladimir Kirillov and Maxim Sokhatsky have already done
-this for us, and released the result on hex as `fs`.
+Watching file system events to detect when a file has been changed is
+definately the tricky part.
+
+Luckily Vladimir and Maxim here have already done this for us, and released the
+project as a hex package called fs.
 
 ---
 class: middle
@@ -241,8 +245,10 @@ iex&gt; flush()
 
 fs is an application that allows a process to subscribe to file system events.
 
-Each time a file is modified it will send subscribed processes a message
+Each time a file is modified fs will send the subscribed processes a message
 containing information about the event, like so.
+
+Let's build a GenServer process that will listen to these events.
 
 ---
 class: middle
@@ -272,14 +278,19 @@ end
 
 ???
 
-Here's our watcher GenServer.
+First we have the public API.
 
-In the init callback it subscribes to events from the fs application
+There's just a start_link function which wraps the GenServer.start_link
+function for neatness sake.
 
-And then it has a handle_info clause that will print take the path of the
-changed file from the event, and then print.
+Then we have the GenServer callbacks.
 
-We've also wrapped the GenServer.start_link function for neatness sake.
+We implement the init callback to ensure fs is started, subscribe to events,
+and then start iteration.
+
+We also implement a clause for the handle_info function that will match the events sent from fs.
+
+From each message we grab the file path, and then print it.
 
 ---
 class: middle
@@ -302,10 +313,11 @@ iex> Watcher.start_link()
 
 ???
 
-And if we run this, it works. It prints a series of paths.
+So if we start it in the REPL and edit a file, it works. It prints a series of
+paths.
 
-Now that we can respond to file system events let's make it compile and run the
-tests when it's a source file.
+Now we can respond to file system events. Let's make it compile and run the
+tests when it's an Elixir file that's changed.
 
 ---
 class: middle
@@ -315,10 +327,10 @@ defmodule Watcher do
 
   # Rest of module here...
 
-  @source_file_pattern ~r/\.(exs|ex|erl|eex|xrl|yrl)\z/
+  @pattern ~r/\.(exs|ex|erl|eex|xrl|yrl)\z/
 
   def handle_info({_, {:fs, :file_event}, {path, _}}, state) do
-    if Regex.match?(@source_file_pattern, path) do
+    if Regex.match?(@pattern, to_string(path) do
       Runner.run_tests()
     end
     {:noreply, state}
@@ -355,7 +367,7 @@ the command will be sent back to the process as a message.
 ---
 ```ruby
 defmodule Runner do
-  @args ~w(stream binary use_stdio stderr_to_stdout)a
+  @args ~w(stream binary exit_status use_stdio)a
   def run_tests do
     {:spawn, "mix test"}
     |&gt; Port.open(@args)
@@ -379,13 +391,14 @@ end
 
 Here's our function.
 It creates a port that runs the command "mix test", and then enters a receive
-loop, printing the output from the tests running in the port.
+loop.
 
-This works. If you run this and edit a file the tests will run, and anything
-printed will be streamed to the watcher and printed.
+When the message contains IO data, we print it and loop again. When it contains
+an exit status the tests have finished running, so we return back to the
+GenServer.
 
-You will notice however that the tests will be run multiple times when you save
-one file.
+If you use this as it is, you will find that the tests will be run multiple
+times when you save one file.
 
 Even worse, if you edit files while the tests are running those will also add
 more test runs to the queue, and you'll end up with tests running endlessly in
@@ -403,7 +416,7 @@ defmodule Watcher do
   # Rest of module here...
 
   def handle_info({_, {:fs, :file_event}, {path, _}}, state) do
-    if Regex.match?(@source_file_pattern, path) do
+    if Regex.match?(@pattern, to_string(path) do
       Runner.run_tests()
 *     discard_messages() # Empty inbox after a test run
     end
@@ -412,8 +425,8 @@ defmodule Watcher do
 
   def discard_messages do
     receive do
-      _       -> discard_messages()
-      after 0 -> :ok
+      _       -&gt; discard_messages()
+      after 0 -&gt; :ok
     end
   end
 end
@@ -426,12 +439,40 @@ after running the tests.
 To do so we simply enter a receive loop that does nothing for all messages.
 
 This little after 0 trick allows us to stop iteration if there are no
-messages left.
+messages left, rather than looping forever.
 
-I found this technique in the source code for iex. It's very similar to the
-flush method.
+---
+class: middle
 
-And that's pretty much how this tool has worked for the last year or so.
+```plain
+iex&gt; Watcher.start_link()
+:ok
+iex&gt;
+......................................................
+................
+
+Finished in 0.3 seconds (0.3s on load, 0.04s on tests)
+74 tests, 0 failures, 4 skipped
+
+Randomized with seed 387360
+```
+
+???
+
+And that's pretty much how this test runner has worked for the last year and a
+half. It's OK, it works. But what can we improve?
+
+For starters this doesn't work on Windows. The shell on Linux isn't the same as
+on Windows.
+
+Also it's not as fast as it could be. Each time we run the tests we launch a
+new instance of the BEAM, and then it has to load the bytecode and start the
+applications.
+
+Wouldn't it be great if we could avoid the shell altogether and just run the
+tests inside the existing virtual machine?
+
+How about we call the mix compile and mix test commands internally?
 
     </textarea>
     <script src="../vendor/remark-0.11.0.min.js"></script>
