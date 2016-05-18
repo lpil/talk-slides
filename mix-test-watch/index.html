@@ -1,0 +1,193 @@
+---
+layout: presentation
+title: A Faster Feedback Loop
+---
+class: center, middle
+
+# A Faster Feedback Loop
+
+Louis Pilfold<br>
+http://lpil.uk/
+
+
+???
+
+Hi.
+
+I'm Louis Pilfold, and I'm a exceptionally lazy developer.
+
+---
+
+class: center, middle
+
+Write some unit tests<br>
+Write some code<br>
+Tests pass<br>
+GOTO 10<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+???
+
+This is my dev cycle.
+
+I write a unit test.
+
+I write some code.
+
+The tests let me know if my implementation  has the
+behaviour I expect.
+
+For me this is much faster than checking in the REPL, and an
+order of magnitude faster than actually running the app.
+
+---
+class: center, middle
+
+Write some unit tests<br>
+Write some code<br>
+Tests **FAIL**<br>
+Write some code<br>
+Tests pass<br>
+GOTO 10<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+???
+
+In reality it normally looks more like this.
+
+I write some code. The test fails.
+
+---
+class: center, middle
+
+Write some unit tests<br>
+Write some code<br>
+Tests **FAIL**<br>
+Write some code<br>
+Tests **FAIL**<br>
+Write some code<br>
+Tests pass<br>
+GOTO 10<br>
+<br>
+<br>
+<br>
+<br>
+
+???
+
+In reality it normally looks more like this.
+
+I write some code. The test fails.
+
+And again.
+
+---
+class: center, middle
+
+Write some unit tests<br>
+Write some code<br>
+Tests **FAIL**<br>
+Write some code<br>
+Tests **FAIL**<br>
+Write some code<br>
+Tests **FAIL**<br>
+Write some code<br>
+Tests pass<br>
+GOTO 10<br>
+<br>
+<br>
+
+???
+
+In reality it normally looks more like this.
+
+I write some code. The test fails.
+
+And again.
+
+And again.
+
+---
+class: center, middle
+
+Write some unit tests<br>
+Write some code<br>
+Tests **FAIL**<br>
+Write some code<br>
+Tests **FAIL**<br>
+Write some code<br>
+Tests **FAIL**<br>
+Write some code<br>
+Tests **FAIL**<br>
+Write some code<br>
+Tests pass<br>
+GOTO 10<br>
+
+???
+
+And so on.
+
+Every time I write more code I have to switch to another window to run the
+tests. As we've established, I'm very lazy, so I want to get the computer to
+do it for me.
+
+Most languages will have a tool that will automatically run your tests for you
+each time you save a source file in your project, solving this problem.
+
+---
+class: middle
+
+|  |  |  |
+| -- | -- | -- |
+| Haskell    | => | Stack |
+| Ruby       | => | Guard |
+| Erlang     | => | Rebar autotest |
+| Javascript | => | Karma, Grunt, Gulp |
+| &nbsp;     |    |              |
+
+???
+
+Haskell has Stack
+
+Ruby has Guard
+
+Erlang has the rebar3 autotest plugin
+
+Javascript has Karma, Grunt, Gulp and so on.
+
+But what did Elixir have back when v1.0 was new?
+
+---
+class: middle
+
+|  |  |  |
+| -- | -- | -- |
+| Haskell    | => | Stack |
+| Ruby       | => | Guard |
+| Erlang     | => | Rebar3 autotest |
+| Javascript | => | Karma, Grunt, Gulp |
+| Elixir     | => | `nil` |
+
+???
+
+Nothing.
+
+"I'll have to write one" I thought.
+
+So I did. And I've been using it every day since.
+
+I'm going to walk you through roughly how it works.
+
+Hopefully at the end you'll have some thoughts as to how we can make it better.
