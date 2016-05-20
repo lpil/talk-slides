@@ -474,6 +474,64 @@ tests inside the existing virtual machine?
 
 How about we call the mix compile and mix test commands internally?
 
+---
+```plain
+$ MIX_ENV=test iex -S mix
+```
+
+```ruby
+iex&gt; Mix.Task.run("test")
+# ......................................................
+# ................
+#
+# Finished in 0.3 seconds (0.3s on load, 0.04s on tests)
+# 74 tests, 0 failures, 4 skipped
+#
+# Randomized with seed 387360
+[Function<2.127709695/1 in Mix.Tasks.Test.run/1>]
+```
+
+---
+
+```plain
+$ MIX_ENV=test iex -S mix
+```
+
+```ruby
+iex&gt; Mix.Task.run("test")
+# ......................................................
+# ................
+#
+# Finished in 0.3 seconds (0.3s on load, 0.04s on tests)
+# 74 tests, 0 failures, 4 skipped
+#
+# Randomized with seed 387360
+[Function<2.127709695/1 in Mix.Tasks.Test.run/1>]
+
+iex&gt; Mix.Task.run("test")
+```
+
+---
+
+```plain
+$ MIX_ENV=test iex -S mix
+```
+
+```ruby
+iex&gt; Mix.Task.run("test")
+# ......................................................
+# ................
+#
+# Finished in 0.3 seconds (0.3s on load, 0.04s on tests)
+# 74 tests, 0 failures, 4 skipped
+#
+# Randomized with seed 387360
+[Function<2.127709695/1 in Mix.Tasks.Test.run/1>]
+
+iex&gt; Mix.Task.run("test")
+:noop
+```
+
     </textarea>
     <script src="../vendor/remark-0.11.0.min.js"></script>
     <script>
