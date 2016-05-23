@@ -758,8 +758,9 @@ iex&gt; Code.loaded_files()
 ???
 
 If you rummage around inside the Elixir source code you'll find there's an
-Erlang process that keeps track of paths to files that have already been
-loaded.
+Erlang process called the "elixir_code_server" that keeps track of paths to
+files that have already been loaded. Any file that is already known will not be
+loaded by the test task.
 
 ---
 class: middle
@@ -785,11 +786,19 @@ end
 ```
 ???
 
-If we instruct this process to unload the files the test task will pick up test
-changes. To do this we use mix to get a list of the test files, expand the
-paths, and then unload them.
+The Code module exposes a few functions that we can use to interact with the elixir_code_server, including one called unload_files. This function takes a list of absolute paths to files, and unloads them.
+
+Note this only unloads the files, the modules are managed by the VM and another
+process called the erlang_code_server, so they stay available.
+
+Here I've changed the run_tests function to build a list of test files, and
+then pass them to the unload_files function.
 
 ---
+```plain
+$ MIX_ENV=test iex -S mix
+```
+
 ```plain
 iex&gt; Runner.run_tests()
 ......................................
@@ -799,7 +808,19 @@ Finished in 0.6 seconds (0.1s on load, 0.5s on tests)
 
 iex&gt; Runner.run_tests()
 ```
+
+???
+
+The tests still work it we run it a first time.
+
+And if we run it a second time...
+
+
 ---
+```plain
+$ MIX_ENV=test iex -S mix
+```
+
 ```plain
 iex&gt; Runner.run_tests()
 ......................................
@@ -820,6 +841,47 @@ test/parser_test.exs:1: warning: redefining module ParserTest
 Finished in 0.6 seconds (0.1s on load, 0.5s on tests)
 38 tests, 0 failures
 ```
+
+???
+
+Well it sort of works- our test code is reloaded on each run now. However,
+because the test **modules** are already in memory we get these nasty warnings
+when as they are redefined.
+
+This is only a tiny project here, and it's already pretty noisy. Imagine if you
+had tens or hundreds of modules, each emitting a warning like this.
+
+What can we do about this?
+
+---
+class: middle
+```erlang
+check_module_availability(Line, File, Module) -&gt;
+  case elixir_compiler:get_opt(ignore_module_conflict) of
+    false -&gt;
+      case code:ensure_loaded(Module) of
+        {module, _} -&gt;
+          elixir_errors:form_warn([{line, Line}],
+            File, ?MODULE, {module_defined, Module});
+        {error, _}  -&gt;
+          ok
+      end;
+    true -&gt;
+      ok
+  end.
+```
+???
+
+Inside the Elixir compiler there is a Erlang module that confusingly enough is
+called elixir_module. It contains a function called format_error, one clause of
+which builds our warning message. This clause is called from a function called
+check_module_availability, in the same module.
+
+Here we can see it checks if the module is loaded using ensure_loaded function
+in the Erlang code module, and calls the warning function if is loaded.
+
+However, it doesn't do this check at all if the elixir_compiler:get_opt
+function returns true when called with the atom ignore_module_conflict.
 
     </textarea>
     <script src="../vendor/remark-0.11.0.min.js"></script>
