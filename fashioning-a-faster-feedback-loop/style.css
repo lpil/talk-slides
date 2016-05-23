@@ -39,6 +39,7 @@ code {
   border-radius: 5px;
 }
 .remark-code.plain {
+  overflow: hidden;
   color: #ddd;
 }
 .remark-code, .remark-inline-code {

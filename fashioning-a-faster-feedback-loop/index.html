@@ -491,6 +491,15 @@ iex&gt; Mix.Task.run("test")
 [Function<2.127709695/1 in Mix.Tasks.Test.run/1>]
 ```
 
+???
+
+If we want to run the tests inside a running VM we need to make sure we start
+it in the test environment, otherwise they will throw an exception.
+
+This is the Mix.Task.run function, which allows us to invoke mix tasks.
+
+If we call it with the string "test" the tests run.
+
 ---
 
 ```plain
@@ -510,6 +519,10 @@ iex&gt; Mix.Task.run("test")
 
 iex&gt; Mix.Task.run("test")
 ```
+
+???
+
+What happens it we call it again?
 
 ---
 
@@ -530,6 +543,282 @@ iex&gt; Mix.Task.run("test")
 
 iex&gt; Mix.Task.run("test")
 :noop
+```
+
+???
+
+Nothing.
+
+This is because mix maintains some internal state, and doesn't run tasks if
+they have already been invoked already.
+
+This is useful as we can build dependancy trees out of mix tasks, and mix will
+work out how to run them sequentially without repeating itself.
+
+Here's an example.
+
+---
+class: middle
+
+```ruby
+defmodule Mix.Tasks.Breakfast do
+  use Mix.Task
+  def run(_) do
+    Mix.Task.run "eggs"
+    Mix.Task.run "toast"
+    IO.puts "Breakfast is ready!"
+  end
+end
+```
+
+???
+
+This is a mix task called breakfast. When it's run it calls the eggs task, the
+toast task, and then lets us know that breakfast is ready.
+
+---
+class: middle
+
+```ruby
+defmodule Mix.Tasks.Eggs do
+  use Mix.Task
+  def run(_) do
+    Mix.Task.run "buy_ingredients"
+    IO.puts "Cooking eggs"
+  end
+end
+```
+
+???
+
+The eggs task calls the buy_ingredients task, and then cooks eggs.
+
+---
+class: middle
+
+```ruby
+defmodule Mix.Tasks.Toast do
+  use Mix.Task
+  def run(_) do
+    Mix.Task.run "buy_ingredients"
+    IO.puts "Toasting bread"
+  end
+end
+```
+
+???
+
+The toast task also calls the buy_ingredients task, and then toasts some bread.
+
+
+---
+class: middle
+
+```ruby
+defmodule Mix.Tasks.BuyIngredients do
+  use Mix.Task
+  def run(_) do
+    IO.puts "Buying ingredients"
+  end
+end
+```
+???
+
+And lastly the buy_ingredients task, which depends upon nothing.
+
+---
+class: middle
+
+```plain
+$ mix breakfast
+Buying ingredients
+Cooking eggs
+Toasting bread
+Breakfast is ready!
+```
+???
+
+So when we run the breakfast task ingredients are bought, eggs are cooked,
+bread is toasted, and then breakfast is ready.
+
+Because mix was keeping this internal state the buy_ingredients task was run
+once, even though we called it twice.
+
+This is great for build tasks, but less good for our use case. Luckily mix
+gives us a way to re-enable tasks we want to run more than once.
+
+---
+class: middle
+
+```ruby
+defmodule Runner do
+  def run_tests do
+    reenable_test_tasks()
+    Mix.Task.run("test")
+  end
+
+  defp reenable_test_tasks do
+    Mix.Task.reenable("loadpaths")
+    Mix.Task.reenable("deps.loadpaths")
+    Mix.Task.reenable("test")
+  end
+end
+```
+
+???
+
+Here's our new Runner module. It reenables the test task and the two dependancy
+tasks, and then runs the test task.
+
+---
+
+```ruby
+iex&gt; Runner.run_tests()
+# ......................................................
+# ................
+#
+# Finished in 0.3 seconds (0.3s on load, 0.04s on tests)
+# 74 tests, 0 failures, 4 skipped
+#
+# Randomized with seed 387360
+[Function<2.127709695/1 in Mix.Tasks.Test.run/1>]
+
+iex&gt; Runner.run_tests()
+# ......................................................
+# ................
+#
+# Finished in 0.3 seconds (0.3s on load, 0.04s on tests)
+# 74 tests, 0 failures, 4 skipped
+#
+# Randomized with seed 792311
+[Function<2.843757605/1 in Mix.Tasks.Test.run/1>,
+  Function<2.127709695/1 in Mix.Tasks.Test.run/1>]
+```
+???
+
+We can now run the tests more then once, but there's a problem. We're not
+recompiling and reloading the code, so our tests are locked to the codebase
+when we started the VM. We need to force recompilation in order to get for our
+edits to register.
+
+---
+class: middle
+
+```ruby
+defmodule Runner do
+  def run_tests do
+*   recompile_project()
+    reenable_test_tasks()
+    Mix.Task.run("test")
+  end
+
+  @compile_tasks ["compile", "compile.all",
+    "compile.protocols", "compile.app", "compile.elixir",
+    "compile.erlang", "compile.yecc", "compile.leex",
+    "loadpaths", "deps.loadpaths"]
+
+  defp recompile_project do
+    Enum.each(@compile_tasks, &amp;Mix.Task.reenable/1)
+    Mix.Task.run("compile")
+  end
+
+  # Other code here...
+end
+```
+
+???
+
+Reenabling compilation looks a lot like reenabling test running.
+
+There's a new function called recompile_project, which calls
+Mix.Task.reenable on some dependancy tasks, and then runs the compile task.
+
+Changes to our application code are now picked up each time we edit a file, but
+changes to our test code are not. Why is this?
+
+The compile task ignores the test directory entirely, instead is it the test
+task that loads the test module. Unlike the compile task it won't check to see
+if there is a newer version of the code as it doesn't expect any test code to
+be loaded before being run.
+
+We have to make Elixir forget that it's already seen the test files.
+
+---
+class: middle
+
+```ruby
+iex&gt; Code.loaded_files()
+["/home/louis/runner/mix.exs",
+ "/home/louis/runner/test/test_helper.exs",
+ "/usr/local/bin/mix",
+ #... and more...
+]
+```
+
+???
+
+If you rummage around inside the Elixir source code you'll find there's an
+Erlang process that keeps track of paths to files that have already been
+loaded.
+
+---
+class: middle
+
+```ruby
+defmodule Runner do
+  def run_tests do
+*   unload_test_files()
+    recompile_project()
+    reenable_test_tasks()
+    Mix.Task.run("test")
+  end
+
+  defp unload_test_files do
+    ["test"]
+    |&gt; Mix.Utils.extract_files("*")
+    |&gt; Enum.map(&amp;Path.expand/1)
+    |&gt; Code.unload_files
+  end
+
+  # Other code here...
+end
+```
+???
+
+If we instruct this process to unload the files the test task will pick up test
+changes. To do this we use mix to get a list of the test files, expand the
+paths, and then unload them.
+
+---
+```plain
+iex&gt; Runner.run_tests()
+......................................
+
+Finished in 0.6 seconds (0.1s on load, 0.5s on tests)
+38 tests, 0 failures
+
+iex&gt; Runner.run_tests()
+```
+---
+```plain
+iex&gt; Runner.run_tests()
+......................................
+
+Finished in 0.6 seconds (0.1s on load, 0.5s on tests)
+38 tests, 0 failures
+
+iex&gt; Runner.run_tests()
+test/calc_test.exs:1: warning: redefining module FooTest
+test/addition_test.exs:1: warning: redefining module AddtionTest
+test/multiply_test.exs:1: warning: redefining module MultiplyTest
+test/division_test.exs:1: warning: redefining module DivisionTest
+test/subtraction_test.exs:1: warning: redefining module SubtractionTest
+test/prime_test.exs:1: warning: redefining module PrimeTest
+test/parser_test.exs:1: warning: redefining module ParserTest
+......................................
+
+Finished in 0.6 seconds (0.1s on load, 0.5s on tests)
+38 tests, 0 failures
 ```
 
     </textarea>
