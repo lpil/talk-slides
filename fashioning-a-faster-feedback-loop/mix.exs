@@ -24,6 +24,8 @@ defmodule Talk do
     [
       # File system event watcher
       {:fs, "~> 0.9.1"},
+      # runner
+      {:mix_test_watch, github: "lpil/mix-test.watch"},
     ]
   end
 end

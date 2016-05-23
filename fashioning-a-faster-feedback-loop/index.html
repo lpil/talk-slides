@@ -880,9 +880,79 @@ check_module_availability, in the same module.
 Here we can see it checks if the module is loaded using ensure_loaded function
 in the Erlang code module, and calls the warning function if is loaded.
 
-However, it doesn't do this check at all if the elixir_compiler:get_opt
-function returns true when called with the atom ignore_module_conflict.
+However, it doesn't do this check at all if elixir compiler
+ignore_module_conflict has been set.
 
+---
+class: middle
+```ruby
+defmodule Runner do
+  def run_tests do
+*   Code.compiler_options(ignore_module_conflict: true)
+    unload_test_files()
+    recompile_project()
+    reenable_test_tasks()
+    Mix.Task.run("test")
+  end
+
+  # Other code here...
+end
+```
+
+???
+
+It turns out that the Code module gives us an easy way to enable this option at
+runtime. We just pass ignore_module_conflict: true to the compiler_options
+function.
+
+---
+class: middle
+```ruby
+defmodule Runner do
+  def run_tests do
+    Code.compiler_options(ignore_module_conflict: true)
+    unload_test_files()
+    recompile_project()
+    reenable_test_tasks()
+    Mix.Task.run("test")
+*   :elixir_config.put(:at_exit, [])
+  end
+
+  # Other code here...
+end
+```
+
+???
+
+If you run the tests normally and tests fail, Elixir will exit with a non-zero
+exit code. It acheives this by registering an on_exit callback function. To
+avoid leaking a little bit of memory with each run we clear this callback after
+each run like so.
+
+And that's it. It works. We can run the tests as many times as we like inside
+the existing VM. Our test runner is faster, and now works on Windows.
+
+---
+
+```plain
+iex&gt; Watcher.start_link()
+{:ok, #PID<0.68.0>}
+iex&gt;
+```
+Edit a file...
+```plain
+......................................
+
+Finished in 0.6 seconds (0.1s on load, 0.5s on tests)
+38 tests, 0 failures
+```
+Edit a file...
+```plain
+......................................
+
+Finished in 0.6 seconds (0.1s on load, 0.5s on tests)
+38 tests, 0 failures
+```
     </textarea>
     <script src="../vendor/remark-0.11.0.min.js"></script>
     <script>
