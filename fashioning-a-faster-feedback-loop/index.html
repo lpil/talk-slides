@@ -12,22 +12,21 @@ class: center, middle, inverse
 # Fashioning a Faster<br>Feedback Loop
 
 Louis Pilfold<br>
-http://lpil.uk/
+<a href="http://lpil.uk/" target="_blank">http://lpil.uk/</a><br>
+<a href="https://twitter.com/louispilfold" target="_blank">@louispilfold</a>
 
 
 ???
 
 Hi.
 
-I'm Louis Pilfold, and I'm a exceptionally lazy developer.
-
-Today I'd like to talk a little bit about my experience building a faster
-feedback loop for Elixir development.
+I'm Louis Pilfold and today I'd like to talk a little bit about my experience
+building a faster feedback loop for Elixir development.
 
 ---
 class: center, middle
 
-Write some unit tests<br>
+Write some tests<br>
 Write some code<br>
 Tests pass<br>
 GOTO 10<br>
@@ -42,24 +41,23 @@ GOTO 10<br>
 
 This is my dev cycle.
 
-I write a unit test.
+I write some tests.
 
 I write some code.
 
-The tests let me know if my implementation  has the
-behaviour I expect.
+The tests let me know if my implementation has the behaviour I expect.
 
-For me this is much faster than checking in the REPL, and an
-order of magnitude faster than actually running the app.
+For me this is faster than checking in the REPL, and much faster than actually
+running the app.
 
 ...
 
-In reality it normally looks more like this.
+Though in reality my workflow normally looks more like this.
 
 ---
 class: center, middle
 
-Write some unit tests<br>
+Write some tests<br>
 Write some code<br>
 Tests **.red[FAIL]**<br>
 <br>
@@ -77,7 +75,7 @@ I write some code. The test fails.
 ---
 class: center, middle
 
-Write some unit tests<br>
+Write some tests<br>
 Write some code<br>
 Tests **.red[FAIL]**<br>
 Write some code<br>
@@ -97,7 +95,7 @@ And again.
 ---
 class: center, middle
 
-Write some unit tests<br>
+Write some tests<br>
 Write some code<br>
 Tests **.red[FAIL]**<br>
 Write some code<br>
@@ -119,7 +117,7 @@ And again.
 ---
 class: center, middle
 
-Write some unit tests<br>
+Write some tests<br>
 Write some code<br>
 Tests **.red[FAIL]**<br>
 Write some code<br>
@@ -134,12 +132,12 @@ Tests **.red[FAIL]**<br>
 
 And so on.
 
-Every time I write more code I have to switch to another window to run the
-tests. As we've established, I'm very lazy, so I want to get the computer to
-do it for me.
+Every time I edit the code I have to switch to another window to run the
+tests. Now I'm both lazy and impatient, so I don't like all this switching back
+and forth. I want to get the computer to do it for me.
 
-Most languages will have a tool that will automatically run your tests for you
-each time you save a source file in your project, solving this problem.
+Luckily most languages will have a tool that will automatically run your tests
+for you each time you save a file.
 
 ---
 class: middle
@@ -154,13 +152,15 @@ class: middle
 
 ???
 
+For example...
+
 Haskell has Stack.
 
 Ruby has Guard.
 
 Erlang has Rebar autotest.
 
-Javascript has Karma.
+and Javascript has Karma.
 
 But what did Elixir have?
 
@@ -181,9 +181,9 @@ class: middle
 Nothing.
 
 When I started learning Elixir this was a problem for me, so I decided to make
-this test runner one of my first Elixir projects. After some confusion about
-processes and applications I had something that worked, and I've been using it
-every day since.
+this test runner one of my first Elixir projects. After much confusion about
+processes, applications, OTP, and so on, I had something that worked, and I've
+been using it every day since.
 
 I'm going to walk through two implementations, and then at the end maybe you'll
 have some thoughts as to how we can make it better.
@@ -206,18 +206,18 @@ When a file is saved -&gt;
 [https://hex.pm/packages/fs](https://hex.pm/packages/fs)
 
 ???
-This is our method.
+This is our approach.
 
 When a file is saved<br>
 If the file is an Elixir file<br>
 Recompile the project<br>
 Run the tests<br>
 
-Watching file system events to detect when a file has been changed is
+Watching file system to detect when a file has been changed is
 definately the tricky part.
 
 Luckily Vladimir and Maxim here have already done this for us, and released the
-project as a hex package called fs.
+project as a hex package called fs. It's excellent, check it out.
 
 ---
 class: middle
@@ -245,10 +245,11 @@ iex&gt; flush()
 
 fs is an application that allows a process to subscribe to file system events.
 
-Each time a file is modified fs will send the subscribed processes a message
+Each time a file is modified fs will send the subscriber a message
 containing information about the event, like so.
 
-Let's build a GenServer process that will listen to these events.
+In order to make use of these messages I made a GenServer that will recieve
+them.
 
 ---
 class: middle
@@ -278,19 +279,17 @@ end
 
 ???
 
-First we have the public API.
-
-There's just a start_link function which wraps the GenServer.start_link
-function for neatness sake.
+First we have the public API, which is just a start_link function which wraps
+the GenServer.start_link function for the sake of having a clean API.
 
 Then we have the GenServer callbacks.
 
-We implement the init callback to ensure fs is started, subscribe to events,
-and then start iteration.
+The init callback ensures fs is started, subscribes to events, and then
+starts iteration.
 
-We also implement a clause for the handle_info function that will match the events sent from fs.
-
-From each message we grab the file path, and then print it.
+We also implement a clause for the handle_info function that will match the
+events sent from fs. This clause just prints the path of the changed file,
+which it extracts from the message.
 
 ---
 class: middle
@@ -316,7 +315,7 @@ iex> Watcher.start_link()
 So if we start it in the REPL and edit a file, it works. It prints a series of
 paths.
 
-Now we can respond to file system events. Let's make it compile and run the
+We can respond to file system events. Now it has to compile and run the
 tests when it's an Elixir file that's changed.
 
 ---
@@ -340,17 +339,14 @@ end
 
 ???
 
-Here's our updated handle_info clause.
+Here's our updated handle_info clause in our GenServer.
 
 First we check to see if the file has an Elixir or Erlang file extension using
 a regex,
 
 and if it matches we delegate the actual test running to a new Runner module.
 
-In the real version we also ignore certain directories here, such as build and
-deps.
-
-So how does the run_tests/0 function run the tests?
+So how does the run_tests function run the tests?
 
 ---
 class: middle, center, inverse, large
@@ -362,7 +358,7 @@ class: middle, center, inverse, large
 Has anyone used Erlang Ports?
 
 Ports are a way of running commands in the shell. Anything that is printed by
-the command will be sent back to the process as a message.
+the shell command will be sent back to the process as a message.
 
 ---
 ```ruby
@@ -395,18 +391,18 @@ loop.
 
 When the message contains IO data, we print it and loop again. When it contains
 an exit status the tests have finished running, so we return back to the
-GenServer.
+GenServer and await the next event.
 
 If you use this as it is, you will find that the tests will be run multiple
 times when you save one file.
 
 Even worse, if you edit files while the tests are running those will also add
-more test runs to the queue, and you'll end up with tests running endlessly in
-a loop.
+more test runs to the queue, and you'll end up with tests running continuously
+whether you want them to to or not.
 
 This happens because there are actually many events occuring when a file is
-saved, and our Watcher faithfully works through all the events in its inbox,
-running the tests for each one.
+saved, and our Watcher faithfully works through all the events, running the
+tests for each one.
 
 ---
 
@@ -441,6 +437,9 @@ To do so we simply enter a receive loop that does nothing for all messages.
 This little after 0 trick allows us to stop iteration if there are no
 messages left, rather than looping forever.
 
+It's saying "if we have to wait at all for another message, time out and break
+out of the recieve block.
+
 ---
 class: middle
 
@@ -460,19 +459,20 @@ Randomized with seed 387360
 ???
 
 And that's pretty much how this test runner has worked for the last year and a
-half. It's OK, it works. But what can we improve?
+half. It's OK, it works. But what can be improved here?
 
-For starters this doesn't work on Windows. The shell on Linux isn't the same as
-on Windows.
+For starters this doesn't work on Windows as with ports we're relying on the
+Unix shell.
 
-Also it's not as fast as it could be. Each time we run the tests we launch a
-new instance of the BEAM, and then it has to load the bytecode and start the
-applications.
+It's also not as fast as it could be. Each time we run the tests we launch a
+new instance of the virtual machine, and then it has to load the bytecode,
+start the applications, and so on.
 
 Wouldn't it be great if we could avoid the shell altogether and just run the
 tests inside the existing virtual machine?
 
-How about we call the mix compile and mix test commands internally?
+How about we compile and run the tests with the virtual machine that's already
+running?
 
 ---
 ```plain
@@ -493,12 +493,12 @@ iex&gt; Mix.Task.run("test")
 
 ???
 
-If we want to run the tests inside a running VM we need to make sure we start
-it in the test environment, otherwise they will throw an exception.
+If we want to run the tests like this we need to make sure we start
+the VM in the test environment, otherwise they will throw an exception.
 
 This is the Mix.Task.run function, which allows us to invoke mix tasks.
 
-If we call it with the string "test" the tests run.
+If we call it with the string "test" the tests run. Simple.
 
 ---
 
@@ -547,7 +547,7 @@ iex&gt; Mix.Task.run("test")
 
 ???
 
-Nothing.
+Nothing. It doesn't run the tests.
 
 This is because mix maintains some internal state, and doesn't run tasks if
 they have already been invoked already.
@@ -555,94 +555,10 @@ they have already been invoked already.
 This is useful as we can build dependancy trees out of mix tasks, and mix will
 work out how to run them sequentially without repeating itself.
 
-Here's an example.
-
----
-class: middle
-
-```ruby
-defmodule Mix.Tasks.Breakfast do
-  use Mix.Task
-  def run(_) do
-    Mix.Task.run "eggs"
-    Mix.Task.run "toast"
-    IO.puts "Breakfast is ready!"
-  end
-end
-```
-
-???
-
-This is a mix task called breakfast. When it's run it calls the eggs task, the
-toast task, and then lets us know that breakfast is ready.
-
----
-class: middle
-
-```ruby
-defmodule Mix.Tasks.Eggs do
-  use Mix.Task
-  def run(_) do
-    Mix.Task.run "buy_ingredients"
-    IO.puts "Cooking eggs"
-  end
-end
-```
-
-???
-
-The eggs task calls the buy_ingredients task, and then cooks eggs.
-
----
-class: middle
-
-```ruby
-defmodule Mix.Tasks.Toast do
-  use Mix.Task
-  def run(_) do
-    Mix.Task.run "buy_ingredients"
-    IO.puts "Toasting bread"
-  end
-end
-```
-
-???
-
-The toast task also calls the buy_ingredients task, and then toasts some bread.
-
-
----
-class: middle
-
-```ruby
-defmodule Mix.Tasks.BuyIngredients do
-  use Mix.Task
-  def run(_) do
-    IO.puts "Buying ingredients"
-  end
-end
-```
-???
-
-And lastly the buy_ingredients task, which depends upon nothing.
-
----
-class: middle
-
-```plain
-$ mix breakfast
-Buying ingredients
-Cooking eggs
-Toasting bread
-Breakfast is ready!
-```
-???
-
-So when we run the breakfast task ingredients are bought, eggs are cooked,
-bread is toasted, and then breakfast is ready.
-
-Because mix was keeping this internal state the buy_ingredients task was run
-once, even though we called it twice.
+For example, the test command depends upon the compile command, as does the
+docs command. If you run both test and docs it'll run compile once for the test
+command, but not again for the docs command as that requirement has already
+been met.
 
 This is great for build tasks, but less good for our use case. Luckily mix
 gives us a way to re-enable tasks we want to run more than once.
@@ -929,30 +845,12 @@ exit code. It acheives this by registering an on_exit callback function. To
 avoid leaking a little bit of memory with each run we clear this callback after
 each run like so.
 
-And that's it. It works. We can run the tests as many times as we like inside
-the existing VM. Our test runner is faster, and now works on Windows.
-
 ---
+class: inverse, middle, center
 
-```plain
-iex&gt; Watcher.start_link()
-{:ok, #PID<0.68.0>}
-iex&gt;
-```
-Edit a file...
-```plain
-......................................
+# Demo
 
-Finished in 0.6 seconds (0.1s on load, 0.5s on tests)
-38 tests, 0 failures
-```
-Edit a file...
-```plain
-......................................
 
-Finished in 0.6 seconds (0.1s on load, 0.5s on tests)
-38 tests, 0 failures
-```
     </textarea>
     <script src="../vendor/remark-0.11.0.min.js"></script>
     <script>
