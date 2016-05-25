@@ -136,8 +136,8 @@ Every time I edit the code I have to switch to another window to run the
 tests. Now I'm both lazy and impatient, so I don't like all this switching back
 and forth. I want to get the computer to do it for me.
 
-Luckily most languages will have a tool that will automatically run your tests
-for you each time you save a file.
+Luckily most languages will have a tool that will automatically run the tests
+for you each time a file is saved.
 
 ---
 class: middle
@@ -208,7 +208,7 @@ When a file is saved -&gt;
 [https://hex.pm/packages/fs](https://hex.pm/packages/fs)
 
 ???
-This is our approach.
+This is the high level approach.
 
 When a file is saved<br>
 If the file is an Elixir file<br>
@@ -341,7 +341,7 @@ end
 
 ???
 
-Here's our updated handle_info clause in our GenServer.
+Here's the updated handle_info clause in the GenServer.
 
 First I check to see if the file has an Elixir or Erlang file extension using
 a regex,
@@ -387,7 +387,7 @@ end
 
 ???
 
-Here's our function.
+Here's the function.
 It creates a port that runs the command "mix test", and then enters a receive
 loop.
 
@@ -403,7 +403,7 @@ also add more test runs to the queue, and the test will end up running
 continuously whether we want them to to or not.
 
 This happens because there are actually many events occuring when a file is
-saved, and our Watcher faithfully works through all the events, running the
+saved, and the GenServer faithfully works through all the events, running the
 tests for each one.
 
 ---
@@ -434,7 +434,8 @@ end
 My solution here was to empty the process inbox of any messages immediately
 after running the tests.
 
-To do so we simply enter a receive loop that does nothing for all messages.
+To do so I enter a receive loop that matches any message, and then does nothing
+for each one.
 
 This little after 0 trick allows us to stop iteration if there are no
 messages left, rather than looping forever.
@@ -470,9 +471,9 @@ It's also not as fast as it could be. Each time it runs the tests it launchs a
 new instance of the virtual machine, and then it has to load the bytecode,
 start the applications, and so on.
 
-How about we compile and run the tests with the virtual machine that's already
-running? Then it doesn't matter what OS we're running on, and there's no
-waiting for the virtual machine to start.
+How about compiling and running the tests with the virtual machine that's
+already running? Then it doesn't matter what OS is bein used running on, and
+there's no waiting for the virtual machine to start.
 
 ---
 ```plain
@@ -493,9 +494,8 @@ iex&gt; Mix.Task.run("test")
 
 ???
 
-To run the tests like this we need to make sure we start the VM in the test
-environment, otherwise the test task will throw an exception when you try and
-run it.
+To run the tests like thisthe VM must be started in the test environment,
+otherwise the test task will throw an exception when you try and run it.
 
 Here I'm calling the Mix.Task.run function, which allows us to invoke mix
 tasks.
@@ -561,8 +561,8 @@ For example, the test task runs the compile command, and the docs task also
 runs the compile task. If you run both test and docs at once it'll run the
 compile task only once as it knows that requirement has already been met.
 
-This is great for build tasks, but less good for our use case. Luckily mix
-gives us a way to re-enable tasks we want to run more than once.
+This is great for build tasks, but less good for this use case. Luckily mix
+provides a way to re-enable tasks that always need to be run.
 
 ---
 class: middle
@@ -616,10 +616,10 @@ iex&gt; Runner.run_tests()
 Great. I can now run the tests more then once, but there's a problem.
 
 The tests are being run, but the application code is not being recompiled and
-reloaded. Our tests are locked in time to when we started the VM, and don't
+reloaded. The tests are locked in time to when the VM was started, and don't
 reflect the current state of the codebase.
 
-We need to force recompilation in order to get for our edits to register.
+I need to force recompilation in order to get the edits to register.
 
 ---
 class: middle
@@ -653,8 +653,8 @@ Reenabling compilation looks a lot like reenabling test running.
 I've added a new function called recompile_project, which calls
 Mix.Task.reenable on some dependancy tasks, and then runs the compile task.
 
-Changes to our application code are now picked up each time we edit a file, but
-changes to our test code are not. Why is this?
+Changes to the application code are now picked up each time a file is edited,
+but changes to test code are not. Why is this?
 
 The compile task ignores the test directory entirely, instead is it the test
 task that loads the test modules.
@@ -709,7 +709,7 @@ end
 ```
 ???
 
-The Code module exposes a few functions that we can use to interact with the
+The Code module exposes a few functions that can be used to interact with the
 elixir_code_server, including one called unload_files. This function takes a
 list of absolute paths to files, and unloads them.
 
@@ -776,7 +776,7 @@ warnings when as they are redefined.
 This is only a tiny project here, and it's already pretty noisy. Imagine if it
 had had tens or hundreds of modules, each emitting a warning like this.
 
-What can we do about this?
+What can be done about this?
 
 ---
 class: middle
@@ -799,7 +799,7 @@ check_module_availability(Line, File, Module) -&gt;
 
 Inside the Elixir compiler there is a Erlang module that confusingly enough is
 called elixir_module. It contains a function called format_error, one clause of
-which builds our warning message. This clause is called from a function called
+which builds the warning message. This clause is called from a function called
 check_module_availability, which is on screen now.
 
 The function checks if the module is loaded using ensure_loaded function
