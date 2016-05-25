@@ -95,3 +95,10 @@ code {
   float: right;
   padding-top: 1em;
 }
+
+.hljs-comment {
+  color: #bf79db !important;
+}
+.hljs-symbol {
+  color: #a6e22e !important;
+}

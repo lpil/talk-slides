@@ -146,7 +146,7 @@ class: middle
   <tr><td>Haskell</td>   <td>=&gt;</td><td>Stack</td></tr>
   <tr><td>Ruby</td>      <td>=&gt;</td><td>Guard</td></tr>
   <tr><td>Erlang</td>    <td>=&gt;</td><td>Rebar autotest</td></tr>
-  <tr><td>Javascript</td><td>=&gt;</td><td>Karma, Grunt, Gulp</td></tr>
+  <tr><td>Javascript</td><td>=&gt;</td><td>Karma</td></tr>
   <tr><td>&nbsp;</td>    <td>     </td><td></td></tr>
 </table>
 
@@ -163,6 +163,8 @@ Erlang has Rebar autotest.
 and Javascript has Karma.
 
 But what did Elixir have?
+
+TODO: metion other ones now exist. Give some context as to when this was.
 
 ---
 class: middle
@@ -279,15 +281,15 @@ end
 
 ???
 
-First we have the public API, which is just a start_link function which wraps
+First there is the public API, which is just a start_link function which wraps
 the GenServer.start_link function for the sake of having a clean API.
 
-Then we have the GenServer callbacks.
+Then there's the GenServer callbacks.
 
 The init callback ensures fs is started, subscribes to events, and then
 starts iteration.
 
-We also implement a clause for the handle_info function that will match the
+I've also implemented a clause for the handle_info function that will match the
 events sent from fs. This clause just prints the path of the changed file,
 which it extracts from the message.
 
@@ -297,25 +299,25 @@ class: middle
 Start the Watcher GenServer
 
 ```ruby
-iex> Watcher.start_link()
+iex&lt; Watcher.start_link()
 ```
 
 ...edit a file...
 
 ```ruby
-#=> "file changed: /home/louis/runner/lib/4913"
-#=> "file changed: /home/louis/runner/lib/4913"
-#=> "file changed: /home/louis/runner/lib/runner.ex~"
-#=> "file changed: /home/louis/runner/lib/runner.ex"
-#=> "file changed: /home/louis/runner/lib/runner.ex"
+#=&gt; "file changed: /home/louis/runner/lib/4913"
+#=&gt; "file changed: /home/louis/runner/lib/4913"
+#=&gt; "file changed: /home/louis/runner/lib/runner.ex~"
+#=&gt; "file changed: /home/louis/runner/lib/runner.ex"
+#=&gt; "file changed: /home/louis/runner/lib/runner.ex"
 ```
 
 ???
 
-So if we start it in the REPL and edit a file, it works. It prints a series of
+So if I start it in the REPL and edit a file, it works. It prints a series of
 paths.
 
-We can respond to file system events. Now it has to compile and run the
+The app can respond to file system events. Now it has to compile and run the
 tests when it's an Elixir file that's changed.
 
 ---
@@ -341,10 +343,10 @@ end
 
 Here's our updated handle_info clause in our GenServer.
 
-First we check to see if the file has an Elixir or Erlang file extension using
+First I check to see if the file has an Elixir or Erlang file extension using
 a regex,
 
-and if it matches we delegate the actual test running to a new Runner module.
+and if it matches I delegate the actual test running to a new Runner module.
 
 So how does the run_tests function run the tests?
 
@@ -389,16 +391,16 @@ Here's our function.
 It creates a port that runs the command "mix test", and then enters a receive
 loop.
 
-When the message contains IO data, we print it and loop again. When it contains
-an exit status the tests have finished running, so we return back to the
-GenServer and await the next event.
+When the message contains IO data, it prints it and loop again. When it
+contains an exit status the tests have finished running, so I return back to
+the GenServer and await the next event.
 
-If you use this as it is, you will find that the tests will be run multiple
-times when you save one file.
+If this is used now, there is a problem in that the tests will be run multiple
+times when a file is saved.
 
-Even worse, if you edit files while the tests are running those will also add
-more test runs to the queue, and you'll end up with tests running continuously
-whether you want them to to or not.
+Even worse, if more files are edited while the tests are running those will
+also add more test runs to the queue, and the test will end up running
+continuously whether we want them to to or not.
 
 This happens because there are actually many events occuring when a file is
 saved, and our Watcher faithfully works through all the events, running the
@@ -437,8 +439,8 @@ To do so we simply enter a receive loop that does nothing for all messages.
 This little after 0 trick allows us to stop iteration if there are no
 messages left, rather than looping forever.
 
-It's saying "if we have to wait at all for another message, time out and break
-out of the recieve block.
+It's saying "if we have to wait zero or more milliseconds for another message,
+time out and break out of the recieve block."
 
 ---
 class: middle
@@ -461,18 +463,16 @@ Randomized with seed 387360
 And that's pretty much how this test runner has worked for the last year and a
 half. It's OK, it works. But what can be improved here?
 
-For starters this doesn't work on Windows as with ports we're relying on the
+For starters this doesn't work on Windows as with ports I'm relying on the
 Unix shell.
 
-It's also not as fast as it could be. Each time we run the tests we launch a
+It's also not as fast as it could be. Each time it runs the tests it launchs a
 new instance of the virtual machine, and then it has to load the bytecode,
 start the applications, and so on.
 
-Wouldn't it be great if we could avoid the shell altogether and just run the
-tests inside the existing virtual machine?
-
 How about we compile and run the tests with the virtual machine that's already
-running?
+running? Then it doesn't matter what OS we're running on, and there's no
+waiting for the virtual machine to start.
 
 ---
 ```plain
@@ -488,17 +488,19 @@ iex&gt; Mix.Task.run("test")
 # 74 tests, 0 failures, 4 skipped
 #
 # Randomized with seed 387360
-[Function<2.127709695/1 in Mix.Tasks.Test.run/1>]
+[Function&lt;2.127709695/1 in Mix.Tasks.Test.run/1&gt;]
 ```
 
 ???
 
-If we want to run the tests like this we need to make sure we start
-the VM in the test environment, otherwise they will throw an exception.
+To run the tests like this we need to make sure we start the VM in the test
+environment, otherwise the test task will throw an exception when you try and
+run it.
 
-This is the Mix.Task.run function, which allows us to invoke mix tasks.
+Here I'm calling the Mix.Task.run function, which allows us to invoke mix
+tasks.
 
-If we call it with the string "test" the tests run. Simple.
+If called with the string "test", it runs the test task. Simple.
 
 ---
 
@@ -515,14 +517,14 @@ iex&gt; Mix.Task.run("test")
 # 74 tests, 0 failures, 4 skipped
 #
 # Randomized with seed 387360
-[Function<2.127709695/1 in Mix.Tasks.Test.run/1>]
+[Function&lt;2.127709695/1 in Mix.Tasks.Test.run/1&gt;]
 
 iex&gt; Mix.Task.run("test")
 ```
 
 ???
 
-What happens it we call it again?
+What happens if it is called again?
 
 ---
 
@@ -539,7 +541,7 @@ iex&gt; Mix.Task.run("test")
 # 74 tests, 0 failures, 4 skipped
 #
 # Randomized with seed 387360
-[Function<2.127709695/1 in Mix.Tasks.Test.run/1>]
+[Function&lt;2.127709695/1 in Mix.Tasks.Test.run/1&gt;]
 
 iex&gt; Mix.Task.run("test")
 :noop
@@ -547,18 +549,17 @@ iex&gt; Mix.Task.run("test")
 
 ???
 
-Nothing. It doesn't run the tests.
+Nothing. It doesn't run the tests, it just return the atom :noop.
 
 This is because mix maintains some internal state, and doesn't run tasks if
 they have already been invoked already.
 
-This is useful as we can build dependancy trees out of mix tasks, and mix will
-work out how to run them sequentially without repeating itself.
+This is useful as users can build dependancy trees out of mix tasks, and mix
+will work out how to run them sequentially without repeating itself.
 
-For example, the test command depends upon the compile command, as does the
-docs command. If you run both test and docs it'll run compile once for the test
-command, but not again for the docs command as that requirement has already
-been met.
+For example, the test task runs the compile command, and the docs task also
+runs the compile task. If you run both test and docs at once it'll run the
+compile task only once as it knows that requirement has already been met.
 
 This is great for build tasks, but less good for our use case. Luckily mix
 gives us a way to re-enable tasks we want to run more than once.
@@ -583,8 +584,8 @@ end
 
 ???
 
-Here's our new Runner module. It reenables the test task and the two dependancy
-tasks, and then runs the test task.
+Here's the new Runner module. It reenables the test task and the two dependancy
+tasks using Mix.Task.reenable, and then runs the test task using Mix.Task.run.
 
 ---
 
@@ -597,7 +598,7 @@ iex&gt; Runner.run_tests()
 # 74 tests, 0 failures, 4 skipped
 #
 # Randomized with seed 387360
-[Function<2.127709695/1 in Mix.Tasks.Test.run/1>]
+[Function&lt;2.127709695/1 in Mix.Tasks.Test.run/1&gt;]
 
 iex&gt; Runner.run_tests()
 # ......................................................
@@ -607,15 +608,18 @@ iex&gt; Runner.run_tests()
 # 74 tests, 0 failures, 4 skipped
 #
 # Randomized with seed 792311
-[Function<2.843757605/1 in Mix.Tasks.Test.run/1>,
-  Function<2.127709695/1 in Mix.Tasks.Test.run/1>]
+[Function&lt;2.843757605/1 in Mix.Tasks.Test.run/1&gt;,
+  Function&lt;2.127709695/1 in Mix.Tasks.Test.run/1&gt;]
 ```
 ???
 
-We can now run the tests more then once, but there's a problem. We're not
-recompiling and reloading the code, so our tests are locked to the codebase
-when we started the VM. We need to force recompilation in order to get for our
-edits to register.
+Great. I can now run the tests more then once, but there's a problem.
+
+The tests are being run, but the application code is not being recompiled and
+reloaded. Our tests are locked in time to when we started the VM, and don't
+reflect the current state of the codebase.
+
+We need to force recompilation in order to get for our edits to register.
 
 ---
 class: middle
@@ -646,18 +650,19 @@ end
 
 Reenabling compilation looks a lot like reenabling test running.
 
-There's a new function called recompile_project, which calls
+I've added a new function called recompile_project, which calls
 Mix.Task.reenable on some dependancy tasks, and then runs the compile task.
 
 Changes to our application code are now picked up each time we edit a file, but
 changes to our test code are not. Why is this?
 
 The compile task ignores the test directory entirely, instead is it the test
-task that loads the test module. Unlike the compile task it won't check to see
-if there is a newer version of the code as it doesn't expect any test code to
-be loaded before being run.
+task that loads the test modules.
 
-We have to make Elixir forget that it's already seen the test files.
+Unlike the compile task it doesn't check the modification times of files, and
+as a result will never reload a file that has already been loaded.
+
+I have to make Elixir forget that it's already seen the test files.
 
 ---
 class: middle
@@ -673,10 +678,12 @@ iex&gt; Code.loaded_files()
 
 ???
 
-If you rummage around inside the Elixir source code you'll find there's an
-Erlang process called the "elixir_code_server" that keeps track of paths to
-files that have already been loaded. Any file that is already known will not be
-loaded by the test task.
+After some rummaging around inside the Elixir compiler I found there's an
+Erlang process called the "elixir_code_server". This process keeps track of
+which files have already been loaded.
+
+If the elixir_code_server already has a test file registered the file will not
+be loaded by the test task.
 
 ---
 class: middle
@@ -702,7 +709,9 @@ end
 ```
 ???
 
-The Code module exposes a few functions that we can use to interact with the elixir_code_server, including one called unload_files. This function takes a list of absolute paths to files, and unloads them.
+The Code module exposes a few functions that we can use to interact with the
+elixir_code_server, including one called unload_files. This function takes a
+list of absolute paths to files, and unloads them.
 
 Note this only unloads the files, the modules are managed by the VM and another
 process called the erlang_code_server, so they stay available.
@@ -727,9 +736,9 @@ iex&gt; Runner.run_tests()
 
 ???
 
-The tests still work it we run it a first time.
+The tests still work if the run_tests function is called a once.
 
-And if we run it a second time...
+And if it's run it a second time...
 
 
 ---
@@ -760,12 +769,12 @@ Finished in 0.6 seconds (0.1s on load, 0.5s on tests)
 
 ???
 
-Well it sort of works- our test code is reloaded on each run now. However,
-because the test **modules** are already in memory we get these nasty warnings
-when as they are redefined.
+Well it sort of works- the test code is reloaded on each run now. However,
+because the test **modules** are already in memory there are these nasty
+warnings when as they are redefined.
 
-This is only a tiny project here, and it's already pretty noisy. Imagine if you
-had tens or hundreds of modules, each emitting a warning like this.
+This is only a tiny project here, and it's already pretty noisy. Imagine if it
+had had tens or hundreds of modules, each emitting a warning like this.
 
 What can we do about this?
 
@@ -791,12 +800,12 @@ check_module_availability(Line, File, Module) -&gt;
 Inside the Elixir compiler there is a Erlang module that confusingly enough is
 called elixir_module. It contains a function called format_error, one clause of
 which builds our warning message. This clause is called from a function called
-check_module_availability, in the same module.
+check_module_availability, which is on screen now.
 
-Here we can see it checks if the module is loaded using ensure_loaded function
+The function checks if the module is loaded using ensure_loaded function
 in the Erlang code module, and calls the warning function if is loaded.
 
-However, it doesn't do this check at all if elixir compiler
+However, it doesn't do this check at all if elixir compiler option
 ignore_module_conflict has been set.
 
 ---
@@ -817,43 +826,62 @@ end
 
 ???
 
-It turns out that the Code module gives us an easy way to enable this option at
-runtime. We just pass ignore_module_conflict: true to the compiler_options
-function.
+It turns out that the Code module provides an easy way to enable this option at
+runtime. I just have to pass "ignore_module_conflict: true" as a keyword
+list to the compiler_options function.
 
----
-class: middle
-```ruby
-defmodule Runner do
-  def run_tests do
-    Code.compiler_options(ignore_module_conflict: true)
-    unload_test_files()
-    recompile_project()
-    reenable_test_tasks()
-    Mix.Task.run("test")
-*   :elixir_config.put(:at_exit, [])
-  end
-
-  # Other code here...
-end
-```
-
-???
-
-If you run the tests normally and tests fail, Elixir will exit with a non-zero
-exit code. It acheives this by registering an on_exit callback function. To
-avoid leaking a little bit of memory with each run we clear this callback after
-each run like so.
+And that's pretty much where I am now. Let's see it in action.
 
 ---
 class: inverse, middle, center
 
 # Demo
 
+???
+
+I have wrapped this code in a mix task called test.watch, so I'll run that now.
+
+Now I'll define an ExUnit test module. When it hit save the tests are re-run.
+
+Now I'll make a test that checks the return value of a App.hello function.
+
+I hit save, and I instantly got feedback telling me that the function is
+undefined, and the module is not known. Switching over to my application code
+now I'll create the module and function.
+
+And as I continue to edit, all I need to do to check the status of my work is
+to look across to the other side of the screen. I find this feedback loop quick
+and enjoyable.
+
+---
+class: inverse, middle, center
+
+# mix test.watch
+<a href="https://github.com/lpil/mix-test.watch" target="_blank">https://github.com/lpil/mix-test.watch</a><br>
+<a href="https://hex.pm/packages/mix_test_watch" target="_blank">https://hex.pm/packages/mix_test_watch</a><br>
+
+Louis Pilfold<br>
+<a href="http://lpil.uk/" target="_blank">http://lpil.uk/</a><br>
+<a href="mailto:louis@lpil.uk">louis@lpil.uk</a><br>
+<a href="https://twitter.com/louispilfold" target="_blank">@louispilfold</a>
+
+???
+
+If you're interested in using this tool or contributing to its development you
+can find it on hex or GitHub. The version on Hex is still using Ports, but I'm
+hoping to release the new version after some more testing.
+
+If you would like to use the master branch from GitHub and report any issues
+you have that would be very much appreciated.
+
+I'm Louis Pilfold, my contact details are on the board, thank you very much for
+listening.
+
 
     </textarea>
     <script src="../vendor/remark-0.11.0.min.js"></script>
     <script>
+// TODO: comments hard to read
 var slideshow = remark.create({
   highlightStyle: "monokai",
   highlightLanguage: "remark",
