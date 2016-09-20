@@ -1195,6 +1195,9 @@ h1#title = name
   expr: " name",
   text: "</h1>" ]
 ```
+```ruby
+(("" &lt;&gt; "<h1 id='title'>") &lt;&gt; name) &lt;&gt; "</h1>"
+```
 ???
 
 The parser is used to generate an Elixir data structure with all the required
@@ -1206,7 +1209,6 @@ This list is put through the same compile function, which results in an Elixir
 AST that builds the HTML string with the passed values injected into it.
 
 All that's left is turning it into a function.
-<!-- TODO: Show the AST!! -->
 
 ---
 class: middle
@@ -1234,10 +1236,11 @@ It turns out that `def` is not a keyword, but instead a macro. As a macro I
 can use `unquote` to inject the AST back into the code as an expression at
 compile time.
 
-<!-- TODO. describe what's on the slide -->
+So to build the function a template is tokenized, parsed, compiled to AST and
+then unquoted into the `do` block of a function.
 
-And now I can generate functions, and I have the beginnings of a HTML
-templating language that I can use in a real app.
+And now I have the beginnings of a HTML templating library that I can use in a
+real app.
 
 ---
 class: middle, small
