@@ -18,12 +18,14 @@ Louis Pilfold<br>
 
 ???
 
-Hi. I'm Louis Pilfold. I started writing Elixir and Erlang a couple years ago
-and through various pet projects I went from knowing nothing about compilers
-to somehow having a little language on the BEAM. I learnt about tokenization
-and parsing, abstract syntax trees and code generation, and what this can look
-like with Elixir and Erlang. I'd like to share this journey with you, and also
-share some of the things I've learnt along the way.
+Hi. I'm Louis Pilfold.
+
+I started writing Elixir and Erlang a couple years ago and through various pet
+projects I went from knowing nothing about compilers to somehow having a little
+language on the BEAM. I learnt about tokenization and parsing, abstract syntax
+trees and code generation, and what this can look like with Elixir and Erlang.
+I'd like to share this journey with you, and also share some of the things I've
+learnt along the way.
 
 ---
 class: center, middle
@@ -51,10 +53,13 @@ Source code
 
 ???
 
-Linters are effectvely simple functions that take source code files as an
+Linters are effectvely functions that take source code files as an
 input, and return a number of errors to the user. I didn't know exactly how
 they worked so I looked at source for Rubocop and a Javascript linter called
-JSCS and discovered that if you look a little closer they look like this.
+JSCS.
+
+I discovered that if you look a little closer they look like something like
+this.
 
 ---
 class: middle, large
@@ -67,8 +72,9 @@ Source code
 ???
 
 They take source code, convert them to one or more different data structures,
-and then analyse those forms to find any errors. These errors would show up as
-patterns in the data that we could match against.
+and then analyse those forms to find any errors.
+
+These errors would show up as patterns in the data that we could match against.
 
 ---
 class: middle, large
@@ -81,6 +87,7 @@ Source code
 ???
 
 The first data structure we can create from source code is a list of tokens.
+
 Tokens represents the smallest elemental parts of the source code we type, the
 basic textual building blocks of code.
 
@@ -100,7 +107,9 @@ class: middle, large
 For example, if we took the English sentence "Hello, world!" and tokenize it
 we might end up with something like this.
 
-- We have 5 tokens, the first one is a word with a value of "Hello".
+There are have 5 tokens
+
+- The first one is a word with a value of "Hello".
 - The second is a comma.
 - The third is a space.
 - The fourth is word with a value of "world".
@@ -118,9 +127,11 @@ class: middle, large
 ```
 ???
 
-Here we can do the same with Elixir code. Here's a snippet of code in which I
-pipe the number one into a function called "add" that takes an additional
-argument of 2. When tokenized it becomes this a list of 4 tokens:
+Here we can do the same with Elixir code.
+
+Here's a snippet of code in which I pipe the number one into a function called
+"add". The function also takes an additional argument of 2. When tokenized it
+becomes this a list of 4 tokens:
 
 - A number token with a value of 1.
 - An arrow_op token which is the pipe operator.
@@ -164,9 +175,9 @@ class: middle, large
 
 The Elixir compiler is written in Erlang, and the modules are available in
 the Elixir standard library. Elixir tokenization is as simple as calling the
-`elixir_tokenizer` module's `tokenize` function.
+`tokenize` function from the `elixir_tokenizer` module.
 
-So getting the tokens is easy.. So how might they be used them in a linter?
+So getting the tokens is easy. So how might they be used them in a linter?
 
 ---
 class: middle, large
@@ -199,16 +210,24 @@ end
 To make the linter detect violations of this rule I first defined a function
 called "semicolons?". It returns true if passed a semicolon token, and false
 if it is passed anything else. It detects the semicolon token by pattern
-matching on the first element of the token tuple, which is the type of the
-token.
+matching on the first element of the token tuple, which in this case is the
+semicolon character as an atom.
 
 Now with this function I can use the `Enum.any?` function to iterate over a
 given list of tokens, and return an error if any semicolon tokens are found.
 
-And that's how one might do linting with tokens. Tokens are simple and easy,
-but quite limited. In order to do more meaningful analysis on code another
-form needs to be used to represent the source code- this form is an abstract
-syntax tree.
+---
+class: middle, large
+```plain
+Source code
+  -> Tokens, Abstract Syntax Tree
+  -> Errors
+```
+???
+
+Tokens are simple and easy, but quite limited. In order to do more meaningful
+analysis on code another form needs to be used to represent the source code-
+this form is an abstract syntax tree.
 
 ---
 class: middle, large
@@ -239,7 +258,7 @@ expression would form.
 ---
 class: middle, large
 ```ruby
-send self(), {:compare 1, 2 + 2}
+send self(), {:compare, 2 + 2, 1}
 ```
 ```ruby
 function_call send
@@ -290,11 +309,10 @@ or constructor, the second item is some metadata, and the third item is a list
 of that node's children.
 
 Here is the add function again, only this time the `quote` special form is
-being used to get real Elixir AST. This is quite a nice compact AST that's
-relatively easy to read.
+being used to get real Elixir AST.
 
 The root is a function call, so it's a three item tuple. The first element is
-the atom "add" as that is the name of the function. The third element are the
+the atom "add" as that is the name of the function. The third element is the
 node's children, which are the numbers 1 and 2.
 ---
 class: middle, large
@@ -481,32 +499,59 @@ html
 One line is one element in my syntax, so I'll split on newlines and trim the
 intendation, leaving me with just the element syntax that I want to parse.
 
----
-class: middle
-```plain
-h1#an-id
-h2.class_a
-h3.classB
-h4(style="color: hotpink")
-h5 Elixir LDN 2016!
-```
-???
-<!-- TODO: this is confusing without examples. show an example of what tokens
-     would be generated.
-  -->
 Looking at these elements I can see a few token types.
 
+---
+class: middle, large
+```plain
+h1#title.bold
+h1    : name
+#     : hash
+title : name
+.     : dot
+bold  : name
+```
+???
+
 There is one for names, which are element names, class names, or ID names,
-such as "h1" or "classB" used here.
 
 There are dots and hashes which are used to denote classes and IDs
 respectively.
 
-There are strings, which is a series of characters surrounded by double
-quotes.
+---
+class: middle, large
+```plain
+a(href="/")
+```
+```plain
+a    : name
+(    : open_paren
+href : name
+=    : equal
+"/"  : string
+)    : close_paren
+```
+???
 
 The syntax for attributes includes open paren tokens, close paren tokens,
 and then an equals token between the attribute name and the value.
+
+There are strings, which is a series of characters surrounded by double
+quotes.
+
+---
+class: middle, large
+```plain
+div ! Hi
+```
+```plain
+div  : name
+     : whitespace
+!    : word
+     : whitespace
+Hi   : name
+```
+???
 
 Lastly there's whitespace tokens, and word tokens, which are any
 non-whitespace characters that are not covered by the other tokens.
@@ -954,8 +999,13 @@ class: middle
 ???
 
 Other symbols more complex than simple values or lists. The "names" symbol
-consisted of a combination of an element `type` such as "div" or "body", an
-id, and one or more classes. This could be represented as a three item tuple,
+consisted of a combination of
+
+- an element `type` such as "div" or "body",
+- an id,
+- and one or more classes.
+
+This could be represented as a three item tuple,
 but then it's really hard to remember which field is which with tuples, so
 instead I've opted to use an Erlang record.
 
@@ -1022,7 +1072,7 @@ also easy to imitate. Yet again I felt like Elixir was doing all the hard work
 for me.
 
 ---
-class: middle
+class: middle, large
 ```erb
 Hello, <%= name %>
 ```
@@ -1156,6 +1206,7 @@ This list is put through the same compile function, which results in an Elixir
 AST that builds the HTML string with the passed values injected into it.
 
 All that's left is turning it into a function.
+<!-- TODO: Show the AST!! -->
 
 ---
 class: middle
@@ -1182,6 +1233,8 @@ that?
 It turns out that `def` is not a keyword, but instead a macro. As a macro I
 can use `unquote` to inject the AST back into the code as an expression at
 compile time.
+
+<!-- TODO. describe what's on the slide -->
 
 And now I can generate functions, and I have the beginnings of a HTML
 templating language that I can use in a real app.
@@ -1357,9 +1410,10 @@ statement -> function           : '$1'.
 ```
 ???
 
-Here's a Gleam module called "stack". It's made up of multiple statements, the
-module declaration at the top and each of the function definitions are
-statements.
+Here's a Gleam module called "stack". It's made up of multiple statements:
+
+- the module declaration at the top
+- and each of the function definitions are statements.
 
 The rootsymbol of the grammar is a module. A module is defined as a series of
 statements, and statements are defined as one more more statement.
@@ -1492,8 +1546,8 @@ Erlang.
 ---
 class: middle, large
 ```plain
-erlang
-  -> core erlang
+Erlang
+  -> Core Erlang
   -> BEAM bytecode
 ```
 ???
@@ -1547,16 +1601,17 @@ the compiler from scratch.
 
 
 ---
-class: middle
+class: middle, large
 ```erlang
-cerl:c_atom(ok). % => Core Erlang atom 'ok'
+cerl:c_atom(ok).
+% => Core Erlang atom 'ok'
 ```
 ???
 <!-- show data structure on slide.
      Explain this is not to be replied upon.
   -->
 
-If the AST format is not formatlly specified how can it be generated? The
+If the AST format is not formally specified how can it be generated? The
 answer is to use the `cerl` Erlang module, which exposes functions for the
 composing and decomposing of this AST.
 
@@ -1831,14 +1886,14 @@ class: middle, large
 
 ???
 
-With Erlang and Elixir tasks we are supplied with a range of excellent tools
+With Erlang and Elixir we are supplied with a range of excellent tools
 that can be used by themselves, or all together.
 
 Leex and Yecc give us an easy out-of-the-box way of doing tokenization and
 parsing of code, and with Elixir macros and Core Erlang we have an friendly
 way to generate code that can be loaded into the virtual machine. Coupled with
 Elixir and Erlang's excellent pattern matching and data handling these tasks
-become quite easy.
+become quite simple.
 
 ---
 class: middle, large
@@ -1878,7 +1933,6 @@ Louis Pilfold<br>
     <!-- <script src="../vendor/highlight-js/elixir.min.js"></script> -->
     <!-- <script src="../vendor/highlight-js/erlang.min.js"></script> -->
     <script>
-// TODO: comments hard to read
 var slideshow = remark.create({
   highlightStyle: "monokai",
   highlightLanguage: "remark",

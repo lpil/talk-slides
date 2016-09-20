@@ -117,6 +117,10 @@ img {
 .remark-notes code {
   background-color: white;
 }
-td {
-  padding: 5px 20px;
+table {
+  width: 100%;
+}
+th {
+  text-align: left;
+  padding: 5px 20px 5px 0;
 }
