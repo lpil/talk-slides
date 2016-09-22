@@ -1123,8 +1123,10 @@ Hello, <%= name %>
 ???
 
 EEx's parser splits the template into text and expressions. The template
-in the first code snippet would be split into the text "Hello, ", an
-expression consisting of variable name.
+in the first code snippet would be split into
+
+- the text "Hello, ",
+- and an expression consisting of the variable name.
 
 This list is then turned into an expression which can be the body of a
 function.
@@ -1182,7 +1184,7 @@ compile.([text: "Hello ", expr: "name", text: "!"])
 
 Here the compile function is called on the list from before.
 
-As you can see it gets pretty hard to read these expressions, so I'm
+It gets pretty hard to read these expressions, so at the bottom I'm
 converting back into a string with the `Macro.to_string` function.
 
 ---
@@ -1258,7 +1260,7 @@ can use `unquote` to inject the AST back into the code as an expression at
 compile time.
 
 So to build the function a template is tokenized, parsed, compiled to AST and
-then unquoted into the `do` block of a function.
+then unquoted into the block of a function.
 
 And now I have the beginnings of a HTML templating library that I can use in a
 real app.
@@ -1332,7 +1334,7 @@ trying to solve is the problem of there not being enough curly braces in the
 Erlang world. Without curly braces we'll never be able to convince people to
 come over from Javascript.
 
-The first step is to make a tokenizer with Leex.
+The first step in solving this problem is to make a tokenizer with Leex.
 
 ---
 class: middle
@@ -1348,8 +1350,14 @@ WS      = [\n\s\r\t]
 ```
 ???
 
-I've only a few definitions. A float and an int for numbers, a string, an
-identifier, an atom, an atom with quotes, and lastly whitespace.
+I've only a few definitions.
+
+- A float and an int for numbers,
+- a string,
+- an identifier,
+- an atom,
+- an atom with quotes,
+- and lastly whitespace.
 
 ---
 class: middle, small
@@ -1390,15 +1398,21 @@ Rules.
 After that comes the more complex tokens that use patterns from the
 `Definitions` section. The value of each of these tokens comes from calling a
 helper function on the matched characters. The `int` function converts the
-`Int` string to an an integer, the `flt` function converts to a float, and for
+value to an an integer, the `flt` function converts to a float, and for
 identifier and atom I convert the value to an atom. For strings I get the
 contents of the string by dropping the quotes as before. These functions are
 all defined in the Erlang Code section.
 
-<!-- maybe remove this para -->
 Also note how the `Int` pattern and the `Float` patterns are used to build a
 token of type `number`. Leex allows multiple rules to construct the same
 token, so we can have variations like this.
+
+---
+class: middle, large
+```plain
+{WS}     : skip_token.
+```
+???
 
 Lastly there's the rule for the `whitespace` definition pattern. Instead of
 constructing a token the `skip_token` atom is used to signify that text
@@ -1490,8 +1504,13 @@ function -> private identifier fn_block
 
 Moving on to the other type of statement-
 A function is either the public or private keyword, followed by an identifier
-and a function block. From this we record the function publicity, name, and
-the clauses, which is taken from the the function block.
+and a function block.
+
+The resulting function record contains
+
+- the function publicity,
+- the function name,
+- and the clauses, which are taken from the the function block.
 
 ---
 class: middle
@@ -1512,8 +1531,9 @@ fn_statements -> fn_clause fn_statements
 A function block is a pair of curly braces around one or more function clauses.
 
 Later I imagine there would also be other function block contents, such as
-docstrings or unit tests, this is why there is a record for the block, rather
-than a list of clauses.
+docstrings or unit tests.
+
+This is why there is a record for the block, it will be easier to extend later.
 
 ---
 class: middle
@@ -1530,9 +1550,12 @@ fn_clause -> def tuple clause_block
 ```
 ???
 
-Next the function clause. It's the `def` keyword followed by an arguments
-tuple and a clause block. Again I'm constructing a record, this one has fields
-for arity, arguments, and the body.
+Next the function clause.
+
+It's the `def` keyword followed by an arguments tuple and a clause block.
+
+Again I'm constructing a record, this one has fields for arity, arguments, and
+the body.
 
 And this continues for each parser symbol until I've defined a rule every node
 in the syntax tree.
@@ -1851,7 +1874,7 @@ to stick them all together.
 Here is the `gleam_compiler` module, which defines a `load_file` function.
 
 This function takes a path to a file of Gleam source code, reads the file and
-converts the resulting unicode binary into an Erlang string.
+converts the resulting binary into an Erlang string.
 
 The string is then fed into the tokenizer, which breaks the source code down
 into a list of it's atomic parts, such as strings, numbers, and punctuation.
@@ -1895,9 +1918,8 @@ the BEAM.
 Then the Glean function can be called, just like any other Erlang function.
 And with that there's a new language running on the BEAM!
 
-I can't explain how unreasonably happy I was when I successfully compiled my
-first module. It's such a small thing, but it was a really fun journey, and a
-unexpectedly smooth one too.
+I was ecstatic when I successfully compiled my first module. It's such a small
+thing, but it was a really fun journey, and a unexpectedly smooth one too.
 
 ---
 class: middle, large
@@ -1917,7 +1939,7 @@ Leex and Yecc give us an easy out-of-the-box way of doing tokenization and
 parsing of code, and with Elixir macros and Core Erlang we have an friendly
 way to generate code that can be loaded into the virtual machine. Coupled with
 Elixir and Erlang's excellent pattern matching and data handling these tasks
-become quite simple.
+become quite straightforward.
 
 ---
 class: middle, large
