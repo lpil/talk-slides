@@ -421,10 +421,12 @@ class: middle
 
 Some time later I found myself making a simple web app in Elixir. Nothing
 exciting, it rendered a few HTML pages to a user and let them record some
-information in a database using forms. While I was writing the HTML views I
-found myself getting a little fed up of Elixir default templating language for
-making web pages. EEx is fast and easy to use, but with it I still have to
-write regular HTML, and HTML is not so much fun.
+information in a database using forms.
+
+While I was writing the HTML views I found myself getting a little fed up of
+Elixir default templating language for making web pages. EEx is fast and easy
+to use, but with it I still have to write regular HTML, and HTML is not so much
+fun.
 
 It has superfluous angle brackets, a rather verbose syntax for closing tags,
 and you have to manually escape certain characters. I would rather type
@@ -458,7 +460,7 @@ HTML Template
 ```
 ???
 
-A templating library is effectvely a function that takes a template of
+The templating library is effectvely a function that takes a template of
 alternative HTML syntax, and returns a function that given data produces a
 string of HTML.
 
@@ -481,9 +483,11 @@ from my html templates, so I'll have to build my own. After a little digging I
 discovered that the Erlang standard library includes a module called Leex
 which offers a DSL for creating tokenizers. It's the module that the LFE
 language uses for tokenization, which is a pretty good endorsement in my
-books. It might be a little over the top as I could probably easily parse this
-string by iterating over it, but this is a excuse to learn something new while
-doing something useful, so lets get started.
+books.
+
+It might be a little over the top as I could probably easily parse this string
+manually with pattern matching, but this is a excuse to learn something new
+while doing something useful, so lets get started.
 
 ---
 class: middle
@@ -560,7 +564,7 @@ Now I need to teach Leex what my tokens are so it can create the tokenizer.
 
 ---
 class: middle
-```erlang
+```plain
 %%% my_tokenizer.xrl
 
 Definitions.
@@ -591,7 +595,7 @@ might be used in the other sections.
 
 ---
 class: middle
-```erlang
+```plain
 Definitions.
 
 Dot    = \.
@@ -599,7 +603,7 @@ Hash   = #
 EQ     = =
 OpenP  = \(
 CloseP = \)
-String = "([^\\""]|\\.)*"
+String = "([^\\"]|\\.)*"
 Name   = [A-Za-z][A-Za-z0-9_-]*
 WS     = [\s\t]+
 Word   = [^\(\)\t\s\n\.#=]+
@@ -615,6 +619,16 @@ It has the simple literal patterns of Dot, Hash, EQ, OpenP and CloseP.
 After that are the more complex patterns of String, Name, whitespace, and
 Word. Regular expressions are not the easiest to read, let's go over them now.
 
+---
+class: middle, large
+```plain
+String = "([^\\"]|\\.)*"
+Name   = [A-Za-z][A-Za-z0-9_-]*
+WS     = [\s\t]+
+Word   = [^\(\)\t\s\n\.#=]+
+```
+???
+
 The string pattern is a pair of double quotes with zero or more characters
 between them, where the characters are any non-double quote character, or any
 character preceeded by an escaping slash. This is how we get support for
@@ -623,12 +637,13 @@ escaped quotes inside string bodies.
 A name is any letter, followed by any mix of letters, numbers, underscores and
 dashs.
 
-Whitespace is one or more spaces and tabs, and lastly a word is one or more or
-anything else.
+Whitespace is one or more spaces and tabs.
+
+and lastly a word is one or more or anything else.
 
 ---
 class: middle
-```erlang
+```plain
 Rules.
 
 {String} : {token, {string, TokenChars}}.
@@ -684,9 +699,13 @@ function takes a charlist of code and returns a list of tokens. Because I used
 two item tuples with an atom as the first element for my tokens I get back an
 Elixir keyword list.
 
-Here I tokenize this line of code, and back I get a name token with a value of
-"div", a whitespace token, a name token with a value of "Hello", a whitespace
-token, and a name token with a value of "word". Great.
+Here I tokenize this line of code, and back I get
+
+- a name token with a value of "div"
+- a whitespace token
+- a name token with a value of "Hello"
+- a whitespace token
+- and a name token with a value of "world". Great.
 
 ---
 class: middle
@@ -699,7 +718,7 @@ class: middle
   "(":    '(',
   word:   'href',
   eq:     '=',
-  string: '"/about"', # &lt;-- Quotes
+* string: '"/about"',
   ")":    ')',
 ], _}
 ```
@@ -713,7 +732,7 @@ To resolve this I make use of the final part of a Leex module.
 
 ---
 class: middle
-```erlang
+```plain
 {String} : {token, {string, string(TokenChars)}}.
 % ...snip...
 
@@ -742,7 +761,7 @@ class: middle
   "(":    '(',
   word:   'href',
   eq:     '=',
-  string: '/about', # &lt;-- No quotes
+* string: '/about',
   ")":    ')',
 ], _}
 ```
@@ -764,7 +783,7 @@ syntax of a language.
 
 ---
 class: middle
-```erlang
+```plain
 %%% my_parser.yrl
 
 Nonterminals.
@@ -789,7 +808,7 @@ token types my Leex tokenizer can create.
 
 ---
 class: middle
-```erlang
+```plain
 %%% my_parser.yrl
 
 Nonterminals.
@@ -842,10 +861,10 @@ In this context the "dot" terminal followed by the "name" terminal can be
 composed together to form the "class" nonterminal.
 
 ---
-class: middle
-```erlang
-class -> dot name  % .btn
-id    -> hash name % #jumbo
+class: middle, large
+```plain
+class -> dot name    % .btn
+id    -> hash name   % #jumbo
 ```
 ???
 
@@ -853,30 +872,30 @@ A class is a dot then a name.
 An id is a hash then a name.
 
 ---
-class: middle
-```erlang
-classes -> class         % .big
-classes -> class classes % .small.tiny.timid
+class: middle, large
+```plain
+classes -> class           % .big
+classes -> class classes   % .small.tiny
 ```
 ???
 
-Elements can have as many class literals on them as the user likes, so we need
-a classes nonterminal.
+Elements can have many class literals on them, so we need a classes
+nonterminal.
 
 classes are either a single class, or many classes. A repeating symbol like
 this is defined recursively, so here classes can be a class, or a class
 followed by classes.
 
 ---
-class: middle
-```erlang
-names -> name            % div
-names -> name id         % div#header
-names -> name classes    % div.btn
-names -> name id classes % div#submit.btn
-names -> classes         % .grey.small
-names -> id              % #jumbo
-names -> id classes      % #jumbo.bordered
+class: middle, large
+```plain
+names -> name             % div
+names -> name id          % div#header
+names -> name classes     % div.btn
+names -> name id classes  % div#send.btn
+names -> classes          % .grey.small
+names -> id               % #jumbo
+names -> id classes       % #jumbo.border
 ```
 ???
 
@@ -897,7 +916,7 @@ an element.
 
 ---
 class: middle
-```erlang
+```plain
 % a.btn
 element -> names
 
@@ -926,11 +945,12 @@ abstract syntax tree is instructing it how to build a data structure for each
 nonterminal- what each node in the tree actually looks like.
 
 ---
-class: middle
-```erlang
-class -> dot name % '$1' is the dot symbol
-                  % '$2' is the name symbol
+class: middle, large
+```plain
+class -> dot name
 ```
+- '$1' is the dot
+- '$2' is the name
 ???
 
 In my mini AST I want the class token to be represented by a string with the
@@ -944,14 +964,14 @@ used in the nonterminal definition. If class is a dot then a name, atom dollar
 one refers to the dot token, and atom dollar two refers to the name token.
 
 ---
-class: middle
-```erlang
+class: middle, large
+```plain
 % .btn
 '$1' = {dot,  "."}
 '$2' = {name, "btn"}
 ```
-```erlang
-class -> dot name : element(2, '$2'). % "btn"
+```plain
+class -> dot name : element(2, '$2').
 ```
 ???
 
@@ -961,7 +981,7 @@ and before a full stop for each definition.
 
 ---
 class: middle
-```erlang
+```plain
 class -> dot  name : element(2, '$2').
 id    -> hash name : element(2, '$2').
 
@@ -975,7 +995,7 @@ classes -> class classes : ['$1' | '$2'].
 Now that I've defined a data structure for class I can do the same for ID. It
 also just pulls the string value from the name token.
 
-Some nodes in my AST will be collections represented with a list, one such
+Some nodes in my AST will be collections represented with a list. One such
 example is the "classes" symbol, which is one or many class symbols.
 
 For the base case of just one class I wrap the class in a list.
@@ -986,7 +1006,10 @@ class, which is the base case that was just defined.
 
 ---
 class: middle
-```erlang
+```plain
+h1#title.bold
+```
+```plain
 % records.hrl
 -record(
   names,
@@ -998,8 +1021,8 @@ class: middle
 ```
 ???
 
-Other symbols more complex than simple values or lists. The "names" symbol
-consisted of a combination of
+Other symbols are more complex than simple values or lists. The "names" symbol
+consist of a combination of
 
 - an element `type` such as "div" or "body",
 - an id,
@@ -1012,14 +1035,14 @@ instead I've opted to use an Erlang record.
 Like Elixir structs each field in a record definition gets a name and default
 value.
 
-The default for the type field is string "div",
-the default for the id field is atom "nil",
-and the default for the classes field is an empty list.
+- The default for the type field is string "div",
+- the default for the id field is the atom "nil",
+- and the default for the classes field is an empty list.
 
 
 ---
 class: middle, small
-```erlang
+```plain
 names -> classes      : #names{ classes = '$1' }.
 names -> name classes : #names{ classes = '$2', type = '$1' }.
 names -> id   classes : #names{ classes = '$2', id   = '$1' }.
@@ -1031,18 +1054,19 @@ names -> name id classes
 ```
 ???
 
-With this record I can use a nice syntax for setting named values on a complex
-node.
+With this record I can use a nice syntax for setting and getting named values
+on a complex node.
 
 Now that I can build simple values, more complex values, and collections
-of values I can work my way all the way up to the rootsymbol, the element.
+of values I can work my way all the way up to the rootsymbol, which the
+element.
 
 ---
 class: middle
 ```pug
 a.profile(href="/me") User profile
 ```
-```erlang
+```plain
 element -> names attributeList content :
   #element{
     type       = '$1'#names.type,
@@ -1066,10 +1090,9 @@ I can now turn source code into tokens, and tokens into an AST. The next step
 is turning the AST into a function that produces HTML.
 
 I wasn't sure how to do this, so I had a look at the source code for EEx on
-GitHub. The code I found was easy to understand, and leveraged some of
-Elixir's metaprogramming features in a way that to me seemed really clever and
-also easy to imitate. Yet again I felt like Elixir was doing all the hard work
-for me.
+GitHub. The code I found leveraged some of Elixir's metaprogramming features in
+a way that to me seemed really clever and also easy to imitate. Yet Elixir was
+doing all the hard work for me.
 
 ---
 class: middle, large
@@ -1107,19 +1130,17 @@ This list is then turned into an expression which can be the body of a
 function.
 
 ---
-class: middle, small
+class: middle
 ```ruby
 def compile(list) do
   Enum.reduce(list, "", &codegen/2)
 end
-
 
 def codegen({:text, text}, buffer) do
   quote do
     unquote(buffer) &lt;&gt; unquote(text)
   end
 end
-
 def codegen({:expr, text}, buffer) do
   ast = Code.string_to_quoted!(text)
   quote do
@@ -1309,13 +1330,13 @@ I believe that in order for a language to be worthwhile it needs to have a
 clear idea of the problem it's trying to solve, and the problem Gleam is
 trying to solve is the problem of there not being enough curly braces in the
 Erlang world. Without curly braces we'll never be able to convince people to
-come over from C++, Java, and Javascript.
+come over from Javascript.
 
 The first step is to make a tokenizer with Leex.
 
 ---
 class: middle
-```erlang
+```plain
 Definitions.
 
 Float   = [0-9]+\.[0-9]+
@@ -1332,7 +1353,7 @@ identifier, an atom, an atom with quotes, and lastly whitespace.
 
 ---
 class: middle, small
-```erlang
+```plain
 module     : {token, {module,     TokenChars}}.
 private    : {token, {private,    TokenChars}}.
 public     : {token, {public,     TokenChars}}.
@@ -1354,7 +1375,7 @@ which are straightforward.
 
 ---
 class: middle, small
-```erlang
+```plain
 Rules.
 
 {Int}    : {token, {number,     int(TokenChars)}}.
@@ -1404,7 +1425,7 @@ public pop {
   def (stack) { (:ok, hd(stack), tl(stack)) }
 }
 ```
-```erlang
+```plain
 module -> statements : '$1'.
 statements -> statement            : ['$1'].
 statements -> statement statements : ['$1'|'$2'].
@@ -1425,12 +1446,12 @@ A statement is either a module_declaration, or a function.
 
 ---
 class: middle
-```erlang
+```plain
 % module stack
 module_declaration -> module identifier
   : #module_declaration{ name = element(2, '$2') }.
 ```
-```erlang
+```plain
 -record(module_declaration, { name = {} }).
 ```
 ???
@@ -1451,7 +1472,7 @@ public peak {
   def (stack) { (:ok, hd(stack)) }
 }
 ```
-```erlang
+```plain
 function -> public identifier fn_block
   : #function
     { publicity = public
@@ -1474,7 +1495,7 @@ the clauses, which is taken from the the function block.
 
 ---
 class: middle
-```erlang
+```plain
 fn_block -> '{' fn_statements '}' : '$2'.
 
 fn_statements -> fn_clause
@@ -1499,7 +1520,7 @@ class: middle
 ```ruby
 def (stack) { (:ok, hd(stack)) }
 ```
-```erlang
+```plain
 fn_clause -> def tuple clause_block
   : #fn_clause
     { arity = length('$2')
@@ -1518,7 +1539,7 @@ in the syntax tree.
 
 ---
 class: middle
-```erlang
+```plain
 module             -> #module{}
 module_declaration -> #module_declaration{}
 funtion            -> #function{}
@@ -1566,7 +1587,7 @@ as Erlang and hopefully be as fast.
 
 ---
 class: middle, small
-```erlang
+```plain
 f(X) ->
   case X of
     {foo, A} -> B = g(A);
@@ -1574,7 +1595,7 @@ f(X) ->
   end,
   {A, B}.
 ```
-```erlang
+```plain
 'f'/1 = fun (X) ->
   let <X1, X2> =
     case X of
@@ -1605,7 +1626,7 @@ the compiler from scratch.
 
 ---
 class: middle, large
-```erlang
+```plain
 cerl:c_atom(ok).
 % => Core Erlang atom 'ok'
 ```
@@ -1633,7 +1654,7 @@ may be.
 
 ---
 class: middle
-```erlang
+```plain
 c_alias/2       c_cons_skel/2        c_primop/2
 c_apply/2       c_float/1            c_receive/1
 c_atom/1        c_fname/2            c_receive/3
@@ -1661,7 +1682,7 @@ function clause for each record.
 
 ---
 class: middle
-```erlang
+```plain
 codegen(Node = #string{}) ->
   cerl:c_string(Node#string.value).
 ```
@@ -1673,7 +1694,7 @@ record.
 
 ---
 class: middle
-```erlang
+```plain
 codegen(#string{ value = Value }) ->
   cerl:c_string(Value);
 
@@ -1706,14 +1727,14 @@ class: middle
 ```ruby
 (:ok, "hello")
 ```
-```erlang
+```plain
 #tuple
 { elements = [ #atom{ value = ok }
              , #string{ value = "Hello" }
              ]
 }
 ```
-```erlang
+```plain
 codegen(#tuple{ elements = Elements }) ->
   Cerls = lists:map(fun codegen/1, Elements),
   cerl:c_tuple(Cerls).
@@ -1744,13 +1765,13 @@ entire tree has been converted.
 
 ---
 class: middle
-```erlang
+```plain
 #module
 { name = my_module
 , functions = [ #function{}, #function{}, #function{} ]
 }
 ```
-```erlang
+```plain
 codegen(#module{ name = Name, functions = Functions }) ->
   CerlName = cerl:c_atom(Name),
   CerlExports = gen_exports(Functions),
@@ -1779,7 +1800,7 @@ their children, recursively converting the tree into Core Erlang.
 
 ---
 class: middle, small
-```erlang
+```plain
 %% @spec c_module(Name::cerl(), Exports, Definitions) -> cerl()
 %%
 %%     Exports = [cerl()]
@@ -1807,7 +1828,7 @@ I found LFE, MLFE, and Joxa were good language to study.
 
 ---
 class: middle, small
-```erlang
+```plain
 -module(gleam).
 -export([load_file]).
 
@@ -1858,7 +1879,7 @@ public hello {
   def () { "Hello, world!" }
 }
 ```
-```erlang
+```plain
 gleam:load_file("src/first_module.gleam", first_module).
 % => ok
 
@@ -1904,7 +1925,8 @@ class: middle, large
 - Code formatter
 - Security analysis
 - Style linters
-- Parsing
+- Parsers
+- Type checker
 - More languages
 
 ???
@@ -1923,9 +1945,9 @@ on the BEAM for exciting new projects.
 
 Thank you very much.
 ---
-class: center, middle, large
+class: center, middle, large, inverse
 
-Thank you everyone has worked on Erlang, Elixir, LFE, MLFE, Joxa, Rubocop,
+Thank you everyone who has worked on Erlang, Elixir, LFE, MLFE, Joxa, Rubocop,
 Dogma, Slim, JSCS, and EEx.
 
 Louis Pilfold<br>
