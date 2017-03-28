@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>lpil - Exploring Interpretation</title>
-  <link rel="stylesheet" href="style.css" type="text/css" charset="utf-8">
+  <link rel="stylesheet" href="./style.css" type="text/css" charset="utf-8">
 </head>
   <body>
     <textarea id="source">
@@ -17,13 +17,284 @@ class: center, middle, inverse
 <a href="https://twitter.com/louispilfold" target="_blank">@louispilfold</a>
 
 ---
+class: middle, center
+## What actually happens when a program is running?
 
-Hello, Sailor!
+---
+class: middle
 
 ```elixir
-defmodule Foo do
-  def hello do
-    :ok
+source_code
+|> Runtime.some_magic(user_input) # ???
+#=> Output
+```
+
+???
+
+A runtime takes code and data, does something with them, and we get some
+output. What happens in the middle?
+
+Last year I made a language that compiled to BEAM bytecode (see my talk).
+
+
+---
+class: middle
+```elixir
+# A compiler
+
+source_code
+|> Compiler.parse_source()
+|> Compiler.optimise_ast()
+|> Compiler.generate_bytecode()
+# => Bytecode (or other target language)
+```
+???
+
+Compilers:
+
+- Take in source code
+- Parse code into an AST
+- Transform into an output format (here BEAM bytecode)
+
+But how does the output format run?
+
+---
+class: middle, center
+## OK, so how do we run the bytecode?
+
+---
+class: middle
+
+### Original problem:
+```elixir
+source_code
+|> Runtime.some_magic(user_input) # ???
+#=> Output
+```
+
+### New problem:
+```elixir
+bytecode_from_compiler
+|> Runtime.some_magic(user_input) # ???
+#=> Output
+```
+???
+
+A runtime takes the compiled output and data, does something, and we get
+output.
+
+This is the same as the first diagram. I'm not any closer to understanding
+what's happening inside a running program!
+
+I need to build an interpreter.
+
+---
+class: middle
+```elixir
+source_code
+|> Interpreter.parse_source()
+|> Interpreter.execute_ast(user_input) # ???
+#=> Output
+```
+???
+
+Interpreters:
+- Parse source code into AST
+- Execute that AST
+
+How might execution work? Let's think about how code reduces.
+---
+### Expressions can be reduced step by step
+
+```elixir
+(1 + 2) + (3 + 4)
+
+# reduce
+3 + (3 + 4)
+
+# reduce
+3 + 7
+
+# reduce
+10
+```
+???
+
+Evaluation of code can be thought of happening in steps. Each step the code
+reduces by the smallest possible amount.
+
+How could we model this in Elixir?
+
+---
+class: small
+
+### A struct for each AST node
+
+```elixir
+defmodule AST.Number do
+  defstruct [:value]
+
+  def new(n) do
+    %__MODULE__{value: n}
+  end
+end
+
+defmodule AST.Add do
+  defstruct [:lhs, :rhs]
+
+  def new(lhs, rhs) do
+    %__MODULE__{lhs: lhs, rhs: rhs}
+  end
+end
+```
+???
+
+Define each elemental part of the language as an Elixir struct with a
+constructor function.
+
+---
+class: middle
+```elixir
+1 + 2
+
+# Can be represented as...
+
+Add.new(Number.new(1),
+        Number.new(2))
+```
+
+---
+### In our minds:
+```elixir
+1 + 2
+
+# reduces to
+3
+```
+
+### In the interpreter:
+```elixir
+Add.new(Number.new(1),
+        Number.new(2))
+
+# reduces to
+Number.new(3)
+```
+???
+
+How do we implement reduction behaviour?
+
+With a protocol. It takes an AST node and returns a reduced
+one, if it can be reduced.
+
+---
+### A protocol for reducing AST nodes
+
+```elixir
+defprotocol AST do
+  @spec reduce(AST.t) :: {:ok, AST.t} | :noop
+  def reduce(ast)
+end
+```
+---
+class: middle
+### What does a number reduce to?
+
+```elixir
+1000
+```
+```elixir
+Number.new(1000)
+```
+
+---
+### Reducing Numbers
+
+```elixir
+defimpl AST, for: AST.Number do
+  def reduce(_) do
+    :noop
+  end
+end
+```
+```elixir
+:noop = AST.reduce(Number.new(1000))
+```
+???
+
+A number cannot be reduced, it evaluates to itself, so we
+return noop.
+
+Addition can be reduced by summing the numbers on each side.
+
+---
+### Reducing Adds
+
+```elixir
+defimpl AST, for: AST.Add do
+  def reduce(%{lhs: lhs, rhs: rhs}) do
+    value = lhs.value + rhs.value
+    number = Number.new(value)
+    {:ok, number}
+  end
+end
+```
+
+```elixir
+# 1 + 2
+ast = Add.new(Number.new(1),
+              Number.new(2))
+
+{:ok, Number.new(3)} = AST.reduce(ast)
+```
+---
+### How about a nested expression?
+
+```elixir
+# (1 + 2) + 3
+ast = Add.new(Add.new(Number.new(1),
+                      Number.new(2))
+              Number.new(3))
+
+AST.reduce(ast) # Crash!
+# `(1 + 2)` isn't a Number, it's an Add
+```
+---
+class: center, middle
+
+## A node cannot be reduced until its children have been reduced
+---
+
+class: middle
+```elixir
+Add.new(Add.new(Number.new(1),
+                Number.new(2))
+        Number.new(3))
+
+# Reduces to
+Add.new(Number.new(3),
+        Number.new(3))
+
+# Reduces to
+Number.new(6)
+```
+---
+class: middle, small
+```elixir
+defimpl AST, for: AST.Add do
+  def reduce(%{lhs: lhs, rhs: rhs}) do
+    with {:lhs, :noop} <- {:lhs, AST.reduce(lhs)},
+         {:rhs, :noop} <- {:rhs, AST.reduce(rhs)},
+         num <- Number.new(lhs.value + rhs.value) do
+      {:ok, num}
+
+    else
+      {:lhs, {:ok, new_lhs}} ->
+        {:ok, Add.new(new_lhs, rhs)}
+
+      {:rhs, {:ok, new_rhs}} ->
+        {:ok, Add.new(lhs, new_rhs)}
+    end
   end
 end
 ```
@@ -38,7 +309,7 @@ class: center, middle, large, inverse
 [@louispilfold](https://twitter.com/louispilfold)<br>
 [github.com/lpil](https://github.com/lpil)
     </textarea>
-    <script src="../vendor/remark-0.11.0.min.js"></script>
+    <script src="../vendor/remark-0.14.0.min.js"></script>
     <!-- <script src="../vendor/highlight-js/elixir.min.js"></script> -->
     <!-- <script src="../vendor/highlight-js/erlang.min.js"></script> -->
     <script>
