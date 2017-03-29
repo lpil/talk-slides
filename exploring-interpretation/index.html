@@ -327,7 +327,7 @@ if true {
 ```
 
 ---
-class: middle, small
+class: middle
 
 ```elixir
 defmodule AST.True do
@@ -335,14 +335,17 @@ defmodule AST.True do
   def new, do: %__MODULE__{}
 end
 
-defimpl AST, for: AST.True do
-  def reduce(_), do: :noop
-end
-```
-```elixir
 defmodule AST.False do
   defstruct []
   def new, do: %__MODULE__{}
+end
+```
+
+---
+class: middle
+```elixir
+defimpl AST, for: AST.True do
+  def reduce(_), do: :noop
 end
 
 defimpl AST, for: AST.False do
@@ -369,21 +372,6 @@ defmodule AST.If do
                 alternative: alternative}
   end
 end
-```
----
-class: middle
-
-```rust
-if true {
-    100
-} else {
-    200
-}
-```
-```elixir
-If.new(True.new,
-       Number.new(100),
-       Number.new(200))
 ```
 
 ---
@@ -470,6 +458,31 @@ end
 Block.new([Number.new(1),
            Number.new(2),
            Number.new(3)])
+```
+
+---
+class: small
+
+```elixir
+defimpl AST, for: AST.Block do
+  def reduce(%{expressions: [expr]}, env) do
+    case AST.reduce(expr, env) do
+      {:ok, new_expr, new_env} ->
+        {:ok, AST.Block.new([new_expr]) , new_env}
+
+      :noop -> {:ok, expr, env}
+    end
+  end
+
+  def reduce(%{expressions: [ast|tail]}, env) do
+    case AST.reduce(ast, env) do
+      {:ok, new_ast, new_env} ->
+        {:ok, Block.new([new_ast|tail]), new_env}
+
+      :noop -> {:ok, Block.new(tail_exprs), env}
+    end
+  end
+end
 ```
 
 ---
