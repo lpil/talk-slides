@@ -584,10 +584,10 @@ end
 ---
 class: middle
 ```rust
-let a = 1  // env.vars = %{}
-let b = 2  // env.vars = %{a: 1}
-let a = 3  // env.vars = %{a: 1, b: 2}
-           // env.vars = %{a: 3, b: 2}
+let a = 1  // %{}
+let b = 2  // %{a: 1}
+let a = 3  // %{a: 1, b: 2}
+           // %{a: 3, b: 2}
 ```
 
 ---
@@ -652,11 +652,11 @@ double(10)
 
 // reduces to...
 // %{double: #lambda/1}
-let y = double(10)
+double(10)
 
 // reduces to...
 // %{double: #lambda/1, x: 10}
-let y = x + x
+x + x
 ```
 ---
 class: small, middle
