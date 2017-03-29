@@ -13,8 +13,13 @@ class: center, middle, inverse
 
 ### Louis Pilfold
 
-<a href="http://lpil.uk/" target="_blank">http://lpil.uk/</a><br>
+<a href="https://lpil.uk/" target="_blank">https://lpil.uk/</a><br>
 <a href="https://twitter.com/louispilfold" target="_blank">@louispilfold</a>
+
+---
+class: middle, center
+
+<img src="./honeycomb-logo.png" alt="Honeycomb logo">
 
 ---
 class: middle, center
@@ -391,7 +396,7 @@ defimpl AST, for: AST.If do
   end
 
   def reduce(if_) do
-    case Soup.AST.reduce(if_.condition, env) do
+    case AST.reduce(if_.condition, env) do
       :noop ->
         {:ok, if_.consequence}
 
@@ -449,7 +454,7 @@ x + y          // third statement
 class: middle, small
 
 ```elixir
-defmodule Soup.AST.Block do
+defmodule AST.Block do
   defstruct [:expressions]
   def new(exprs), do: %__MODULE__{expressions: exprs}
 end
@@ -491,18 +496,242 @@ Number.new(3)
 ```
 
 ---
+class: center, middle
+
+## Sequences are not useful if all expressions are pure
+
+---
+class: middle
+```rust
+1          // This expression is discarded
+2          // This expression is discarded
+3
+```
+```rust
+let x = 1  // Mutate local state
+let y = 2  // Mutate local state
+x + y      // Read from local state
+```
+
+---
+class: small
+## Where does the state live?
+
+```elixir
+defprotocol AST do
+  @spec reduce(AST.t) :: {:ok, AST.t} | :noop
+  def reduce(ast, env)
+end
+```
+
+---
+class: small
+## An Env containing local state
+
+```elixir
+defprotocol AST do
+  @spec reduce(AST.t, Env.t) :: {:ok, AST.t, Env.t}
+                              | :noop
+  def reduce(ast, env)
+end
+
+defmodule Soup.Env do
+  defstruct vars: %{}
+
+  def new, do: # ...
+  def put(env, var_name, value), do: # ...
+  def get(env, var_name), do: # ...
+end
+```
+
+---
+class: small
+```elixir
+defmodule AST.Let do
+  defstruct [:name, :value]
+  def new(name, value),
+    do: %__MODULE__{name: name, value: value}
+end
+
+defimpl AST, for: AST.Let do
+  def reduce(let, env) do
+    case AST.reduce(let.value, env) do
+      {:ok, new_value, env} ->
+        new_let = Let.new(let.name, new_value)
+        {:ok, new_let, env}
+
+      :noop ->
+        new_value = Env.put(env, let.name, let.value
+        {:ok, value, new_env)}
+    end
+  end
+end
+```
+
+---
+class: middle
+```rust
+let a = 1  // env.vars = %{}
+let b = 2  // env.vars = %{a: 1}
+let a = 3  // env.vars = %{a: 1, b: 2}
+           // env.vars = %{a: 3, b: 2}
+```
+
+---
+class: small
+
+```elixir
+defmodule AST.Variable do
+  defstruct [:name]
+  def new(name), do: %__MODULE__{name: name}
+end
+
+
+defimpl AST, for: AST.Variable do
+  def reduce(var, env) do
+    case Env.get(env, var.name) do
+      :not_set ->
+        # TODO: Error handling
+
+      {:ok, v} ->
+        {:ok, v, env}
+    end
+  end
+end
+```
+---
+class: middle
+```rust
+let a = 1                   // %{}
+
+// reduces to...
+1                           // %{a: 1}
+```
+```elixir
+Let.new(:a, Number.new(1))  # %{}
+
+# reduces to...
+Number.new(1)               # %{a: 1}
+```
+
+---
+class: center, middle
+
+## What about functions?
+
+---
+class: middle
+
+```rust
+// Lambda syntax
+let double = |x| { x + x }
+
+// Function call syntax
+double(10)
+```
+
+---
+class: middle
+```rust
+// %{}
+let double = |x| { x + x }
+double(10)
+
+// reduces to...
+// %{double: #lambda/1}
+let y = double(10)
+
+// reduces to...
+// %{double: #lambda/1, x: 10}
+let y = x + x
+```
+---
+class: small, middle
+
+```elixir
+defmodule AST.Function do
+  defstruct [:args, :body]
+  def new(args, body),
+    do: %__MODULE__{args: args, body: body}
+end
+
+defimpl AST, for: AST.Function do
+  # Functions are values
+  def reduce(_, _), do: :noop
+end
+```
+
+---
+class: small, middle
+
+```elixir
+defmodule Soup.AST.Call do
+  defstruct [:name, :args]
+  def new(fun, args),
+    do: %__MODULE__{fun: fun, args: args}
+end
+
+defimpl AST, for: AST.Call do
+  def reduce(call, env) do
+    {:ok, fun} = Env.get(env, call.fun)
+    insert_arg = fn({k, v}, e) ->
+      Env.put(e, k, v)
+    end
+    new_env =
+      Enum.zip(fun.args, call.args)
+      |> Enum.reduce(env, insert_arg)
+    {:ok, fun.body, new_env}
+  end
+end
+```
+
+---
+class: middle
+```rust
+let double = |x| { x + x }
+double(10)
+```
+```elixir
+Block.new([
+
+  Let.new(:double,
+    Function.new([:x],
+      Add.new(Variable.new(:x),
+              Variable.new(:x)))),
+
+   Call.new(:double, [Number.new(10)])
+])
+```
+---
+## Problems
+
+- Functions share and mutate the caller's scope
+- No handling of undefined variables
+- No handling of undefined functions
+- No handling of invalid arity
+- No handling of type errors
+- No handling of errors at all!
+
+---
+class: large, inverse, middle, center
+
+# Demo time!
+
+---
 class: center, middle, large, inverse
 
-# Thanks for listening :)
+# Thank you :)
+
+[https://github.com/lpil/talk-slides](https://github.com/lpil/talk-slides)<br>
+[https://github.com/lpil/soup](https://github.com/lpil/soup)
 
 ### Louis Pilfold
 
 [@louispilfold](https://twitter.com/louispilfold)<br>
 [github.com/lpil](https://github.com/lpil)
+
     </textarea>
     <script src="../vendor/remark-0.14.0.min.js"></script>
-    <!-- <script src="../vendor/highlight-js/elixir.min.js"></script> -->
-    <!-- <script src="../vendor/highlight-js/erlang.min.js"></script> -->
     <script>
 var slideshow = remark.create({
   highlightStyle: "monokai",
