@@ -1,0 +1,11 @@
+.mugshots {
+  display: flex;
+  text-align: center;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.mugshots img {
+  max-width: 40%;
+  flex: 1;
+}
