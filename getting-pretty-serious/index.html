@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>lpil - Getting Pretty Serious</title>
+  <link rel="stylesheet" href="./style.css" type="text/css" charset="utf-8">
+  <link rel="stylesheet" href="./style-extra.css" type="text/css" charset="utf-8">
+</head>
+  <body>
+    <textarea id="source">
+class: middle, inverse, hc-yellow
+
+<br>
+# Getting Pretty Serious
+
+## Louis Pilfold<br>@louispilfold
+
+---
+class: title, middle, hc-pink
+
+## What is the standard Elixir style?
+
+---
+### Indentation
+
+```elixir
+defmodule Syntax do
+  def hello do
+    :world
+  end
+end
+```
+```elixir
+defmodule Syntax do
+    def hello do
+        :world
+    end
+end
+```
+---
+### do block syntax
+
+```elixir
+defmodule Syntax do
+  def say(1) do: "One"
+  def say(1) do: "Two"
+  def say(_) do: "Dunno!"
+end
+```
+```elixir
+defmodule Syntax do
+  def say(1) do
+    "One"
+  end
+  def say(2) do
+    "Two"
+  end
+  def say(_) do
+    "Dunno!"
+  end
+end
+```
+
+---
+### Brace positioning
+
+```elixir
+defp deps do
+  [{:mix_test_watch, "~> 0.4"},
+   {:dialyxir, "~> 0.5"}]
+end
+```
+```elixir
+defp deps do
+  [
+    {:mix_test_watch, "~> 0.4"},
+    {:dialyxir, "~> 0.5"},
+  ]
+end
+```
+
+---
+### Brace positioning
+
+```elixir
+defp deps do
+  [{:mix_test_watch, "~> 0.4"},
+   {:dialyxir, "~> 0.5"}]
+end
+```
+```elixir
+defp deps do
+  [
+    {:mix_test_watch, "~> 0.4"},
+*   {:dialyxir, "~> 0.5"}, # <-- Trailing comma?
+  ]
+end
+```
+
+---
+class: middle, hc-pink
+
+## Every dev has their own style
+
+---
+class: middle, hc-pink
+
+## Every codebase has its own style
+
+---
+class: middle, hc-pink
+
+# Does it matter?
+
+---
+class: middle
+
+```elixir
+defmodule MyApp do
+  use SomeLib
+
+  def run(data) do
+    {:ok, data}
+  end
+end
+```
+```elixir
+defmodule(MyApp, [{:do, __block__(
+  use(SomeLib),
+
+  def(run(data), [{:do,
+    {:ok, data}}]
+  ))
+)}])
+```
+---
+class: middle
+
+```elixir
+defmodule MyApp do
+  use SomeLib
+
+  def run(data) do
+    {:ok, data}
+  end
+end
+```
+```elixir
+{:defmodule, [context: Elixir, import: Kernel],
+ [{:__aliases__, [alias: false], [:MyApp]},
+  [do: {:__block__, [],
+    [{:use, [context: Elixir, import: Kernel],
+      [{:__aliases__, [alias: false], [:SomeLib]}]},
+     {:def, [context: Elixir, import: Kernel],
+      [{:run, [context: Elixir], [{:data, [], Elixir}]},
+       [do: {:ok, {:data, [], Elixir}}]]}]}]]}
+```
+
+---
+class: hc-blue, middle
+
+## The compiler doesn't care
+
+---
+class: middle
+
+> Code is read many more times than it is written, which means that the
+> ultimate cost of code is in its reading. It therefore follows that code
+> should be optimized for readability...
+>
+> Adhering to a common style saves you money.
+>
+> \- Sandi Metz
+
+---
+class: hc-yellow, middle
+## How can we achieve a common code style?
+
+How about a linter?
+
+---
+class: splash-image, middle
+![A linter not reporting issues with normal style code](./linter-normal.gif)
+
+---
+class: splash-image, middle
+![A linter not reporting issues with unusual code](./linter-unusual.gif)
+
+---
+## Linters
+
+- Bans a subset of possible styles.
+- Requires manual fixing of style.
+- Often cause debates about linter configuration.
+
+---
+## Linters
+
+- Bans a subset of possible styles.
+- Requires manual fixing of style.
+- Often cause debates about linter configuration.
+
+## Formatters
+
+- Specifies a single correct style.
+- Fully automates maintainence of style.
+- Zero configuration.
+
+---
+class: splash-image, middle
+![exfmt automatically fixing code](./formatter-03.gif)
+
+---
+class: splash-image, middle
+![exfmt helping refactor code](./formatter-02.gif)
+
+---
+class: hc-pink, middle
+# How does it work?
+
+---
+### Step 1
+Parse the source code into an AST.
+
+### Step 2
+Convert the AST into printable "algebra".
+
+### Step 3
+Print the algebra without exceeding the max width.
+
+---
+## Step 1
+
+```elixir
+Code.string_to_quoted! "IO.puts \"Hello, World!\""
+```
+```elixir
+{{:., [line: 1],
+  [{:__aliases__, [], [:IO]}, :puts]},
+   [line: 1], ["hello, world!"]}
+```
+
+---
+## Step 2 & 3
+.mugshots[![Philip Wadler](./philip-wadler.jpg) ![Christian Lindig](./christian-lindig.jpg)]
+
+- "A Prettier Printer" by Philip Wadler
+- "Strictly Pretty" by Christian Lindig
+
+---
+## Lindig's printing algorithm
+
+```elixir
+@type text  :: String.t
+@type line  :: :line
+@type break :: :break
+@type cons  :: {:cons, doc, doc}
+@type nest  :: {:nest, doc, integer}
+@type group :: {:group, doc}
+@type doc   :: text | line | cons | nest | group | break
+
+@doc "Determine if a rendered document will fit in `max_width`"
+@spec fits?(max_width, [{width, mode, doc}]) :: boolean
+
+@doc "Print documents, taking `max_width` into account"
+@spec format(max_width, width, [{indent, mode, doc}]) :: boolean
+```
+
+---
+class: middle
+
+```elixir
+@spec text :: String.t
+```
+```elixir
+my_doc = "1000"
+format(80, 10, [my_doc])
+# 1000
+```
+???
+
+the `text` doc is just passed straight through.
+
+---
+class: middle
+
+```elixir
+@type cons :: {:cons, doc, doc}
+```
+```elixir
+my_doc = {:cons, "double ", "1000"}
+format(80, 0, [my_doc])
+# double 1000
+```
+???
+
+`cons` is used to join two documents together.
+
+---
+class: middle
+
+```elixir
+@type line  :: :line
+```
+```elixir
+my_doc = concat(["11", :line, "2222"]) # cons helper function
+format(80, 0, [my_doc])
+# 11
+# 2222
+```
+???
+
+`line` is nice and simple. When the format function receieves a line it
+inserts a newline character.
+
+---
+class: middle
+
+```elixir
+@type nest :: {:nest, doc, integer}
+```
+```elixir
+my_doc = concat([
+  "11",
+  {:nest, concat(["2222", :line, "333333"]), 4}
+])
+format(80, 0, [my_doc])
+# 11
+# 2222
+#     333333
+```
+???
+The `nest` form is used for specifying indentation, and is where things start
+to get interesting.
+
+Rather than rendering to anything itself, `nest` changes how `line` is
+rendered. When a line is within a nest it is rendered as a newline followed by
+the number of spaces of indentation specified by the parent `nest`.
+---
+class: middle
+
+```elixir
+my_doc = {:nest, {:nest, concat([:line, "Hello"]), 4}, 4}
+format(80, 0, [my_doc])
+#         Hello
+```
+???
+`nest` stacks, so a line inside a nest of 4 inside a nest of 4 results in the
+line having 8 space indentation.
+---
+class: middle
+```elixir
+@type break :: :break
+```
+```elixir
+my_doc = concat(["Hello,", :break, "world!"])
+format(80, 0, [my_doc])
+# Hello, world!
+
+format(4, 0, [my_doc])
+# Hello,
+# world!
+```
+???
+Up until now the algebra haven't given us anything we couldn't have achieved
+by just concatenating strings together. `break` is where things change a
+little.
+
+`break` represents a point in the document where a newline _could_ be
+inserted.
+
+The format function decides by calling the `fits` function on the next
+algebra.
+
+If it will render on one line then we can render the document in a wide
+fashion, with breaks as spaces.
+
+If it does not fit we render the document in a wide fashion, with breaks as
+newlines.
+
+First example has a max width of 80 chars...
+
+Second example has a max width of 4 chars...
+---
+class: middle
+```elixir
+my_list = [1, 2, 3] ++ [4, 5, 6]
+```
+```elixir
+my_list =
+  [
+    1,
+    2,
+    3
+  ] ++
+  [
+    4,
+    5,
+    6
+  ]
+```
+```elixir
+my_list =
+  [1, 2, 3] ++
+  [4, 5, 6]
+```
+???
+With the algebra we have so far we can make a formatter that respects the
+maximum width, but it's all or nothing.
+
+If it fits we end up with a wide document like in the first example, if it
+doesn't fit we get a completely flat document like in the second example.
+
+What we want is closer to the third example, where some but not all of the
+breaks have been rendered as newlines.
+
+---
+class: middle
+```elixir
+@type group :: {:group, doc}
+
+group_1 = {:group, concat(["one", :break, "two"])}
+group_2 = {:group, concat([:break, "three", :break, "four"])}
+my_doc = concat([group_1, group_2])
+
+format(10, 0, [my_doc])
+# one two
+# three
+# four
+```
+???
+group allows us to group breaks together so they render the same way, either
+flat or wide.
+
+    </textarea>
+    <script src="../vendor/remark-0.14.0.min.js"></script>
+    <script>
+var slideshow = remark.create({
+  highlightStyle: "monokai",
+  highlightLanguage: "remark",
+  highlightLines: true,
+});
+    </script>
+    <!-- <link href="https://fonts.googleapis.com/css?family=Karla" rel="stylesheet"> -->
+  </body>
+</html>
+<!-- vi: ft=markdown
+-->
