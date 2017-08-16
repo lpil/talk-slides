@@ -50,6 +50,11 @@ body {
   margin-bottom: 0.5em;
 }
 
+.remark-notes-current-area {
+  font-size: 22px;
+}
+
+
 /* Syntax highlighting */
 
 .remark-code-line-highlighted {
