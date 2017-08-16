@@ -15,10 +15,27 @@ class: middle, inverse, hc-yellow
 
 ## Louis Pilfold<br>@louispilfold
 
+???
+
+Here to talk about
+
+- Elixir code style
+- Reducing the cost of reading code
+- Reducing the cost of writing code
+
+Especially in the context of Elixir projects with more than one contributor.
+
 ---
 class: title, middle, hc-pink
 
 ## What is the standard Elixir style?
+
+???
+What is the standard style?
+
+Is there a standard style?
+
+Do we largely conform to one way of writing Elixir code?
 
 ---
 ### Indentation
@@ -37,6 +54,18 @@ defmodule Syntax do
     end
 end
 ```
+???
+
+First example uses 2 space
+
+Second example uses 4 space
+
+- Who uses 2 space in their code?
+- Who uses 4 space in their code?
+- Does anyone do something else?
+
+We are consistent here.
+
 ---
 ### do block syntax
 
@@ -60,57 +89,114 @@ defmodule Syntax do
   end
 end
 ```
+???
+
+Here we have a function with three clauses, each with a very short body.
+
+I might write them on one line without the `do` sugar, as on the top
+
+or I might use the `do` sugar and write them on multiple lines, as on the
+bottom.
+
+- Who might write it as in the first example?
+- Who might go for the second?
+- Does anyone do something else?
+
+Now we're starting to appear less consistent.
+
+There's a variety of different preferences just here in this one room.
 
 ---
-### Brace positioning
+### Keyword list delimiter positioning
 
 ```elixir
-defp deps do
-  [{:mix_test_watch, "~> 0.4"},
-   {:dialyxir, "~> 0.5"}]
+defp details do
+  [name: "Ada Lovelace",
+   role: "Mathematician"]
 end
 ```
 ```elixir
-defp deps do
+defp details do
   [
-    {:mix_test_watch, "~> 0.4"},
-    {:dialyxir, "~> 0.5"},
+    name: "Ada Lovelace",
+    role: "Mathematician",
   ]
 end
 ```
+???
+
+The first example is a more Lisp-y style.
+
+The second is a more C-like style, with braces on their own lines.
+
+- Who prefers the first example?
+- Who prefers the second example?
+
+Seems in this room we prefer X
+
 
 ---
-### Brace positioning
+### Keyword list delimiter positioning
 
 ```elixir
-defp deps do
-  [{:mix_test_watch, "~> 0.4"},
-   {:dialyxir, "~> 0.5"}]
+defp details do
+  [name: "Ada Lovelace",
+   role: "Mathematician"]
 end
 ```
 ```elixir
-defp deps do
+defp details do
   [
-    {:mix_test_watch, "~> 0.4"},
-*   {:dialyxir, "~> 0.5"}, # <-- Trailing comma?
+    name: "Ada Lovelace",
+*   role: "Mathematician", # <-- Trailing comma?
   ]
 end
 ```
+???
+
+What about trailing commas?
+
+There's another way in which we can diverge here.
+
+I find this particular choice interesting as I've seen it change over time.
+
+Previously big Elixir projects prefered the former style, but more recently
+they've started using and recommending the latter style.
+
+This was especially confusing for me as I started with the latter style,
+adopted the former style to conform with big name projects, and then they
+switched over just as I'd retrained my muscle memory.
+
 
 ---
 class: middle, hc-pink
 
 ## Every dev has their own style
 
+???
+Every dev has their own style
+
 ---
 class: middle, hc-pink
 
 ## Every codebase has its own style
 
+???
+As a result, every codebase has its own style
+
+Often a codebase has more than one style, as different people work on
+different parts of the codebase over time.
+
 ---
 class: middle, hc-pink
 
 # Does it matter?
+
+???
+
+Does it matter?
+
+Does code style make a difference?
 
 ---
 class: middle
@@ -133,6 +219,20 @@ defmodule(MyApp, [{:do, __block__(
   ))
 )}])
 ```
+
+???
+
+Here we have two similar piece of code, written in very different ways.
+
+The first makes use of lots of syntactic sugar, while the second does not.
+
+Instead of a `do-end` block there is an unsugared keyword list with a `do`
+key.
+
+Instead of a block there's a call to the `__block__` special form.
+
+And parens are always used on every function call.
+
 ---
 class: middle
 
@@ -155,11 +255,35 @@ end
       [{:run, [context: Elixir], [{:data, [], Elixir}]},
        [do: {:ok, {:data, [], Elixir}}]]}]}]]}
 ```
+???
+
+If we took each of these examples and fed them into the compiler we would get
+exactly the same result.
+
+They parse to the same AST.
+
+They generate the same bytecode.
+
+They behave the same way.
+
+As far as the compiler is concerned these are the same.
+
 
 ---
 class: hc-blue, middle
 
 ## The compiler doesn't care
+
+???
+
+The compiler doesn't care, they are the same.
+
+If this is the case why do we have strong opinions about code style?
+
+I believe that a clear and consistent style makes it easier for humans to read
+code.
+
+This is important, because humans are much more difficult than compilers.
 
 ---
 class: middle
@@ -172,20 +296,73 @@ class: middle
 >
 > \- Sandi Metz
 
+???
+
+Here's a quote from Sandi Metz:
+
+READ QUOTE
+
+I like this a lot.
+
+Note it says a "consistent style"
+
+Having a style that is consistent and familiar is more important than getting
+_my_ style, or the style I think is _best_.
+
 ---
 class: hc-yellow, middle
 ## How can we achieve a common code style?
 
 How about a linter?
 
+???
+
+Linters are programs that inspect the style of code and report back any style
+violations they detect.
+
+A few years back I wrote a linter for Elixir called Dogma, and shortly
+afterwards another one popped up called Credo.
+
+Let's see what would happen if a linter is run on the code examples from
+before.
+
+
 ---
 class: splash-image, middle
 ![A linter not reporting issues with normal style code](./linter-normal.gif)
+
+???
+
+This is great. If credo is run on the sugar-y example it reports no errors.
+
+We have found our consistent style.
 
 ---
 class: splash-image, middle
 ![A linter not reporting issues with unusual code](./linter-unusual.gif)
 
+???
+
+What happens if we run it on the sugar free Elixir?
+
+It still reports no errors, so both styles are acceptable.
+
+This is a problem.
+
+The linter gets us closer to being consistent, but it doesn't make us actually
+consistent.
+
+Why is this?
+
+Formatters work by checking for a pre-defined set of patterns that they
+consider style violations.
+
+Anything they have not been programmed to blacklist is considered valid.
+
+Because of this, they don't provide a consistent style, rather a slightly
+smaller number of inconsistent styles.
+
+
 ---
 ## Linters
 
@@ -193,30 +370,107 @@ class: splash-image, middle
 - Requires manual fixing of style.
 - Often cause debates about linter configuration.
 
+???
+
+There are other issues too.
+
+When a linter finds a problem it doesn't resolve the problem, that is the job
+of the programmer.
+
+You have to:
+- Run the linter
+- Navigate to the errors
+- Manually fix the errors
+- Run the linter again to see if it happy
+- Run the tests to ensure the edit didn't break anything
+
+Furthermore linters tend to be highly configurable, so it's easy to wind up in
+debates with team members about how the linter should behave.
+
+Everyone wants the linter to use their personal style.
+
+I want style to be consistent, but I don't want sacrifice time and ease of
+writing in order to achieve it.
+
 ---
-## Linters
+class: center, middle, hc-blue
 
-- Bans a subset of possible styles.
-- Requires manual fixing of style.
-- Often cause debates about linter configuration.
+## What's the alternative?
 
-## Formatters
+???
+Over the last year I've been writing other languages such as Haskell, Rust, and
+Elm.
 
-- Specifies a single correct style.
-- Fully automates maintainence of style.
-- Zero configuration.
+Each of these languages had managed to solve this consistency problem through
+a tool called a formatter.
 
 ---
 class: splash-image, middle
 ![exfmt automatically fixing code](./formatter-03.gif)
 
+???
+
+A formatter is a tool that takes source code and rewrites it in the allowed
+style in a few milliseconds, without any additional input from the programmer.
+
+After using these for a while I sorely missed them when writing Elixir, so I
+started making my own, which I've named `exfmt`.
+
+As you can see, no matter how I structure the code, the formatter outputs the
+same style.
+
+It is perfectly consistent with no extra effort.
+
+
+---
+## Linters
+
+- Ban a subset of possible styles.
+- Require manual fixing of style.
+- Often cause debates about linter configuration.
+
+## Formatters
+
+- Specify a single correct style.
+- Fully automate maintenance of style.
+- Zero configuration.
+
+
 ---
 class: splash-image, middle
 ![exfmt helping refactor code](./formatter-02.gif)
 
+???
+
+I find this example interesting for two reasons.
+
+First you can see how the formatter pays attention to how wide the code is. If
+the expression will fit on a single line, it will render it on a single line.
+
+If it does not fit, it breaks it over multiple lines.
+
+This also shows how the amount of typing I have to do while typing has
+decreased. I get it just about working and then the formatter takes care of
+the rest.
+
+I have RSI, so I can hurt my hands if I'm not careful. If I can do more with
+less typing that's better for me and better for my health.
+
+
 ---
 class: hc-pink, middle
 # How does it work?
+
+_(A crash course on pretty printing)_
+???
+
+If you're like me this is the question in your mind. How does it work?
+
+I don't have much time and there's a lot of information here, so this will be
+a bit of a high level crash course.
+
+I've also got links to more resources at the end.
+
 
 ---
 ### Step 1
@@ -239,6 +493,15 @@ Code.string_to_quoted! "IO.puts \"Hello, World!\""
   [{:__aliases__, [], [:IO]}, :puts]},
    [line: 1], ["hello, world!"]}
 ```
+???
+
+The first step is parsing of the source code.
+
+In most languages this is quite a pain and involves copy and pasting huge
+chunks out of the compiler, but Elixir is kind to us.
+
+Simply call the `Code.string_to_quoted` function on a string of source code,
+and you'll get back the AST as Elixir data.
 
 ---
 ## Step 2 & 3
@@ -246,6 +509,19 @@ Code.string_to_quoted! "IO.puts \"Hello, World!\""
 
 - "A Prettier Printer" by Philip Wadler
 - "Strictly Pretty" by Christian Lindig
+
+???
+
+Steps 2 and 3 involve an algebraic printing algorithm invented by Philip
+Wadler and Christian Lindig.
+
+The first iteration was written in Haskell and detailed in Philip's "A
+Prettier Printer".
+
+Shortly afterward Christian produced the next generation of the algorithm in
+his "Strictly Pretty" paper, making it suitable for strictly evaluated
+languages, such as Elixir.
+
 
 ---
 ## Lindig's printing algorithm
@@ -263,8 +539,19 @@ Code.string_to_quoted! "IO.puts \"Hello, World!\""
 @spec fits?(max_width, [{width, mode, doc}]) :: boolean
 
 @doc "Print documents, taking `max_width` into account"
-@spec format(max_width, width, [{indent, mode, doc}]) :: boolean
+@spec format(max_width, width, [{indent, mode, doc}]) :: String.t
 ```
+???
+
+The algorithm is made up of 6 simple algebraic data types and 2 functions
+
+- `fits?`
+- `format`
+
+Where `fits?` is an implementation detail of `format`.
+
+Let's go through each of the data types and see how they are printed by
+the `format` function.
 
 ---
 class: middle
@@ -334,7 +621,9 @@ The `nest` form is used for specifying indentation, and is where things start
 to get interesting.
 
 Rather than rendering to anything itself, `nest` changes how `line` is
-rendered. When a line is within a nest it is rendered as a newline followed by
+rendered.
+
+When a line is within a nest it is rendered as a newline followed by
 the number of spaces of indentation specified by the parent `nest`.
 ---
 class: middle
@@ -431,6 +720,101 @@ format(10, 0, [my_doc])
 ???
 group allows us to group breaks together so they render the same way, either
 flat or wide.
+---
+class: middle
+```elixir
+my_list = [1, 2] ++ [4, 5]
+```
+```elixir
+<"my_list =" break <<"[1," break "2] ++"> break <"[4," break "5]">>>
+```
+```elixir
+"my_list =" #\n
+  <<"[1," break "2] ++"> break <"[4," break "5]">>
+```
+```elixir
+"my_list =" #\n
+  "[1," " " "2] ++" #\n
+  "[4," " " "5]"
+```
+```elixir
+my_list =
+  [1, 2] ++
+  [4, 5]
+```
+???
+group allows us to group breaks together so they render the same way, either
+flat or wide.
+
+---
+class: center, middle, hc-yellow
+
+# Congratulations!
+
+## You know an algebra!
+
+???
+
+Congratulations, that's all you need to know about pretty printing!
+
+---
+class: middle
+
+```elixir
+def format_elixir(source) do
+  source
+  |> Code.string_to_quoted!()
+  |> ast_to_algebra()
+  |> format()
+end
+
+defp ast_to_algebra(x) when is_integer(x) do
+  inspect x
+end
+# _lots_ more cases here...
+
+defp format(algebra) do
+  # Implementation from Strictly Pretty...
+end
+```
+
+???
+
+After that there's not much to it.
+
+Just one really big `ast_to_algebra` function that pattern matches on the AST
+and constructs suitable algebraic documents for each node in the tree.
+
+---
+class: middle, hc-yellow
+### Further reading
+
+- "A Prettier Printer" by Philip Wadler
+- "Strictly Pretty" by Christian Lindig
+- `Inspect.Algebra`
+- `https://github.com/lpil/exfmt`
+
+???
+
+If you'd like to learn more about this algorithm check out the papers, they've
+short, friendly, and easy to read.
+
+Another good place to look is at the module `Inspect.Algebra` which implements
+this algorithm with a slight twist.
+
+---
+class: middle, hc-pink
+### Thanks to
+
+Philip Wadler, Christian Lindig, the Elixir core team, Alex Jiao, the
+Honeycomb team, and everyone who has contributed to `exfmt`.
+
+### Call me?
+
+- @louispilfold
+
+???
+
 
     </textarea>
     <script src="../vendor/remark-0.14.0.min.js"></script>
