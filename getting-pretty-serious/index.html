@@ -483,7 +483,7 @@ Convert the AST into printable "algebra".
 Print the algebra without exceeding the max width.
 
 ---
-## Step 1
+## Step 1 - Parsing
 
 ```elixir
 Code.string_to_quoted! "IO.puts \"Hello, World!\""
@@ -504,7 +504,8 @@ Simply call the `Code.string_to_quoted` function on a string of source code,
 and you'll get back the AST as Elixir data.
 
 ---
-## Step 2 & 3
+## Step 2 & 3 - Pretty printing
+
 .mugshots[![Philip Wadler](./philip-wadler.jpg) ![Christian Lindig](./christian-lindig.jpg)]
 
 - "A Prettier Printer" by Philip Wadler
@@ -771,11 +772,10 @@ end
 defp ast_to_algebra(x) when is_integer(x) do
   inspect x
 end
-# _lots_ more cases here...
-
-defp format(algebra) do
-  # Implementation from Strictly Pretty...
+defp ast_to_algebra(x) when is_binary(x) do
+  concat(["\"", escape(x), "\""])
 end
+# _lots_ more cases here...
 ```
 
 ???
@@ -801,6 +801,8 @@ short, friendly, and easy to read.
 
 Another good place to look is at the module `Inspect.Algebra` which implements
 this algorithm with a slight twist.
+
+Lastly you can check out `exfmt` on my GitHub account.
 
 ---
 class: middle, hc-pink
