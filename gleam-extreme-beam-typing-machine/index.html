@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>lpil - Gleam: Extreme BEAM typing machine</title>
+  <link rel="stylesheet" href="./style.css" type="text/css" charset="utf-8">
+  <link rel="stylesheet" href="./style-extra.css" type="text/css" charset="utf-8">
+</head>
+  <body>
+    <textarea id="source">
+class: middle, inverse, slide-purple
+
+<br>
+# Gleam: Extreme BEAM typing machine
+
+## Louis Pilfold<br>@louispilfold
+
+???
+
+I'm Louis
+
+Founder of Waive
+
+Using Elixir and Erlang for 4-5 years.
+
+Built dogma, exfmt, mix test.watch
+
+Done some work inside the compiler
+
+For the last year been working on Gleam
+
+What is Gleam?
+
+---
+
+## Hello, Gleam!
+
+```rust
+pub enum LinkedList(a) =
+  | Nil
+  | Cons(a, LinkedList(a))
+
+pub fn contains(list, a) {
+  case list {
+  | Nil -> False
+  | Cons(x, xs) -> x == a || contains(xs, a)
+  }
+}
+```
+
+???
+
+This is Gleam
+
+Runs on the Erlang VM like Elixir
+
+Has curly braces.
+
+---
+class: title, middle, slide-blue
+
+# Why a new language?
+
+???
+A good place to start.
+
+Why have I wasted the last year of my life doing this when we have Elixir and
+Erlang?
+
+To understand this let's take a look at Elixir and Erlang.
+
+Who here considers themselves an Elixir user?
+
+Who is new to Elixir?
+
+Who has never used Elixir?
+
+---
+## What're BEAM languages good at?
+
+---
+## What're they not so good at?
+
+---
+## Which languages are better at these?
+
+Elm, OCaml, ReasonML, Haskell
+
+Explain how they manage this
+
+---
+Ven diagram here
+
+---
+Ven diagram with Gleam here
+
+---
+Examples of costs of refactoring
+
+---
+
+etc.
+
+---
+class: middle, slide-blue
+## Interested in making a language?
+
+- Some
+- resources
+- go
+- here
+
+???
+
+If you'd like to learn more about this algorithm check out the papers, they've
+short, friendly, and easy to read.
+
+Another good place to look is at the module `Inspect.Algebra` which implements
+this algorithm with a slight twist.
+
+Lastly you can check out `exfmt` on my GitHub account.
+
+---
+class: middle, slide-purple
+
+### Some links
+
+- https://gleam.run
+- https://github.com/lpil/gleam
+- IRC `#gleam-lang` on Freenode
+
+### Thanks to
+
+Jonny Arnold, Jeremy Pierre, José Valim.
+
+### Call me?
+
+- @louispilfold
+
+???
+
+
+    </textarea>
+    <script src="../vendor/remark-0.14.0.min.js"></script>
+    <script>
+var slideshow = remark.create({
+  highlightStyle: "monokai",
+  highlightLanguage: "remark",
+  highlightLines: true,
+});
+    </script>
+    <!-- <link href="https://fonts.googleapis.com/css?family=Karla" rel="stylesheet"> -->
+  </body>
+</html>
+<!-- vi: ft=markdown
+-->
