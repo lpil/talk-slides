@@ -15,6 +15,11 @@ body {
   line-height: 1.3;
   font-family: "Karla", sans-serif;
 }
+
+.large-code .remark-code  {
+  font-size: 26px;
+}
+
 .remark-code,
 .remark-inline-code {
   font-family: "Ubuntu Mono", monospace;
@@ -28,8 +33,6 @@ body {
 .remark-slide-content h1 {
   font-size: 3em;
   text-transform: uppercase;
-  border-bottom: 0.1em solid black;
-  display: inline-block;
 }
 .remark-slide-content h1,
 .remark-slide-content h2,

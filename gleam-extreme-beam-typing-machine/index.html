@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <title>lpil - Gleam: Extreme BEAM typing machine</title>
   <link rel="stylesheet" href="./style.css" type="text/css" charset="utf-8">
-  <link rel="stylesheet" href="./style-extra.css" type="text/css" charset="utf-8">
 </head>
   <body>
     <textarea id="source">
@@ -76,17 +75,134 @@ Who is new to Elixir?
 Who has never used Elixir?
 
 ---
-## What're BEAM languages good at?
+class: title, middle, slide-blue
+# What are BEAM languages good at?
 
 ---
-## What're they not so good at?
+## Concurrency
 
 ---
-## Which languages are better at these?
+## Parallelism
 
-Elm, OCaml, ReasonML, Haskell
+---
+## Soft real-time performance
 
-Explain how they manage this
+---
+## Fault tolerance
+
+---
+## Simple functional programming
+
+---
+## Libraries and tooling
+
+---
+## Dynamic programming
+
+---
+## Meta programming
+
+---
+## Binary manipulation
+
+---
+## Interoperability between languages
+
+---
+## Community
+
+---
+class: title, middle, slide-blue
+# What are they not quite as good at?
+
+???
+
+Sadly Erlang and Elixir are not perfect
+
+---
+## Error messages can be unhelpful
+
+---
+## Refactoring isn't cheap
+
+---
+## Slow feedback cycle
+
+???
+
+We rely on unit tests to catch errors and mistakes
+
+If that doesn't work we they might be found during manual testing
+
+If that doesn't work we may find the mistake when processes crash in
+production
+
+---
+class: large-code
+## Hard to verify behaviour
+
+<br>
+```ruby
+queue = QueueLib.append(queue, 10)
+```
+
+???
+
+What will this function do?
+
+Will it always return the same thing?
+
+Could it throw an exception?
+
+Could it write to the database?
+
+Could it cause the program to exit?
+
+---
+## Which languages do these better?
+
+<style type="text/css" media="screen">
+.langs {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.langs div {
+  display: inline-block;
+  max-width: 40%;
+  margin-top: 30px;
+}
+
+.langs img {
+  max-width: 100%;
+  max-height: 150px;
+}
+</style>
+
+<div class="langs">
+  <div>
+    <img src="ocaml.png">
+  </div>
+  <div>
+    <img src="haskell.svg">
+  </div>
+  <div>
+    <img src="elm.png">
+  </div>
+  <div>
+    <img src="reason.svg">
+  </div>
+  <div>
+    <img src="rust.png">
+  </div>
+  <div>
+    <img src="scala.png">
+  </div>
+</div>
+
+???
 
 ---
 Ven diagram here
@@ -95,30 +211,19 @@ Ven diagram here
 Ven diagram with Gleam here
 
 ---
-Examples of costs of refactoring
-
----
-
-etc.
-
----
 class: middle, slide-blue
-## Interested in making a language?
+## Want to make a language?
 
-- Some
-- resources
-- go
-- here
+- The Super Tiny Compiler
+  <br> Jamie Kyle
+- Understanding Computation
+  <br> Tom Stuart
+- Types & Programming Languages
+  <br> Benjamin C. Pierce
+- Type Systems
+  <br> Tom Primožič
 
 ???
-
-If you'd like to learn more about this algorithm check out the papers, they've
-short, friendly, and easy to read.
-
-Another good place to look is at the module `Inspect.Algebra` which implements
-this algorithm with a slight twist.
-
-Lastly you can check out `exfmt` on my GitHub account.
 
 ---
 class: middle, slide-purple
