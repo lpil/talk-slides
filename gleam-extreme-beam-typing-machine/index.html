@@ -129,9 +129,31 @@ before they can be processed.
 ## With concurrency
 <img class="center-element" src="time-concurrent.png">
 
+???
+
+So what about when the web server handles requests concurrently?
+
+Here each request is handled in a dedicated light-weight virtual machine
+thread that in the Erlang world we call a process.
+
+Other languages have other abstractions, but we use processes.
+
+Each process works independently, so when 4 requests come in at the same time
+none of them need to wait for others to finish.
+
+The total time taken is now equal to the time taken by the slowest request,
+with a largely insignificant overhead for the concurrency abstraction.
+
 ---
 ## With concurrency
 <img class="center-element" src="time-concurrent-slow.png">
+
+???
+
+What happens when one request is slow?
+
+Because all the processes are independent it doesn't matter if one is slow- no
+others are delayed.
 
 ---
 ## Parallelism
@@ -144,7 +166,9 @@ Northwestern University, EECS
 </cite>
 
 ---
-## Soft real-time performance
+## Predictable garbage collection
+
+<img class="center-element" src="garbage-collection.jpg">
 
 ---
 ## Fault tolerance
@@ -180,7 +204,7 @@ Sadly Erlang and Elixir are not perfect
 
 There's a bunch of things that could be improved with them.
 
-The aspect I'm particulary interested is how they present feedback to the
+The aspect I'm particularly interested is how they present feedback to the
 programmer when a mistake has been made.
 
 I think that improvements in this area could bring great value and
@@ -213,7 +237,7 @@ application crashes at this point, but where is the source of the error?
 Have we called `MyApp.name` with the wrong argument? Perhaps it wants and atom
 rather than a string.
 
-Alternatively is the `MyApp` module internally inconcistent? Does it have a
+Alternatively is the `MyApp` module internally inconsistent? Does it have a
 bug? We could be using it as intended but the code we're calling is the source
 of the problem?
 
