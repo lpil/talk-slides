@@ -81,6 +81,14 @@ class: title, middle, slide-blue
 ---
 ## Concurrency
 
+<img class="center-element" src="lyse-sequential-accept.png">
+<br>
+<img class="center-element" src="lyse-parallel-accept.png">
+
+???
+
+Image from Learn You Some Erlang
+
 ---
 ## Parallelism
 
@@ -119,14 +127,83 @@ class: title, middle, slide-blue
 
 Sadly Erlang and Elixir are not perfect
 
----
-## Error messages can be unhelpful
+There's a bunch of things that could be improved with them.
+
+The aspect I'm particulary interested is how they present feedback to the
+programmer when a mistake has been made.
+
+I think that improvements in this area could bring great value and
+productivity for relatively low cost.
+
+Let's take a closer look.
 
 ---
-## Refactoring isn't cheap
+class: center
+## Error messages can be unhelpful
+
+<img src="elixir-argument-error.png">
+
+???
+
+Error messages leave a lot to be desired.
+
+Here we have an error being printed after we call the function `MyApp.name` on
+a string.
+
+Many Elixir error messages are better than this one but it is not an atypical
+example for Elixir, and it is the norm for Erlang. I'm going to focus on
+common cases that could be improved.
+
+Beyond the name "argument error" it doesn't tell us what the problem is.
+
+It shows a call to `erlang.atom_to_binary` so we can establish that the
+application crashes at this point, but where is the source of the error?
+
+Have we called `MyApp.name` with the wrong argument? Perhaps it wants and atom
+rather than a string.
+
+Alternatively is the `MyApp` module internally inconcistent? Does it have a
+bug? We could be using it as intended but the code we're calling is the source
+of the problem?
+
+There's no way to tell without reading the documentation, the source code, or
+if we get unlucky, both.
+
+---
+class: center
+## Meanwhile, in Elm
+<img src="elm-error.png">
+<br>
+
+???
+
+Here's how the same problem would be reported in the Elm programming language.
+
+It tells us exactly where the problem is, it's on line 8 where we called
+`MyApp.name`. It even shows us the code.
+
+This is fantastic- we know exactly where we need to make the change, it's
+where we called the function.
+
+With this feedback we have complete confidence that the `MyApp.name` function
+is not the problem, so we don't need to investigate further.
+
+If there was a problem with `MyApp.name` this error would show exactly where,
+so even in scenario all we would need to do is to open the right file and
+scroll to the specified line.
+
+What's more it tells us exactly what the problem is, in this case that we are
+calling it with a String when it expects an Int.
+
+It even gives us a hint of how to turn an Int into a String.
+
+
 
 ---
 ## Slow feedback cycle
+
+---
+## Refactoring isn't cheap
 
 ???
 
