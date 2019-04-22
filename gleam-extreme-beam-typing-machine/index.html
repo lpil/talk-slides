@@ -87,10 +87,61 @@ class: title, middle, slide-blue
 
 ???
 
-Image from Learn You Some Erlang
+When we write programs in Elixir and Erlang we can take advantage of the
+concurrency features of the virtual machine.
+
+Here we have 2 diagrams that I've stolen from LYSE.
+
+They show how a hypothetical web server application. It listens and accepts
+requests as fast as possible.
+
+What impact does concurrency have on the performance of the web server?
+
+---
+## Without concurrency
+<img class="center-element" src="time-serial.png">
+
+???
+
+Here's a graph showing how the requests are handled over time.
+
+4 requests are made to the server at the same time.
+
+The first request is handled, then the second, then the third, then the
+fourth.
+
+The time taken to handled all the requests is equal to the sum of the time
+taken by each request.
+
+---
+## Without concurrency
+<img class="center-element" src="time-serial-slow.png">
+
+???
+
+What happens when one request is slow and takes more time than we would like?
+
+All requests that come after the slow request have to wait for it to complete
+before they can be processed.
+
+
+---
+## With concurrency
+<img class="center-element" src="time-concurrent.png">
+
+---
+## With concurrency
+<img class="center-element" src="time-concurrent-slow.png">
 
 ---
 ## Parallelism
+
+<img style="width: 90%" class="center-element" src="core-over-time.jpg">
+
+<cite>
+Nikos Hardavellas,
+Northwestern University, EECS
+</cite>
 
 ---
 ## Soft real-time performance

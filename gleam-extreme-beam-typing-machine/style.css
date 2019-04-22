@@ -93,6 +93,10 @@ body {
   background-color: black;
 }
 
+img {
+  max-width: 100%;
+}
+
 .splash-image img {
   max-width: 100%;
   max-height: 100%;
