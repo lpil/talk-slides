@@ -165,10 +165,47 @@ Nikos Hardavellas,
 Northwestern University, EECS
 </cite>
 
+???
+
+Parallelism, another thing that BEAM languages do well.
+
+This graph shows the number of cores per processor from the 70s up until a
+couple years ago, and that number is increasing exponentially.
+
+Processors are no longer getting, instead they are getting more cores, so if
+we want our programs to get faster as hardware improves we need our programs
+to be able to make full use of all these cores.
+
+In many languages this is not an easy problem to solve, but with the BEAM we
+get it for free. The virtual machine will take our concurrent Erlang program
+and spread the processes over all the cores of our machine.
+
+If we have 4 cores, our program should run 4 times faster with little to no
+effort.
+
+
 ---
 ## Predictable garbage collection
 
 <img class="center-element" src="garbage-collection.jpg">
+
+???
+
+This is the BEAM's garbage collector.
+
+It's adorable, but more importantly is also parallel. Garbage collection is
+performed on a per-process basis.
+
+This means your program will never decide it's time to do global garbage
+collection and pause the world, introducing a big chunk of latency to, say,
+all the requests made to your web application.
+
+And what's more because GC doesn't occur until after the process has been
+around for a little, if you use a new process for each item of work you may
+never hit GC in the hot path.
+
+Latency in Erlang and Elixir tends to be predictable with low deviation.
+
 
 ---
 ## Fault tolerance
