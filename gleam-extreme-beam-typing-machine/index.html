@@ -18,15 +18,23 @@ class: middle, inverse, slide-purple
 
 I'm Louis
 
-Founder of Waive
+Founder of small company called Waive
 
-Using Elixir and Erlang for 4-5 years.
+Using Elixir and Erlang for 4-5 years. I do a lot of open source work so you
+might have come across some of my projects.
 
-Built dogma, exfmt, mix test.watch
+One of my first projects was Dogma, an Elixir style linter.
 
-Done some work inside the compiler
+After that I made mix test.watch, which is a mix plugin that will
+automatically run your ExUnit tests when you save a file.
 
-For the last year been working on Gleam
+And then after that I made exfmt, which was an Elixir auto-formatter.
+
+I've also done some work inside the Elixir compiler, for example I taught the
+inspect protocol about colours so that there would be syntax highlighting in
+the REPL.
+
+I'm here to talk about Gleam, which has been my focus for the last year.
 
 What is Gleam?
 
@@ -56,7 +64,7 @@ Runs on the Erlang VM like Elixir
 Has curly braces.
 
 ---
-class: title, middle, slide-blue
+class: title, middle, slide-purple
 
 # Why a new language?
 
@@ -138,8 +146,8 @@ thread that in the Erlang world we call a process.
 
 Other languages have other abstractions, but we use processes.
 
-Each process works independently, so when 4 requests come in at the same time
-none of them need to wait for others to finish.
+When 4 requests come in at the same time each one is handled by a dedicated
+process, each running at the same time.
 
 The total time taken is now equal to the time taken by the slowest request,
 with a largely insignificant overhead for the concurrency abstraction.
@@ -155,6 +163,58 @@ What happens when one request is slow?
 Because all the processes are independent it doesn't matter if one is slow- no
 others are delayed.
 
+Every other request completes in a timely fashion, and our overall performance
+remains good.
+
+Concurrency is a wonderful tool for writing software the performs well, and
+Elixir and Erlang gives us the means to make concurrent programs without too
+many headaches.
+
+
+---
+class: middle, center, slide-blue
+# Concurrency <br> vs <br> parallelism
+
+???
+<!-- 6 mins since start -->
+
+I want to quickly talk about the relationship between concurrency and
+parallelism. What's the difference?
+
+---
+## Without parallelism
+
+<img style="width: 80%" class="center-element" src="single-core.png">
+???
+
+With concurrency each item of work is taking place at the same time, but the
+CPU might only be performing one task at any one moment.
+
+Most the time each item of work may be waiting on IO, waiting for data to come
+in off a socket, waiting for data to be written to disc, so the CPU isn't
+always needed.
+
+Because of this we can share the CPU between many Erlang processes, switching
+to whichever is needed at that moment.
+
+---
+## With parallelism
+
+<img style="width: 80%" class="center-element" src="multi-core.png">
+???
+
+A step up from thing single threaded concurrency is parallelism.
+
+If we have a CPU with multiple cores we can actually compute multiple things
+at the very same time.
+
+Here we've gone from 1 blue core being shared, we've also got a green core and
+a pink one, speeding up the CPU bound part of our program as well as the IO
+parts.
+
+Why is this especially important now?
+
+
 ---
 ## Parallelism
 
@@ -167,18 +227,16 @@ Northwestern University, EECS
 
 ???
 
-Parallelism, another thing that BEAM languages do well.
-
-This graph shows the number of cores per processor from the 70s up until a
+This graph shows the number of cores per CPU from the 70s up until a
 couple years ago, and that number is increasing exponentially.
 
-Processors are no longer getting, instead they are getting more cores, so if
+CPU are no longer getting faster, instead they are getting more cores, so if
 we want our programs to get faster as hardware improves we need our programs
 to be able to make full use of all these cores.
 
-In many languages this is not an easy problem to solve, but with the BEAM we
-get it for free. The virtual machine will take our concurrent Erlang program
-and spread the processes over all the cores of our machine.
+For BEAM languages this is not a problem. If we write our program to be
+concurrent the virtual machine will auto-magically turn it into a parallel one
+by spreading the processes across all of the CPU cores.
 
 If we have 4 cores, our program should run 4 times faster with little to no
 effort.
@@ -286,29 +344,92 @@ What if cosmic radiation causes some bits in RAM to flip from 0 to 1?
 
 What if our computer is struck by a bolt of lighting?
 
-Avoiding failure is impossible.
+Avoiding failure is impossible, and most languages ignore this fact.
+
+---
+## Processes to the rescue
+
+<img style="width: 77%;" class="center-element" src="process-crash.png">
+
+???
+
+How do BEAM languages tackle this problem? With processes again.
+
+Processes act as failure bulkheads. If there is an unexpected error then only
+the process that has the problem crashes, not the entire program. All over
+processes continue as normal.
+
+Because of this when errors inevitably happen only the sub-system that has the
+problem will be effected, everything else can remain functional and our
+service can stay up.
+
+In a well structured program every process has a supervisor process watching
+over it which is responsible for restarting the failed process in a
+configurable fashion. Turning it off and on again at on a micro-level.
+
+Using this we can build systems that self heal through incremental shedding of
+state until the problem has been resolved.
 
 
 ---
-## Simple functional programming
+## More good stuff
+- Simple functional programming
 
 ---
-## Libraries and tooling
+## More good stuff
+- Simple functional programming
+- Immutable data
 
 ---
-## Dynamic programming
+## More good stuff
+- Simple functional programming
+- Immutable data
+- Good libraries and tooling
 
 ---
-## Meta programming
+## More good stuff
+- Simple functional programming
+- Immutable data
+- Good libraries and tooling
+- Dynamic programming
 
 ---
-## Binary manipulation
+## More good stuff
+- Simple functional programming
+- Immutable data
+- Good libraries and tooling
+- Dynamic programming
+- Meta programming
 
 ---
-## Interoperability between languages
+## More good stuff
+- Simple functional programming
+- Immutable data
+- Good libraries and tooling
+- Dynamic programming
+- Meta programming
+- Declarative binary manipulation
 
 ---
-## Community
+## More good stuff
+- Simple functional programming
+- Immutable data
+- Good libraries and tooling
+- Dynamic programming
+- Meta programming
+- Declarative binary manipulation
+- Interoperability between languages
+
+---
+## More good stuff
+- Simple functional programming
+- Immutable data
+- Good libraries and tooling
+- Dynamic programming
+- Meta programming
+- Declarative binary manipulation
+- Interoperability between languages
+- A friendly community
 
 ---
 class: title, middle, slide-blue
