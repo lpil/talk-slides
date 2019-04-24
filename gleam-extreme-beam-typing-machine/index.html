@@ -210,6 +210,85 @@ Latency in Erlang and Elixir tends to be predictable with low deviation.
 ---
 ## Fault tolerance
 
+<img class="center-element" src="bugs.jpg">
+
+???
+
+There are lots of other languages that offer concurrency, parallelism, and
+low latency garbage collection, but this feature really sets the BEAM apart
+from the rest.
+
+What's the industry standard way of dealing with bugs, mistakes, and other
+things that may make a program crash?
+
+We try to make sure it doesn't happen. We find all the bugs and remove them.
+
+Turns out this is really difficult, so maybe would we use automated tests to
+find them, but if we make a mistake in the tests then bugs can slip though.
+
+---
+class: bug-list
+## Preventing failure
+
+<img style="width: 50%; float: right" src="sisyphus.png">
+
+<style type="text/css" media="screen">
+.bug-list li {
+  padding-bottom: 10px;
+}
+</style>
+
+1. Example tests
+   <br>EUnit, ExUnit
+2. Property tests
+   <br>QuickCheck
+3. Weak type systems
+   <br>Java, C, Go, etc
+4. Stronger type systems
+   <br>Haskell, Elm, etc
+5. Formal verification
+   <br>Idris, Agda, Coq
+
+???
+
+If we're clever we might use a tool like QuickCheck to generate vast numbers
+of test cases based around the desired properties of our program, finding bugs
+in edge cases we wouldn't have otherwise considered.
+
+Static type systems are capable of preventing entire classes of bugs from
+programs, especially stronger ones found in languages like Elm and Haskell.
+
+Even then the type systems are not expressive enough to verify that the
+program is error free.
+
+After that we could write proofs that verify that our program has the correct
+behaviour. This is incredibly powerful and could be the future of programming,
+but today it's difficult and time consuming.
+
+---
+## We can't win
+
+<img style="width: 77%;" class="center-element" src="oops.png">
+
+???
+
+Even if somehow we made our code bug free we can't escape error.
+
+What if there's a bug in the language runtime?
+
+What if we run out of memory?
+
+What if there's a bug in the operating system?
+
+What if there's a hardware failure and our program gets subtly corrupted?
+
+What if cosmic radiation causes some bits in RAM to flip from 0 to 1?
+
+What if our computer is struck by a bolt of lighting?
+
+Avoiding failure is impossible.
+
+
 ---
 ## Simple functional programming
 
