@@ -20,8 +20,7 @@ I'm Louis
 
 Founder of small company called Waive
 
-Using Elixir and Erlang for 4-5 years. I do a lot of open source work so you
-might have come across some of my projects.
+Using Elixir and Erlang for 4-5 years. I do a lot of open source work.
 
 One of my first projects was Dogma, an Elixir style linter.
 
@@ -57,11 +56,13 @@ pub fn contains(list, a) {
 
 ???
 
-This is Gleam
+Gleam is a language that like Elixir runs on the BEAM (Erlang VM).
 
-Runs on the Erlang VM like Elixir
+Has curly braces, which ReasonML has shown is really important if you want
+people to actually use your language
 
-Has curly braces.
+But more importantly it has a robust type system inspired by the ML family of
+languages.
 
 ---
 class: title, middle, slide-purple
@@ -118,7 +119,7 @@ Here's a graph showing how the requests are handled over time.
 The first request is handled, then the second, then the third, then the
 fourth.
 
-The time taken to handled all the requests is equal to the sum of the time
+The time taken to handle all the requests is equal to the sum of the time
 taken by each request.
 
 ---
@@ -131,6 +132,9 @@ What happens when one request is slow and takes more time than we would like?
 
 All requests that come after the slow request have to wait for it to complete
 before they can be processed.
+
+The latency of all following requests is effected by this one request, and
+your overall latency suffers.
 
 
 ---
@@ -149,8 +153,11 @@ Other languages have other abstractions, but we use processes.
 When 4 requests come in at the same time each one is handled by a dedicated
 process, each running at the same time.
 
-The total time taken is now equal to the time taken by the slowest request,
-with a largely insignificant overhead for the concurrency abstraction.
+The total time taken is now equal to the time taken by the slowest request
+
+
+There is a smll overhead for the concurrency abstraction, but it is dwarfed by
+the gains here.
 
 ---
 ## With concurrency
@@ -323,6 +330,8 @@ After that we could write proofs that verify that our program has the correct
 behaviour. This is incredibly powerful and could be the future of programming,
 but today it's difficult and time consuming.
 
+It's very difficult to write bug free code.
+
 ---
 ## We can't win
 
@@ -375,16 +384,41 @@ state until the problem has been resolved.
 ## More good stuff
 - Simple functional programming
 
+???
+
+This one is very much a matter of opinion, but I think the simple style of
+functional programming in Elixir and Erlang is one of the easier programming
+styles to learn and work with.
+
 ---
 ## More good stuff
 - Simple functional programming
 - Immutable data
+
+???
+
+Almost all data on the BEAM is immutable.
+
+This is great because immutable data is easier to reason about then mutable
+data as it can't change unexpected.
+
+It also has some really performance characteristics that we take full
+advantage of in common Elixir programming patterns.
 
 ---
 ## More good stuff
 - Simple functional programming
 - Immutable data
 - Good libraries and tooling
+
+???
+
+Elixir and Erlang are relatively niche languages, yet they have a healthy
+ecosystem of libraries hosted on hex, the package manager.
+
+Everything you probably want for running a professional web application is
+there, complete with documentation and active maintainers.
+
 
 ---
 ## More good stuff
@@ -392,6 +426,15 @@ state until the problem has been resolved.
 - Immutable data
 - Good libraries and tooling
 - Dynamic programming
+
+???
+
+Elixir and Erlang are dynamically typed, which can really help us get code
+written and shipped as fast as possible.
+
+What's more compiled code can be dynamically loaded into the virtual machine,
+giving us ways to debug, introspect, and update our programs while they are
+still running.
 
 ---
 ## More good stuff
@@ -401,14 +444,20 @@ state until the problem has been resolved.
 - Dynamic programming
 - Meta programming
 
----
-## More good stuff
-- Simple functional programming
-- Immutable data
-- Good libraries and tooling
-- Dynamic programming
-- Meta programming
-- Declarative binary manipulation
+???
+
+Using meta programming to generate code at compile time is common in BEAM
+languages.
+
+It can be used to create concise domain specific languages, such as the ones
+used in the Phoenix web framework or the Absinthe GraphQL framework, but my
+favourite use of it is to move expensive computation to compile time.
+
+If some operation is expensive but can be safely cached, just do it on your CI
+server and store the result in a module.
+
+This is how the Elixir String module works, it's generated from the unicode
+database.
 
 ---
 ## More good stuff
@@ -417,9 +466,22 @@ state until the problem has been resolved.
 - Good libraries and tooling
 - Dynamic programming
 - Meta programming
-- Declarative binary manipulation
 - Interoperability between languages
 
+???
+
+This one is a favourite of mine. It's very easy for one BEAM language to make
+use of code written in another BEAM langauge.
+
+For example, if we're writing Elixir and we want a queue data structure, we
+can just use the Erlang queue module. There's no ceremony required, and no
+performance overhead.
+
+If someone were to **make a new language** on the BEAM the users of this new
+language would be able to take advantage of all the existing libraries on
+offer.
+
+
 ---
 ## More good stuff
 - Simple functional programming
@@ -427,9 +489,20 @@ state until the problem has been resolved.
 - Good libraries and tooling
 - Dynamic programming
 - Meta programming
-- Declarative binary manipulation
 - Interoperability between languages
 - A friendly community
+
+???
+
+This one is important to me.
+
+The community BEAM languages once had a reputation for being closed and
+impenetrable, but these days that's certainly not the case.
+
+We've got books, great documentation, tutorials, forums, slack channels, IRC,
+meetups, conferences, workshops, and more. It's easier than ever to learn
+these languages and to interact with people in the community.
+
 
 ---
 class: title, middle, slide-blue
@@ -437,9 +510,8 @@ class: title, middle, slide-blue
 
 ???
 
-Sadly Erlang and Elixir are not perfect
-
-There's a bunch of things that could be improved with them.
+Now that I've wasted a bunch of time telling a room of Elixir users that
+Elixir is good let's look at bunch of things that could be improved.
 
 The aspect I'm particularly interested is how they present feedback to the
 programmer when a mistake has been made.
@@ -448,6 +520,43 @@ I think that improvements in this area could bring great value and
 productivity for relatively low cost.
 
 Let's take a closer look.
+
+
+---
+class: bug-list
+## Failure is frequent
+
+<img style="width: 50%; float: right" src="ouch.png">
+
+1. Example tests
+   <br>EUnit, ExUnit
+2. Property tests (???)
+   <br>QuickCheck
+3. ~~Weak type systems
+   <br>Java, C, Go, etc~~
+4. ~~Stronger type systems
+   <br>Haskell, Elm, etc~~
+5. ~~Formal verification
+   <br>Idris, Agda, Coq~~
+
+???
+
+I talked previously about how processes give us a way to handle failure
+as gracefully as possible, but that doesn't mean that failure isn't a problem.
+
+When something going wrong you're still going to get paged at 4 in the morning
+and it's still your job to fix it.
+
+These methods for removing failure are not perfect, but they will decrease how
+frequently you get paged, and realistically in Elixir we only really use
+example tests.
+
+NoRedInk is a company that uses a lot of the Elm language, and they claim that
+in 2 years they have only had one runtime error, and that was because of
+unsafe Javascript interop.
+
+Type systems really help here.
+
 
 ---
 class: center
@@ -504,31 +613,71 @@ If there was a problem with `MyApp.name` this error would show exactly where,
 so even in scenario all we would need to do is to open the right file and
 scroll to the specified line.
 
-What's more it tells us exactly what the problem is, in this case that we are
-calling it with a String when it expects an Int.
+What's the problem? We're it with a String when it expects an Int.
 
 It even gives us a hint of how to turn an Int into a String.
 
 
 
 ---
-## Slow feedback cycle
+## Refactoring
 
----
-## Refactoring isn't cheap
+<img class="center-element" src="refactoring.png">
 
 ???
 
-We rely on unit tests to catch errors and mistakes
+Refactoring in Elixir is far more time consuming than I want it to be.
 
-If that doesn't work we they might be found during manual testing
+1. We make a change to our code. Perhaps we've decided to add a new field to a
+   map data structure.
+2. Find all the places this change effects. Everywhere this map is constructed
+   and a subset of the places the map is consumed needs to be located by the
+   programer.
+3. Once we know all the locations we update them to fit the new design.
+4. And then we update the tests for all these places to ensure they handle the
+   new data appropriately.
 
-If that doesn't work we may find the mistake when processes crash in
-production
+Finding the problems is hard and time consuming. Tests help, but as we've said
+before they are not completely effective, the rest is up to the programmer.
+
+I want the compiler to find all these problems for me, so all I have to do is
+decide what to do about them.
+
+Writing tests is also time consuming. The Elixir application I work on at
+Waive has more test code than application code, and it takes a lot of time
+time to maintain these tests.
+
+If the compiler was capable of verifying certain properties of my program I
+would need to verify them myself with tests. With a robust type system we can
+write a faction of the tests and have an increase in test coverage.
+
+
+---
+## When is the bug found?
+
+<img class="center-element" src="flow.png">
+
+???
+
+When a mistake is made how long before the bug is discovered?
+
+It could be in dev or in the tests, in which case you'll find out in seconds
+or minutes.
+
+Perhaps it's found when a peer reviews your code, or during QA? This could be
+minutes or hours later.
+
+Maybe it's not discovered until the code is in production, in which case there
+could be days before it is discovered.
+
+It's hard to debug a problem when the context is days in size. As much as
+possible I want any issues highlighted within a second of pressing save, and
+with a well designed type system we can do that for most problems.
+
 
 ---
 class: large-code
-## Hard to verify behaviour
+## What will this do?
 
 <br>
 ```ruby
@@ -539,13 +688,27 @@ queue = QueueLib.append(queue, 10)
 
 What will this function do?
 
-Will it always return the same thing?
-
 Could it throw an exception?
 
-Could it write to the database?
+Does it have some secret internal state or write to a database?
 
 Could it cause the program to exit?
+
+Could it be secretly phoning home? Letting the developer know you are using
+their library.
+
+Can we even rely on the return value? Will it always return the value we
+expect, or will it do something else on Christmas day?
+
+Could it start using your production server to mine bitcoin?
+
+The only way to know if to read the source code of all the libraries you use,
+and to read the source code for every update they get.
+
+Do you do this?
+
+It would be great if the language could tell us properties about code before
+we use it. This would enable us to make informed decisions about deps.
 
 ---
 ## Which languages do these better?
@@ -587,21 +750,67 @@ Could it cause the program to exit?
     <img src="rust.png">
   </div>
   <div>
-    <img src="scala.png">
+    <img src="purescript.png">
   </div>
 </div>
 
 ???
 
----
-Ven diagram here
+Of all the languages I know of I think these languages solve these problems
+the best.
+
+They are the ML family of languages, and their most notable feature is their
+expressive and safe type systems.
 
 ---
-Ven diagram with Gleam here
+class: middle
+<img class="center-element" src="venn-beam-ml.png">
+
+???
+
+Here you can see BEAM languages with their set of strengths
+
+and ML languages with their set of strengths
+
+What I really want is a language that sits across the two and borrows the best
+traits from both.
+
 
 ---
-class: middle, slide-blue
+class: middle
+<img class="center-element" src="venn-gleam.png">
+
+???
+
+I hope that Gleam could achieve that goal.
+
+In some respects it'll be lacking compared to Elixir and Erlang
+
+in some respects it'll be lacking compared to OCaml and Purescript
+
+But I think we can stand on their shoulders and build a really nice middle
+ground.
+
+---
+class: slide-purple, middle
+# Talk is cheap.<br>Show me the code
+
+???
+
+Here's the scary bit. Demo time.
+
+Please bare in mind that Gleam is very young and unpolished, there may be some
+bugs in this demo.
+
+---
+class: middle, slide-blue, learning-list
 ## Want to make a language?
+
+<style type="text/css" media="screen">
+.learning-list li {
+  padding-bottom: 10px;
+}
+</style>
 
 - The Super Tiny Compiler
   <br> Jamie Kyle
@@ -617,7 +826,7 @@ class: middle, slide-blue
 ---
 class: middle, slide-purple
 
-### Some links
+### Find out more
 
 - https://gleam.run
 - https://github.com/lpil/gleam
