@@ -173,7 +173,7 @@ others are delayed.
 Every other request completes in a timely fashion, and our overall performance
 remains good.
 
-Concurrency is a wonderful tool for writing software the performs well, and
+Concurrency is a wonderful tool for writing software that performs well, and
 Elixir and Erlang gives us the means to make concurrent programs without too
 many headaches.
 
@@ -288,8 +288,10 @@ things that may make a program crash?
 
 We try to make sure it doesn't happen. We find all the bugs and remove them.
 
-Turns out this is really difficult, so maybe would we use automated tests to
-find them, but if we make a mistake in the tests then bugs can slip though.
+Turns out this is really difficult
+
+To help we write automated tests designed to find them, but if we make a
+mistake in the tests then bugs can slip though.
 
 ---
 class: bug-list
@@ -402,7 +404,7 @@ Almost all data on the BEAM is immutable.
 This is great because immutable data is easier to reason about then mutable
 data as it can't change unexpected.
 
-It also has some really performance characteristics that we take full
+It also has some nice performance characteristics that we take full
 advantage of in common Elixir programming patterns.
 
 ---
@@ -450,14 +452,16 @@ Using meta programming to generate code at compile time is common in BEAM
 languages.
 
 It can be used to create concise domain specific languages, such as the ones
-used in the Phoenix web framework or the Absinthe GraphQL framework, but my
-favourite use of it is to move expensive computation to compile time.
+used in the Phoenix web framework or the Absinthe GraphQL framework
+
+My favourite use of it is to move expensive computation to compile time.
 
 If some operation is expensive but can be safely cached, just do it on your CI
 server and store the result in a module.
 
 This is how the Elixir String module works, it's generated from the unicode
-database.
+database. Querying it at runtime would be expensive, but we can generate
+efficient Elixir functions from it.
 
 ---
 ## More good stuff
