@@ -1,0 +1,2 @@
+*.gleam linguist-language=Rust
+gen/*/*.erl linguist-generated=true

@@ -1,0 +1,24 @@
+{"1.1.0",
+[{<<"cowboy">>,{pkg,<<"cowboy">>,<<"2.6.3">>},1},
+ {<<"cowlib">>,{pkg,<<"cowlib">>,<<"2.7.3">>},2},
+ {<<"gleam_experimental_stdlib">>,
+  {pkg,<<"gleam_experimental_stdlib">>,<<"0.1.2">>},
+  0},
+ {<<"mime">>,{pkg,<<"mime">>,<<"1.3.1">>},1},
+ {<<"plug">>,{pkg,<<"plug">>,<<"1.8.0">>},0},
+ {<<"plug_cowboy">>,{pkg,<<"plug_cowboy">>,<<"2.0.2">>},0},
+ {<<"plug_crypto">>,{pkg,<<"plug_crypto">>,<<"1.0.0">>},1},
+ {<<"ranch">>,{pkg,<<"ranch">>,<<"1.7.1">>},2},
+ {<<"telemetry">>,{pkg,<<"telemetry">>,<<"0.4.0">>},1}]}.
+[
+{pkg_hash,[
+ {<<"cowboy">>, <<"99AA50E94E685557CAD82E704457336A453D4ABCB77839AD22DBE71F311FCC06">>},
+ {<<"cowlib">>, <<"A7FFCD0917E6D50B4D5FB28E9E2085A0CEB3C97DEA310505F7460FF5ED764CE9">>},
+ {<<"gleam_experimental_stdlib">>, <<"A9041E893111429B859FE13BBE89471CD29F4162DCACD8193C793FF19E482890">>},
+ {<<"mime">>, <<"30CE04AB3175B6AD0BDCE0035CBA77BBA68B813D523D1AAC73D9781B4D193CF8">>},
+ {<<"plug">>, <<"9D2685CB007FE5E28ED9AC27AF2815BC262B7817A00929AC10F56F169F43B977">>},
+ {<<"plug_cowboy">>, <<"6055F16868CC4882B24B6E1D63D2BADA94FB4978413377A3B32AC16C18DFFBA2">>},
+ {<<"plug_crypto">>, <<"18E49317D3FA343F24620ED22795EC29D4A5E602D52D1513CCEA0B07D8EA7D4D">>},
+ {<<"ranch">>, <<"6B1FAB51B49196860B733A49C07604465A47BDB78AA10C1C16A3D199F7F8C881">>},
+ {<<"telemetry">>, <<"8339BEE3FA8B91CB84D14C2935F8ECF399CCD87301AD6DA6B71C09553834B2AB">>}]}
+].

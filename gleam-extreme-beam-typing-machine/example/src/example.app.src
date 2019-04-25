@@ -1,0 +1,16 @@
+{application, example,
+ [{description, "A Gleam library"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {example_sup, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    ranch
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+]}.
