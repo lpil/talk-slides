@@ -26,6 +26,75 @@ Gleam's a new language and there's many things still to come, so what's coming
 up next?
 
 ---
+class: large-code
+## Labelled function arguments
+
+```rust
+string.replace(subject, ",", " ")
+```
+
+```rust
+date.new(2019, 10, 11)
+```
+
+```rust
+file.write("hello", "program.log")
+```
+
+```rust
+version.matches(
+  "3.0.3",
+  "3.0",
+  False,
+)
+```
+???
+
+With functions that take multiple argument it can be difficult to difficult to
+remember what the arguments are and which order they are expected in
+
+This is especially true when reading unfamiliar code.
+
+
+---
+class: large-code
+## Labelled function arguments
+
+```rust
+string.replace(subject, pattern: ",", with: " ")
+```
+
+```rust
+date.new(year: 2019, month: 10, day: 11)
+```
+
+```rust
+file.write(contents: "hello", to: "program.log")
+```
+
+```rust
+version.matches(
+  version: "3.0.3",
+  requirement: "3.0",
+  allow_pre: False,
+)
+```
+???
+
+Future versions of Gleam will have labelled arguments, a popular feature from
+languages such as Python and OCaml.
+
+With this feature arguments can optionally have names at the call site, making
+it clearer what they are and allowing them to be given in any order.
+
+Sometimes in Erlang and Elixir we will give arguments in a map or a keyword
+list to name arguments, but there is a small performance penalt to this.
+
+Gleam's labelled arguments will be resolved entirely at compile time and have
+no performance cost.
+
+
+---
 class: middle
 
 ## TODO: Exercism logo here
