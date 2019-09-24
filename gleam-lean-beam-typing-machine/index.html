@@ -95,6 +95,138 @@ no performance cost.
 
 
 ---
+## Windows support
+
+TODO: graphic
+
+???
+
+Linux and MacOS are popular with developers, but Windows is still the most
+widely used desktop operating system in the world.
+
+We want the barrier to entry to be as low as possible for users of all
+operating systems, so having excellent Windows support is key.
+
+This is especially important as many people who are new to programming will be
+using Windows computers, and we want to make their learning journey as
+frustration free as possible.
+
+
+---
+## Editor integration
+
+TODO: graphic showing the Gleam compiler talking to various different editors
+
+???
+
+- Display type errors in editor
+- Code completion
+- In-editor documentation
+- Go to definition
+- Renaming of variables, functions, etc
+- Automated code formatting (like mix format)
+
+
+---
+class: splash-image
+<img src="img/hexdocs.png">
+
+
+---
+## Ad hoc polymorphism (TBD)
+
+```elixir
+defprotocol String.Chars do
+  @spec to_string(t) :: String.t()
+  def to_string(term)
+end
+
+defimpl String.Chars, for: Integer do
+  def to_string(term) do
+    Integer.to_string(term)
+  end
+end
+
+defimpl String.Chars, for: Float do
+  def to_string(term) do
+    term |> :io_lib_format.fwrite_g() |> IO.iodata_to_binary()
+  end
+end
+```
+???
+
+Today all functions in Gleam are monomorphic, it's not possible to write a
+function that takes a list OR a map.
+
+Another problem is that we can't take a function (behaviour) from a library
+and make it work with types that we have defined. If someone writes a function
+that takes a list we can't give it a new vector type that we have implemented,
+even if conceptually a vector would work OK for what the function does.
+
+Elixir solves this with protocols.
+
+For example, Elixir's String.Char protocol allows the `to_string` function to
+work on Lists, Atoms, Ints, Floats and more.
+
+If we want the `to_string` function to work on new types that we have created
+we can implement the protocol for that type.
+
+---
+## Ad hoc polymorphism (TBD)
+
+```rust
+pub trait ToString {
+  fn to_string(Self) -> String
+}
+
+let Int: ToString {
+  fn to_string(term) {
+    int.to_string(term)
+  }
+}
+
+
+let Float: ToString {
+  fn to_string(term) {
+    term |> fwrite_g |> iodata.to_string
+  }
+}
+```
+???
+
+Nothing here is concrete, this is still in the early ideas stage so if / when
+this makes it into the language it may be completely different.
+
+Goals
+- statically resolved at compile time
+- works on all types, not just structs as in Elixir
+
+
+---
+## Ad hoc polymorphism (TBD)
+
+```rust
+pub trait FromString {
+  fn from_string(String) -> Result(Self, String)
+}
+
+let Int: FromString {
+  fn from_string(s) {
+    int.parse(s)
+  }
+}
+
+
+let Float: FromString {
+  fn from_string(s) {
+    float.parse(s)
+  }
+}
+```
+???
+can dispatch based on the return type
+
+---
 class: middle
 
 ## TODO: Exercism logo here
