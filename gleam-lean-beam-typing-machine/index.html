@@ -119,17 +119,80 @@ TODO: graphic showing the Gleam compiler talking to various different editors
 
 ???
 
-- Display type errors in editor
-- Code completion
-- In-editor documentation
-- Go to definition
-- Renaming of variables, functions, etc
-- Automated code formatting (like mix format)
+Productivity is a core value for Gleam, and the experience of the developer as
+they read and write Gleam code is a big piece of this.
 
+We want the experience of writing Gleam code to be as slick and enjoyable as
+possible. We want IDE like features for Gleam in all the major editors, and by
+implementing Language Server Protocol in the compiler we can get that.
+
+Language Server Protocol is a standard developed by Microsoft for
+communication between text editors and IDE engines. Once the Gleam compiler
+implements it users of vim, emacs, atom, vs code and more will be able to:
+
+Display type errors in editor after every keystroke.
+
+Provide code completion options for variables, modules, functions, and so on.
+
+Show documentation and type information on hover, as well as
+jump-to-definition.
+
+Perform language aware renaming of variables, functions, and more with a
+single command
+
+And every time the user saves we can automatically format the code, like with
+Elixir's mix format command.
+
+And what's more thanks to Gleam's type system and static analysis this tooling
+will be able to provide much richer information to the programmer than is
+possible with other BEAM languages.
+
+---
+## TODO: some graphic
+
+???
+
+Another (perhaps more important) part of the developer experience puzzle is
+documentation.
+
+I don't know if anyone here has written a program in Gleam but right now it's
+not as easy as it could be.
+
+Unless you want to read the source code of the standard library or other
+libraries there's no way to learn what modules and functions are available.
 
 ---
 class: splash-image
 <img src="img/hexdocs.png">
+
+Meanwhile Elixir has the beautiful, searchable, mobile friendly documentation
+generated from the code itself by the ex_doc tool, hosted on the hexdocs
+website and linked directly to the hex package itself.
+
+In Elixir it's easy to find the documentation you need, whether it's online,
+in your editor, or on the command line, and we intend for this to be the case
+for Gleam too.
+
+Exactly what the best approach to take here is unclear, though we are
+currently looking at whether we could use Elixir's ex_doc for Gleam.
+
+This could be a great place someone to contribute a lot of value to Gleam,
+especially someone comfortable working in Elixir.
+
+
+---
+class: slide-blue center
+
+## A peek into future research...
+
+TODO: microscope graphic or something?
+
+???
+
+This next feature is still in the early ideas stage so don't get too attached.
+
+If and when when this makes it into the language it may be completely
+different.
 
 
 ---
@@ -193,9 +256,6 @@ let Float: ToString {
 }
 ```
 ???
-
-Nothing here is concrete, this is still in the early ideas stage so if / when
-this makes it into the language it may be completely different.
 
 Goals
 - statically resolved at compile time
