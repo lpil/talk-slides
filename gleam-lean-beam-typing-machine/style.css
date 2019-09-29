@@ -16,9 +16,18 @@ body {
   font-family: "Karla", sans-serif;
 }
 
-.large-code .remark-code  {
+.remark-code  {
+  text-align: left;
+}
+
+.l-code .remark-code  {
   font-size: 22px;
 }
+
+.xl-code .remark-code  {
+  font-size: 28px;
+}
+
 
 .remark-code,
 .remark-inline-code {
@@ -40,6 +49,11 @@ body {
 .remark-slide-content h4 {
   margin-top: 0.6em;
   margin-bottom: 0.4em;
+}
+
+.remark-slide-content h1,
+.remark-slide-content h2 {
+  text-align: center;
 }
 
 .remark-slide-content {

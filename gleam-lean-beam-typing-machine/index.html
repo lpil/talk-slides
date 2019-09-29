@@ -26,20 +26,8 @@ Gleam's a new language and there's many things still to come, so what's coming
 up next?
 
 ---
-class: large-code
-## Labelled function arguments
-
-```rust
-string.replace(subject, ",", " ")
-```
-
-```rust
-date.new(2019, 10, 11)
-```
-
-```rust
-file.write("hello", "program.log")
-```
+class: xl-code
+## Function arguments
 
 ```rust
 version.matches(
@@ -57,20 +45,8 @@ This is especially true when reading unfamiliar code.
 
 
 ---
-class: large-code
+class: xl-code
 ## Labelled function arguments
-
-```rust
-string.replace(subject, pattern: ",", with: " ")
-```
-
-```rust
-date.new(year: 2019, month: 10, day: 11)
-```
-
-```rust
-file.write(contents: "hello", to: "program.log")
-```
 
 ```rust
 version.matches(
@@ -114,7 +90,77 @@ frustration free as possible.
 
 
 ---
-class: center
+class: l-code center
+## Exhaustiveness checking
+
+```rust
+enum Pet =
+| Cat
+| Dog
+```
+
+```rust
+fn to_string(pet) {
+  case pet {
+  | Cat -> "kitty"
+  | Dog -> "doggo"
+  }
+}
+```
+
+???
+
+This feature is a personal favourite of mine and something that I'm really
+looking forward to.
+
+Let's say I've defined a Pet type in my codebase. It's an enum with 2
+variants: Cat and Dog.
+
+Elsewhere in my code I define a to_string function which pattern matches on a
+pet and returns the string "kitty" for cats, and "doggo" for dogs.
+
+---
+class: l-code center
+## Exhaustiveness checking
+
+```rust
+enum Pet =
+| Cat
+| Dog
+| Tamagotchi
+```
+
+```rust
+fn to_string(pet) {
+  case pet {
+  | Cat -> "kitty"
+  | Dog -> "doggo"
+  }
+}
+```
+
+???
+
+Shortly afterward a new craze takes the nation by storm, an electronic pet
+called a Tamagotchi. Not wanting to be left behind I add a Tamagotchi variant
+to the Pet enum and ship my code to production.
+
+Sadly I've forgotten to update the `to_string` function, so later when the
+function is called with the Tamagotchi variant no clause matches and the
+process crashes, causing degraded functionality in my web application.
+
+It's easy to see on this slide that the `to_string` function needs to be
+updated, but in a codebase of tens or hundreds of thousands of lines of code
+it's hard to find all the places that need to be updated when a new variant is
+added.
+
+Once Gleam has exhaustiveness checking this will kind of mistake will be
+detected at compile time. It'll show the location of the incomplete pattern
+match and show what values will cause the pattern match to crash, making this
+kind of error impossible.
+
+
+---
 ## Editor integration
 
 <img class="center-element" style="" src="img/editors.png">
@@ -150,7 +196,6 @@ will be able to provide much richer information to the programmer than is
 possible with other BEAM languages.
 
 ---
-class: center
 ## Documentation
 <img class="center-element" alt="documentation" style="" src="img/documentation.png">
 
@@ -182,6 +227,70 @@ currently looking at whether we could use Elixir's ex_doc for Gleam.
 
 This could be a great place someone to contribute a lot of value to Gleam,
 especially someone comfortable working in Elixir.
+
+
+---
+class: middle
+
+## TODO: Exercism logo here
+
+https://exercism.io
+
+???
+
+Who's familiar with Exercism?
+
+---
+class: middle
+
+<img class="center-element" src="img/exercism-learn.png">
+???
+TODO: Replace the Ruby logo with Gleam's in this graphic
+
+Exercism is a fantastic place to learn new programming languages and to
+practice their coding skills.
+
+How does it work? The programmer decides what language they want to practice
+and Exercism gives them an exercise to complete.
+
+Each exercises has instructions, and a full set of unit tests to make pass.
+
+
+---
+class: middle
+
+<img class="center-element" style="padding-top: 69px" src="img/exercism-chat.png">
+
+
+???
+
+Once the programmer has completed their solution they can to submit it back to
+Exercism, getting friendly and constructive feedback on their solution by
+track mentors and other students.
+
+They can also view solutions from other people and learn different approaches
+to the same problem.
+
+
+---
+class: center
+
+## 51 Languages and counting
+
+<img class="center-element" src="img/exercism-languages.png">
+
+???
+
+Exercism has 51 languages tracks and has given the thumbs up for a Gleam
+track.
+
+Exercisms exercises need to be implemented for Gleam and documentation needs
+to be written, but once done we'll have a top notch experience for learning
+and practicing Gleam.
+
+Exercism is community run, open source, and very well organised so if you're
+interested in contributing to Gleam this could be a great place to create
+help out.
 
 
 ---
@@ -289,70 +398,6 @@ let Float: FromString {
 ```
 ???
 can dispatch based on the return type
-
----
-class: middle
-
-## TODO: Exercism logo here
-
-https://exercism.io
-
-???
-
-Who's familiar with Exercism?
-
----
-class: middle
-
-<img class="center-element" src="img/exercism-learn.png">
-???
-TODO: Replace the Ruby logo with Gleam's in this graphic
-
-Exercism is a fantastic place to learn new programming languages and to
-practice their coding skills.
-
-How does it work? The programmer decides what language they want to practice
-and Exercism gives them an exercise to complete.
-
-Each exercises has instructions, and a full set of unit tests to make pass.
-
-
----
-class: middle
-
-<img class="center-element" style="padding-top: 69px" src="img/exercism-chat.png">
-
-
-???
-
-Once the programmer has completed their solution they can to submit it back to
-Exercism, getting friendly and constructive feedback on their solution by
-track mentors and other students.
-
-They can also view solutions from other people and learn different approaches
-to the same problem.
-
-
----
-class: center
-
-## 51 Languages and counting
-
-<img class="center-element" src="img/exercism-languages.png">
-
-???
-
-Exercism has 51 languages tracks and has given the thumbs up for a Gleam
-track.
-
-Exercisms exercises need to be implemented for Gleam and documentation needs
-to be written, but once done we'll have a top notch experience for learning
-and practicing Gleam.
-
-Exercism is community run, open source, and very well organised so if you're
-interested in contributing to Gleam this could be a great place to create
-help out.
-
 
 ---
 class: middle, slide-purple
