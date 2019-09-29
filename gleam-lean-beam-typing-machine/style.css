@@ -38,6 +38,7 @@ body {
 .remark-slide-content h2,
 .remark-slide-content h3,
 .remark-slide-content h4 {
+  margin-top: 0.6em;
   margin-bottom: 0.4em;
 }
 
