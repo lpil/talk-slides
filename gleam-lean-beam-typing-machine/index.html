@@ -16,6 +16,12 @@ class: middle, inverse, slide-purple
 
 ???
 
+
+
+---
+class: middle
+<img class="center-element" style="" src="img/demo.png">
+
 ---
 class: slide-purple, middle
 # What's next for Gleam?
@@ -230,9 +236,9 @@ especially someone comfortable working in Elixir.
 
 
 ---
-class: middle
-
-## TODO: Exercism logo here
+class: center
+## Exercism
+<img class="center-element" style="max-width: 70%" src="img/exercism.png">
 
 https://exercism.io
 
@@ -309,7 +315,7 @@ different.
 
 
 ---
-## Ad hoc polymorphism (TBD)
+## Ad hoc polymorphism
 
 ```elixir
 defprotocol String.Chars do
@@ -348,7 +354,7 @@ If we want the `to_string` function to work on new types that we have created
 we can implement the protocol for that type.
 
 ---
-## Ad hoc polymorphism (TBD)
+## Ad hoc polymorphism
 
 ```rust
 pub trait ToString {
@@ -376,7 +382,7 @@ Goals
 
 
 ---
-## Ad hoc polymorphism (TBD)
+## Ad hoc polymorphism
 
 ```rust
 pub trait FromString {
@@ -398,6 +404,26 @@ let Float: FromString {
 ```
 ???
 can dispatch based on the return type
+
+---
+## Typed OTP libraries
+
+```rust
+pub struct Spec(arg, state, call, reply, cast) {
+  init:
+    fn(arg) -> Init(state)
+
+  handle_call:
+    fn(call, state) -> Call(reply, state)
+
+  handle_cast:
+    fn(cast, state) -> Cast(state)
+
+  handle_info:
+    fn(Any, state) -> Cast(state)
+}
+```
+???
 
 ---
 class: middle, slide-purple
