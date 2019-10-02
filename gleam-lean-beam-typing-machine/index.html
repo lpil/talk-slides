@@ -16,7 +16,60 @@ class: middle, inverse, slide-purple
 
 ???
 
+I'm Louis, I've been a heavy user of Elixir and Erlang for about 5 years now.
 
+I'm the founder of a small ad-tech company called Waive that uses Elixir for
+everything, with a little Elm sprinkled on top.
+
+I'm as a platform engineer at Nationwide Building Society, where mostly I work
+with Go and Kubernetes.
+
+I also do some open source work in the Erlang world:
+
+I wrote Dogma, a style linter for Elixir, later succeeded by Credo, which
+we're going to hear about later from Rene.
+
+After that I wrote mix test.watch, an automated test runner for Elixir, and
+exfmt, an Elixir auto-formatter that was succeeded by the official formatter
+released in Elixir v1.6.
+
+I've also done some work inside the Elixir compiler. For example I taught the
+inspect protocol about colours, using this to add syntax highlighting to the
+iex.
+
+But today I'm not here to talk about any of those things, I'm here to talk
+about Gleam!
+
+What is Gleam?
+
+
+---
+## Hello, Gleam!
+## TODO: Some graphic
+
+???
+
+Gleam has been the project consuming all of my time since the start of last
+year.
+
+Gleam is a new functional programming language for the BEAM. Like Elixir it
+compiles to Erlang and adds no runtime overhead so we should always be to
+match or sometimes even beat performance of typical Elixir and Erlang.
+
+Gleam is intended to integrate well into the larger BEAM ecosystem, so it's
+straightforward and zero cost to call Erlang and Elixir from Gleam, or to call
+Gleam from Erlang and Elixir. We want to enrichen and contribute to the BEAM
+ecosystem through collaboration, not fracture it.
+
+Possibly the most distinct and interesting of Gleam's features is it's type
+system. Gleam has a strong static type system inspired by ML family languages
+such as Elm, Haskell, and Rust. I think this type system is where most the
+value of Gleam can be found.
+
+
+---
+## Why Gleam?
+???
 
 ---
 class: middle
