@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>lpil - Gleam: Lean BEAM typing machine</title>
   <link rel="stylesheet" href="./style.css" type="text/css" charset="utf-8">
 </head>
@@ -209,7 +209,10 @@ providing business value).
 Gleam aims to provide that fast and safe feedback loop by introducing a type
 inspired by those found in the ML family of languages.
 
-Why ML languages? Lets look at some real life examples.
+Why these languages? Because I believe they are the languages that currently
+do best in this regard.
+
+Let's look at some examples:
 
 ---
 ## Reason @ Facebook Messenger
@@ -258,9 +261,9 @@ Back in 2016 they started adding Elm code to their Coffeescript web
 application with great success. In 2018 one of their engineers posted this
 tweet:
 
-QUOTE
+**QUOTE**
 
-This is not to say the the engineers at NoRedInk are superhuman, they make as
+This is not to say the engineers at NoRedInk are without error, they make as
 many mistakes as you or I. They are catching their mistakes before they get to
 production, or at least the ones that cause runtime errors.
 
@@ -281,8 +284,20 @@ https://www.lumi.dev/blog/purescript-and-haskell-at-lumi
 
 ???
 
-TODO: This is nice because it's human. Wanna make a compiler that is like a
-pair programming partner.
+Lumi is a **????????????????????????????????????????????** company who
+**??????????????????????**.
+
+In **???????????????????** they started converting their Javascript frontend
+into a Purescript frontend. After **????????? PERIOD OF TIME** engineer
+Brandon Martin had this to say:
+
+**QUOTE**
+
+What I like about this is the feeling of trust in the compiler, that it is
+something that can be relied on.
+
+I want to create the experience of the compiler being like a pair programming
+partner, there to help by catching mistakes and providing additional insight.
 
 
 ---
@@ -679,7 +694,7 @@ let Float: FromString {
 can dispatch based on the return type
 
 ---
-## Typed OTP libraries
+## Typed OTP
 
 ```rust
 pub struct Spec(arg, state, call, reply, cast) {
@@ -698,6 +713,27 @@ pub struct Spec(arg, state, call, reply, cast) {
 ```
 ???
 
+One question that is frequently asked is how does Gleam type processes and
+OTP. The short answer is that it doesn't.
+
+Gleam doesn't currently have any special first class support for processes or
+OTP, instead these Erlang features are to be used via the Erlang FFI.
+
+Today we have some simple bindings to `gen_server` that allow us to define and
+use them in a type safe way, but we lack type safe bindings to other
+behaviours such as supervisor.
+
+Seeing as these bindings are written entirely in Gleam with no compiler magic
+this could be a fun project for someone to experiment with. The challenge here
+is how to write bindings that are reasonably safe but flexible enough to
+support common Erlang patterns used today.
+
+In future we could add some new features to Gleam that make better support for
+OTP possible, but I want these language extensions to be generically useful
+rather than specific to OTP. Any new features should be applicable to a wide
+variety of problems and make the language more powerful as a whole.
+
+
 ---
 class: middle, slide-purple
 
@@ -707,11 +743,25 @@ class: middle, slide-purple
 - https://github.com/lpil/gleam
 - IRC `#gleam-lang` on Freenode
 
+TODO: griffics website
+
 ### Call me?
 
 - twitter @louispilfold
 
 ???
+
+That's all I've got to share today.
+
+If any of this sounds interesting to you please do check out and website and
+always feel free to message me on IRC, GitHub or Twitter with any questions
+you might have.
+
+Lastly I would like to say a huge thank you to Griffics for designing the
+beautiful Gleam logo and Lucy the star. Go checkout his website, it's fun of
+really fun and playful art.
+
+Thanks for listening. Any questions?
 
 
     </textarea>
