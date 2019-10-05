@@ -10,9 +10,7 @@
 class: middle, inverse, slide-purple
 
 <br>
-# Gleam: Lean BEAM typing machine
-
-## Louis Pilfold<br>@louispilfold
+## Hi, I'm Louis!
 
 ???
 
@@ -21,8 +19,8 @@ I'm Louis, I've been a heavy user of Elixir and Erlang for about 5 years now.
 I'm the founder of a small ad-tech company called Waive that uses Elixir for
 everything, with a little Elm sprinkled on top.
 
-I'm as a platform engineer at Nationwide Building Society, where mostly I work
-with Go and Kubernetes.
+In addition I'm a platform engineer at Nationwide Building Society, where
+mostly I work with Go and Kubernetes.
 
 I also do some open source work in the Erlang world:
 
@@ -34,8 +32,8 @@ exfmt, an Elixir auto-formatter that was succeeded by the official formatter
 released in Elixir v1.6.
 
 I've also done some work inside the Elixir compiler. For example I taught the
-inspect protocol about colours, using this to add syntax highlighting to the
-iex.
+inspect protocol about colours, and I used this to add syntax highlighting to
+the iex.
 
 But today I'm not here to talk about any of those things, I'm here to talk
 about Gleam!
@@ -50,8 +48,8 @@ What is Gleam?
 ???
 
 Gleam is a new functional programming language for the BEAM. Like Elixir it
-compiles to Erlang and adds no runtime overhead so we should always be to
-match or sometimes even beat performance of typical Elixir and Erlang.
+compiles to Erlang and adds no runtime overhead so we should always be at
+least as performant as typical Elixir and Erlang code.
 
 Gleam is intended to integrate well into the larger BEAM ecosystem, so it's
 straightforward and zero cost to call Erlang and Elixir from Gleam, or to call
@@ -82,22 +80,24 @@ best language runtimes available today.
 
 It has powerful concurrency features in the form of actor model, allowing us
 to spin up hundreds of thousands of lightweight threads called processes
-inside our programs, making full use of modern computer processors that have
-more and more cores.
+inside our programs, making full use of modern computer processors, which
+these days have more and more cores.
 
 These processes communicate by sending messages to each other, but what's
 amazing about this is that it doesn't matter if the processes are running on
-the same instance of the virtual machine, another instance on the same
-machine, or even on a completely different machine on the network.
+the same instance of the BEAM, a second instance of the BEAM on the same
+computer, or even on a completely different machine on the network.
 
 Distributed computing is built into the BEAM, a typical BEAM program written
 in Erlang or Elixir can be turned into distributed program that runs on a
 cluster of networked computers with minimal effort.
 
-The Erlang virtual machine offers garbage collection, and it is performed on a
-per-process basis. This mean there is no stop-the-world pause for memory to be
-cleaned up, meaning programs on the BEAM can have predictable low latency and
-are often referred to as being soft real time.
+Like most runtimes the BEAM offers garbage collection, however what makes it
+unusual is that it is performed on a per-process basis.
+
+This mean there is no stop-the-world pause for memory to be cleaned up,
+meaning programs on the BEAM can have predictable low latency and are often
+referred to as being soft real time.
 
 ---
 # TODO
@@ -132,34 +132,34 @@ these?
 
 To answer this question I'd like to take a closer look at the BEAM's self
 healing properties and how that impacts us as developers and operators of
-software running on it.
+software.
 
 ---
 # TODO
 
 ???
 
-It's a normal day at work and I've got a change to make to an application at
-work. Perhaps I'm adding a feature, maybe we're removing a bug, it doesn't
-matter. Either way I need to edit the code to have the desired behaviour and
-deploy the new version of the application to production for our users to
-access.
+It's a normal day at work and I've got a change to make to an application.
+Perhaps I'm adding a feature, maybe we're removing a bug, it doesn't matter,
+I'm making some sort of change.
 
-I spend some time making changes, and once satisfied run the compiler to
-build the code, which completes successfully.
+I spend some time editing the code, and once satisfied run the compiler to
+build the application, which completes successfully.
 
 After that I run the unit tests on my laptop to ensure I've not broken
 anything, and then push my changes to GitHub.
 
 Once uploaded the code triggers a build on the CI server. It runs all the unit
-and integration tests, lints the code for mistakes and deploys the new
-application version to a staging environment.
+and integration tests, and runs some linters such as Credo to spot any mistakes.
+
+If all those checks pass then it deploys the new application version to a
+staging environment.
 
 On the staging environment I manually test the application and demo the new
 behaviour to stakeholders who give the green light to continue.
 
 Meanwhile, on GitHub the code is reviewed by some of the other programmers on
-my team. Happy with the code they approve it and the code is merged into
+my team. Happy with my changes they approve it and the code is merged into
 master, triggering another CI build. All the tests are run again, and this
 time the code is deployed to production and to our users.
 
@@ -184,14 +184,106 @@ Worse case scenario it has been months or years and the writer of the bug has
 long since left the company, leaving me to try and fix code I've never seen
 before.
 
-TODO:
-- Want mistakes to be found as early as possible as frequently as possible
-- Faster feedback loop
-- Faster and more reliable feedback means we can iterate faster
-- Editing unfamilar code and large changes are less risky if errors can
-  reliably be detected by the computer.
-- Fewer tests to be written if they can be integrated into the compiler
-  itself.
+---
+# TODO
+???
+
+The larger the gap between the mistake being made and the problem being
+detected the more difficult it will be to fix.
+
+Erlang gives us powerful tools to tolerate mistakes and debug them, but they
+largely only help us once the code is in production, and that time cost is far
+from optimal.
+
+What I really want is to for problems to be detected here, immediately after the
+mistake was made.
+
+I want that feedback loop to be as fast as possible so we can spend less time
+doing exploratory work (such as debugging) and more time iterating (actually
+providing business value).
+
+---
+# TODO
+???
+
+Gleam aims to provide that fast and safe feedback loop by introducing a type
+inspired by those found in the ML family of languages.
+
+Why ML languages? Lets look at some real life examples.
+
+---
+## Reason @ Facebook Messenger
+
+TODO: logos
+
+> Messenger used to receive bugs reports on a daily basis; since the
+> introduction of Reason, there have been a total of 10 bugs (that's during
+> the whole year, not per week)!
+
+> Refactoring speed went from days to hours to dozens of minutes.
+
+<cite>
+https://reasonml.github.io/blog/2017/09/08/messenger-50-reason.html
+</cite>
+
+???
+
+Messenger is Facebook's web chat program. It has 1.3 billion monthly users.
+
+Back in 2016 they started converting the web client from Javascript to a
+dialect of OCaml called Reason. A year later 50% of their code was written in
+Reason and they had this to say:
+
+
+---
+## Elm @ NoRedInk
+
+TODO: logos
+
+> After 2 years and 200,000 lines of production Elm code, we got our first
+> production runtime exception.
+
+> In that period, our legacy JS code has crashed a mere 60,000 times.
+
+<cite>
+Richard Feldman -
+https://twitter.com/rtfeldman/status/961051166783213570
+</cite>
+
+???
+
+NoRedInk are a company in the United States that provide education software.
+
+Back in 2016 they started adding Elm code to their Coffeescript web
+application with great success. In 2018 one of their engineers posted this
+tweet:
+
+QUOTE
+
+This is not to say the the engineers at NoRedInk are superhuman, they make as
+many mistakes as you or I. They are catching their mistakes before they get to
+production, or at least the ones that cause runtime errors.
+
+
+---
+## Haskell & Purescript @ Lumi
+
+TODO: logos
+
+> [I’ve had] such a positive experience, with little mental overhead, and
+> total trust in the compiler. I implemented an entire page with a list of
+> data, filters, search, and pagination which worked first time.
+
+<cite>
+Brandon Martin -
+https://www.lumi.dev/blog/purescript-and-haskell-at-lumi
+</cite>
+
+???
+
+TODO: This is nice because it's human. Wanna make a compiler that is like a
+pair programming partner.
+
 
 ---
 class: middle

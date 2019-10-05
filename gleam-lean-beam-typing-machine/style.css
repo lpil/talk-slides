@@ -41,7 +41,6 @@ body {
 
 .remark-slide-content h1 {
   font-size: 3em;
-  text-transform: uppercase;
 }
 .remark-slide-content h1,
 .remark-slide-content h2,
@@ -120,4 +119,29 @@ img {
 .center-element {
   display: block;
   margin: 0 auto;
+}
+
+blockquote {
+  font-size: 32px;
+  font-style: italic;
+}
+
+cite,
+cite a {
+  font-size: 18px;
+  color: grey;
+}
+
+.remark-slide-content::before {
+  content: "@louispilfold";
+  position: absolute;
+  opacity: 0.5;
+  left: 27px;
+  bottom: 22px;
+}
+
+.splash-image .remark-slide-number,
+.splash-image.remark-slide-content::before {
+  content: '';
+  display: none;
 }
