@@ -49,9 +49,6 @@ What is Gleam?
 
 ???
 
-Gleam has been the project consuming all of my time since the start of last
-year.
-
 Gleam is a new functional programming language for the BEAM. Like Elixir it
 compiles to Erlang and adds no runtime overhead so we should always be to
 match or sometimes even beat performance of typical Elixir and Erlang.
@@ -71,9 +68,140 @@ value of Gleam can be found.
 ## Why Gleam?
 ???
 
+Here's the first question I want to answer- Why make this new language at all
+when there are already so many other languages out there?
+
+---
+## The BEAM
+
+A large part of the answer to that question is the BEAM, the Erlang virtual
+machine.
+
+The Erlang virtual machine is a fantastic piece of software and one of the
+best language runtimes available today.
+
+It has powerful concurrency features in the form of actor model, allowing us
+to spin up hundreds of thousands of lightweight threads called processes
+inside our programs, making full use of modern computer processors that have
+more and more cores.
+
+These processes communicate by sending messages to each other, but what's
+amazing about this is that it doesn't matter if the processes are running on
+the same instance of the virtual machine, another instance on the same
+machine, or even on a completely different machine on the network.
+
+Distributed computing is built into the BEAM, a typical BEAM program written
+in Erlang or Elixir can be turned into distributed program that runs on a
+cluster of networked computers with minimal effort.
+
+The Erlang virtual machine offers garbage collection, and it is performed on a
+per-process basis. This mean there is no stop-the-world pause for memory to be
+cleaned up, meaning programs on the BEAM can have predictable low latency and
+are often referred to as being soft real time.
+
+---
+# TODO
+
+???
+
+And perhaps most excitingly, Erlang processes act as error bulkheads, meaning
+that when something does go wrong and your code crashes the problem is
+contained to the smallest possible sub-system and will not impact any other
+work being undertaken by the program.
+
+An Erlang program that takes advantage of this property can self heal by
+restarting the process and trying again, hopefully succeeding now that any
+corrupt state has been shed, must like pods on the popular Kubernetes
+container orchestrator from Google.
+
+What makes the BEAM different from Kubernetes is that this state shedding can
+happen at a much more fine grained level- we won't lose the state of the
+entire program and all the requests being handled by it, instead just the
+single process that had the problem.
+
+---
+# TODO
+
+So yes, the BEAM is wonderful piece of technology to work with, and I'm sure
+that you'll all understand why I wanted to use target it.
+
+However I've not answer the question of why make a new language at all- we
+already have several fantastic languages on the BEAM such as Erlang, Elixir,
+and LFE. Why spend all this time creating Gleam when we could use one of
+these?
+
+To answer this question I'd like to take a closer look at the BEAM's self
+healing properties and how that impacts us as developers and operators of
+software running on it.
+
+---
+# TODO
+
+???
+
+It's a normal day at work and I've got a change to make to an application at
+work. Perhaps I'm adding a feature, maybe we're removing a bug, it doesn't
+matter. Either way I need to edit the code to have the desired behaviour and
+deploy the new version of the application to production for our users to
+access.
+
+I spend some time making changes, and once satisfied run the compiler to
+build the code, which completes successfully.
+
+After that I run the unit tests on my laptop to ensure I've not broken
+anything, and then push my changes to GitHub.
+
+Once uploaded the code triggers a build on the CI server. It runs all the unit
+and integration tests, lints the code for mistakes and deploys the new
+application version to a staging environment.
+
+On the staging environment I manually test the application and demo the new
+behaviour to stakeholders who give the green light to continue.
+
+Meanwhile, on GitHub the code is reviewed by some of the other programmers on
+my team. Happy with the code they approve it and the code is merged into
+master, triggering another CI build. All the tests are run again, and this
+time the code is deployed to production and to our users.
+
+But then! Disaster strikes! Users are reporting that the application no longer
+works as intended. Right at the very beginning when I was editing the code I
+made a mistake and introduced a bug.
+
+Each one of these steps has failed to detect the problem and now it has snuck
+into production. Luckily the application is written in Erlang so the impact of
+the problem has been minimised, but I still need to fix the problem as a
+matter of urgency.
+
+In this instance the problem was discovered just a few hours after I made the
+mistake, so the change is still fresh in my mind and it's not too difficult to
+correct it, but that's not always the case.
+
+Depending on the culture of the company I'm working at it might take days or
+weeks for a change to be deployed to production, or it might have taken longer
+for the users to discover the problem.
+
+Worse case scenario it has been months or years and the writer of the bug has
+long since left the company, leaving me to try and fix code I've never seen
+before.
+
+TODO:
+- Want mistakes to be found as early as possible as frequently as possible
+- Faster feedback loop
+- Faster and more reliable feedback means we can iterate faster
+- Editing unfamilar code and large changes are less risky if errors can
+  reliably be detected by the computer.
+- Fewer tests to be written if they can be integrated into the compiler
+  itself.
+
 ---
 class: middle
 <img class="center-element" style="" src="img/demo.png">
+
+???
+
+Demo time!
+
+Wish me luck.
 
 ---
 class: slide-purple, middle
