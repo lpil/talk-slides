@@ -91,14 +91,9 @@ body {
 
 /* Pages */
 
-.slide-purple {
+.slide-bold {
   border: 20px solid white;
   background-color: #c380f6;
-}
-
-.slide-blue {
-  border: 20px solid white;
-  background-color: #1cd4c6;
 }
 
 .splash-image {

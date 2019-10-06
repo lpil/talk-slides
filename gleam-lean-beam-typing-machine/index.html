@@ -7,7 +7,7 @@
 </head>
   <body>
     <textarea id="source">
-class: middle, inverse, slide-purple
+class: middle, inverse, slide-bold
 
 <br>
 ## Hi, I'm Louis!
@@ -63,14 +63,16 @@ value of Gleam can be found.
 
 
 ---
-## Why Gleam?
+# Why Gleam?
 ???
 
 Here's the first question I want to answer- Why make this new language at all
 when there are already so many other languages out there?
 
 ---
-## The BEAM
+class: middle
+<img class="center-element" src="img/the-beam.png">
+???
 
 A large part of the answer to that question is the BEAM, the Erlang virtual
 machine.
@@ -78,10 +80,21 @@ machine.
 The Erlang virtual machine is a fantastic piece of software and one of the
 best language runtimes available today.
 
+---
+## Processes
+<img class="center-element" style="max-width: 90%" src="img/processes.png">
+???
+
 It has powerful concurrency features in the form of actor model, allowing us
 to spin up hundreds of thousands of lightweight threads called processes
 inside our programs, making full use of modern computer processors, which
 these days have more and more cores.
+
+---
+## Messages
+<br>
+<img class="center-element" style="max-width: 90%" src="img/messages.png">
+???
 
 These processes communicate by sending messages to each other, but what's
 amazing about this is that it doesn't matter if the processes are running on
@@ -92,6 +105,11 @@ Distributed computing is built into the BEAM, a typical BEAM program written
 in Erlang or Elixir can be turned into distributed program that runs on a
 cluster of networked computers with minimal effort.
 
+---
+## Predictable garbage collection
+<img class="center-element" src="img/garbage-collection.jpg">
+???
+
 Like most runtimes the BEAM offers garbage collection, however what makes it
 unusual is that it is performed on a per-process basis.
 
@@ -100,8 +118,8 @@ meaning programs on the BEAM can have predictable low latency and are often
 referred to as being soft real time.
 
 ---
-# TODO
-
+## Fault tolerance
+<img class="center-element" src="img/isolation.png">
 ???
 
 And perhaps most excitingly, Erlang processes act as error bulkheads, meaning
@@ -284,12 +302,12 @@ https://www.lumi.dev/blog/purescript-and-haskell-at-lumi
 
 ???
 
-Lumi is a **????????????????????????????????????????????** company who
-**??????????????????????**.
+Lumi is a company that provide eco-friendly branded packaging for online
+stores.
 
-In **???????????????????** they started converting their Javascript frontend
-into a Purescript frontend. After **????????? PERIOD OF TIME** engineer
-Brandon Martin had this to say:
+In 2018 they started converting their Javascript frontend into a Purescript
+frontend. After a few months of Purescript in anger engineer Brandon Martin
+had this to say:
 
 **QUOTE**
 
@@ -311,7 +329,7 @@ Demo time!
 Wish me luck.
 
 ---
-class: slide-purple, middle
+class: slide-bold, middle
 # What's next for Gleam?
 
 ???
@@ -735,7 +753,7 @@ variety of problems and make the language more powerful as a whole.
 
 
 ---
-class: middle, slide-purple
+class: middle, slide-bold
 
 ### Find out more
 
