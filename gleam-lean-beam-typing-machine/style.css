@@ -140,3 +140,7 @@ cite a {
   content: '';
   display: none;
 }
+
+a {
+  color: black;
+}

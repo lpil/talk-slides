@@ -8,8 +8,9 @@
   <body>
     <textarea id="source">
 class: middle, inverse, slide-bold
-
-<br>
+## Hi, I'm Louis!
+---
+class: middle, inverse, slide-bold
 ## Hi, I'm Louis!
 
 ???
@@ -17,12 +18,7 @@ class: middle, inverse, slide-bold
 I'm Louis, I've been a heavy user of Elixir and Erlang for about 5 years now.
 
 I'm the founder of a small ad-tech company called Waive that uses Elixir for
-everything, with a little Elm sprinkled on top.
-
-In addition I'm a platform engineer at Nationwide Building Society, where
-mostly I work with Go and Kubernetes.
-
-I also do some open source work in the Erlang world:
+everything, and I also do some open source work.
 
 I wrote Dogma, a style linter for Elixir, later succeeded by Credo, which
 we're going to hear about later from Rene.
@@ -139,6 +135,7 @@ single process that had the problem.
 
 ---
 # TODO
+???
 
 So yes, the BEAM is wonderful piece of technology to work with, and I'm sure
 that you'll all understand why I wanted to use target it.
@@ -233,9 +230,9 @@ do best in this regard.
 Let's look at some examples:
 
 ---
-## Reason @ Facebook Messenger
+## OCaml
 
-TODO: logos
+<img class="center-element" style="max-width: 60%" src="img/messenger.png">
 
 > Messenger used to receive bugs reports on a daily basis; since the
 > introduction of Reason, there have been a total of 10 bugs (that's during
@@ -257,9 +254,8 @@ Reason and they had this to say:
 
 
 ---
-## Elm @ NoRedInk
-
-TODO: logos
+## Elm
+<img class="center-element" style="max-width: 70%" src="img/noredink.png">
 
 > After 2 years and 200,000 lines of production Elm code, we got our first
 > production runtime exception.
@@ -287,9 +283,8 @@ production, or at least the ones that cause runtime errors.
 
 
 ---
-## Haskell & Purescript @ Lumi
-
-TODO: logos
+## Purescript
+<img class="center-element" style="max-width: 70%; padding-bottom: 40px" src="img/lumi.png">
 
 > [I’ve had] such a positive experience, with little mental overhead, and
 > total trust in the compiler. I implemented an entire page with a list of
@@ -525,6 +520,7 @@ libraries there's no way to learn what modules and functions are available.
 ---
 class: splash-image
 <img src="img/hexdocs.png">
+???
 
 Meanwhile Elixir has the beautiful, searchable, mobile friendly documentation
 generated from the code itself by the ex_doc tool, hosted on the hexdocs
@@ -606,6 +602,52 @@ help out.
 
 
 ---
+## Typed OTP
+
+```rust
+pub struct Spec(arg, state, call, reply, cast) {
+  init:
+    fn(arg) -> Init(state)
+
+  handle_call:
+    fn(call, state) -> Call(reply, state)
+
+  handle_cast:
+    fn(cast, state) -> Cast(state)
+
+  handle_info:
+    fn(Any, state) -> Cast(state)
+}
+
+pub external fn start_link(Spec(a, b, c, d, e))
+  -> Result(GenServer(b, c, d, e), InitError)
+  = "gleam_gen_server" "start_link"
+```
+???
+
+One question that is frequently asked is how does Gleam type processes and
+OTP. The short answer is that it doesn't.
+
+Gleam doesn't currently have any special first class support for processes or
+OTP, instead these Erlang features are to be used via the Erlang FFI.
+
+Today we have some simple bindings to `gen_server` that allow us to define and
+use them in a type safe way, but we lack type safe bindings to other
+behaviours such as supervisor.
+
+The challenge here is how to write bindings that are reasonably safe but
+flexible enough to support common Erlang patterns used today.
+
+Seeing as these bindings are written entirely in Gleam with no compiler magic
+this could be a fun and useful project for someone to experiment with today.
+
+In future we could add some new features to Gleam that make better support for
+OTP possible, but I want these language extensions to be generically useful
+rather than specific to OTP. Any new features should be applicable to a wide
+variety of problems and make the language more powerful as a whole.
+
+
+---
 class: center
 
 ## Future research
@@ -614,10 +656,8 @@ TODO: microscope graphic or something?
 
 ???
 
-This next feature is still in the early ideas stage so don't get too attached.
-
-If and when when this makes it into the language it may be completely
-different.
+Speaking of which, this next feature is still in the early ideas stage, but I
+thought I'd give you a preview of what I'm currently thinking.
 
 
 ---
@@ -682,9 +722,26 @@ let Float: ToString {
 ```
 ???
 
-Goals
-- statically resolved at compile time
-- works on all types, not just structs as in Elixir
+Here's what the same protocol may look like in Gleam, though right now we're
+calling them traits.
+
+It's similar in that there's a definition for the `ToString` trait and two
+implementations, and now the `to_string` function can be used on either `Ints`
+or `Floats`.
+
+What's different is how the language dispatches to the correct implementation
+for a given type.
+
+Elixir inspects the value at runtime, which is why Elixir's protocols can only
+be defined for structs and a few special types. It is not possible to
+implement a protocol for types that have the same runtime representation such
+as Erlang records, tuples, and queues, or different kinds of pids.
+
+Gleam's traits instead will dispatch using type information, so a trait can be
+implemented for two types even if they have the same runtime representation.
+
+For example, a user id and a number of euros, which are both integers at
+runtime.
 
 
 ---
@@ -692,7 +749,7 @@ Goals
 
 ```rust
 pub trait FromString {
-  fn from_string(String) -> Result(Self, String)
+  fn from_string(String) -> Self
 }
 
 let Int: FromString {
@@ -709,59 +766,30 @@ let Float: FromString {
 }
 ```
 ???
-can dispatch based on the return type
 
----
-## Typed OTP
+Another cool thing about dispatching using type information is that Gleam can
+dispatch based upon a desired return type rather than just the argument.
 
-```rust
-pub struct Spec(arg, state, call, reply, cast) {
-  init:
-    fn(arg) -> Init(state)
+Here we've got a `FromString` trait which contains a function that goes from a
+String to the type implementing the trait. This wouldn't be possible went
+dispatching on values as we need the value to find the implementation, but we
+need the implementation to find the value.
 
-  handle_call:
-    fn(call, state) -> Call(reply, state)
-
-  handle_cast:
-    fn(cast, state) -> Cast(state)
-
-  handle_info:
-    fn(Any, state) -> Cast(state)
-}
-```
-???
-
-One question that is frequently asked is how does Gleam type processes and
-OTP. The short answer is that it doesn't.
-
-Gleam doesn't currently have any special first class support for processes or
-OTP, instead these Erlang features are to be used via the Erlang FFI.
-
-Today we have some simple bindings to `gen_server` that allow us to define and
-use them in a type safe way, but we lack type safe bindings to other
-behaviours such as supervisor.
-
-Seeing as these bindings are written entirely in Gleam with no compiler magic
-this could be a fun project for someone to experiment with. The challenge here
-is how to write bindings that are reasonably safe but flexible enough to
-support common Erlang patterns used today.
-
-In future we could add some new features to Gleam that make better support for
-OTP possible, but I want these language extensions to be generically useful
-rather than specific to OTP. Any new features should be applicable to a wide
-variety of problems and make the language more powerful as a whole.
+Dispatching based on types like this has much more expressive power.
 
 
 ---
 class: middle, slide-bold
 
-### Find out more
+### More Gleam
 
 - https://gleam.run
 - https://github.com/lpil/gleam
 - IRC `#gleam-lang` on Freenode
 
-TODO: griffics website
+### Griffics' art
+
+- https://www.griffics.com/
 
 ### Call me?
 
