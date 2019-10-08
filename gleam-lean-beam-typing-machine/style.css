@@ -7,8 +7,14 @@
   box-sizing: border-box;
 }
 
-a {
-  color: #0000ff;
+a,
+h1,
+h2,
+h3,
+h4,
+h5,
+p {
+  color: #282828;
 }
 
 body {
@@ -16,18 +22,17 @@ body {
   font-family: "Karla", sans-serif;
 }
 
-.remark-code  {
+.remark-code {
   text-align: left;
 }
 
-.l-code .remark-code  {
+.l-code .remark-code {
   font-size: 22px;
 }
 
-.xl-code .remark-code  {
+.xl-code .remark-code {
   font-size: 28px;
 }
-
 
 .remark-code,
 .remark-inline-code {
@@ -57,7 +62,7 @@ body {
 
 .remark-slide-content {
   background-color: white;
-  border: 20px solid #1cd4c6;
+  border: 20px solid #ffaff3;
   padding: 20px 80px;
 }
 
@@ -93,17 +98,23 @@ body {
 
 .slide-bold {
   border: 20px solid white;
-  background-color: #c380f6;
+  background-color: #ffaff3;
 }
 
 .splash-image {
   border: 0;
   padding: 0;
-  background-color: black;
 }
 
 img {
   max-width: 100%;
+}
+
+/* To make the pink in the drawings (made before we picked colours) match
+ * the Gleam pink a little better
+ */
+.color-adjust {
+  filter: hue-rotate(-20deg) brightness(1.1);
 }
 
 .splash-image img {
@@ -137,10 +148,10 @@ cite a {
 
 .splash-image .remark-slide-number,
 .splash-image.remark-slide-content::before {
-  content: '';
+  content: "";
   display: none;
 }
 
-a {
-  color: black;
+.minimal-padding {
+  padding: 5px;
 }
