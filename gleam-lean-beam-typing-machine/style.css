@@ -101,6 +101,11 @@ body {
   background-color: #ffaff3;
 }
 
+.slide-dark {
+  background-color: #282828;
+  border: 0;
+}
+
 .splash-image {
   border: 0;
   padding: 0;
@@ -146,6 +151,8 @@ cite a {
   bottom: 22px;
 }
 
+.slide-dark .remark-slide-number,
+.slide-dark.remark-slide-content::before,
 .splash-image .remark-slide-number,
 .splash-image.remark-slide-content::before {
   content: "";
