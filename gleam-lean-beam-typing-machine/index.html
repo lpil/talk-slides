@@ -395,9 +395,8 @@ class: middle
 
 ???
 
-Demo time!
-
-Wish me luck.
+In order to give a brief introduction to Gleam as a language I'm going to a
+very simple web application using the Erlang Elli web server.
 
 ---
 class: slide-bold middle
@@ -457,25 +456,6 @@ list to name arguments, but there is a small performance penalt to this.
 
 Gleam's labelled arguments will be resolved entirely at compile time and have
 no performance cost.
-
-
----
-class: center
-## Windows support
-
-<img class="center-element" style="max-width: 80%; padding-right: 7%" src="img/windows.png">
-
-???
-
-Linux and MacOS are popular with developers, but Windows is still the most
-widely used desktop operating system in the world.
-
-We want the barrier to entry to be as low as possible for users of all
-operating systems, so having excellent Windows support is key.
-
-This is especially important as many people who are new to programming will be
-using Windows computers, and we want to make their learning journey as
-frustration free as possible.
 
 
 ---
@@ -556,29 +536,22 @@ kind of error impossible.
 
 ???
 
-Productivity is a core value for Gleam, and the experience of the developer as
-they read and write Gleam code is a big piece of this.
+Productivity is a core value for Gleam, and having good development tooling is
+important for productivity.
 
 We want the experience of writing Gleam code to be as slick and enjoyable as
-possible. We want IDE like features for Gleam in all the major editors, and by
-implementing Language Server Protocol in the compiler we can get that.
+possible, no matter what the editor the programmer is using.
 
-Language Server Protocol is a standard developed by Microsoft for
-communication between text editors and IDE engines. Once the Gleam compiler
-implements it users of vim, emacs, atom, vs code and more will be able to:
+By implementing Microsoft's Language Server Protocol in the Gleam compiler
+users of vim, emacs, atom, vs code and more will be able to do the following:
 
-Display type errors in editor after every keystroke.
-
-Provide code completion options for variables, modules, functions, and so on.
-
-Show documentation and type information on hover, as well as
-jump-to-definition.
-
-Perform language aware renaming of variables, functions, and more with a
-single command
-
-And every time the user saves we can automatically format the code, like with
-Elixir's mix format command.
+- Display type errors in editor after every keystroke.
+- Provide code completion options for variables, modules, functions
+- Show documentation and type information in the editor
+- jump-to-definition
+- Perform language aware renaming of variables, functions, and more with a
+  single command
+- format code automatically when saving a file, like with exfmt
 
 And what's more thanks to Gleam's type system and static analysis this tooling
 will be able to provide much richer information to the programmer than is
@@ -630,19 +603,20 @@ https://exercism.io
 
 Who's familiar with Exercism?
 
+Exercism is a fantastic place for people to learn new programming languages
+and to practice their coding skills.
+
 ---
 class: middle
 
 <img class="center-element" src="img/exercism-learn.png">
 ???
 
-Exercism is a fantastic place to learn new programming languages and to
-practice their coding skills.
-
 How does it work? The programmer decides what language they want to practice
 and Exercism gives them an exercise to complete.
 
-Each exercises has instructions, and a full set of unit tests to make pass.
+Each exercises has instructions, some skeleton code to fill in, and a full set
+of unit tests to make pass.
 
 
 ---
@@ -654,8 +628,8 @@ class: middle
 ???
 
 Once the programmer has completed their solution they can to submit it back to
-Exercism, getting friendly and constructive feedback on their solution by
-track mentors and other students.
+Exercism, where they get getting friendly and constructive feedback from track
+mentors and other students.
 
 They can also view solutions from other people and learn different approaches
 to the same problem.
@@ -719,14 +693,12 @@ behaviours such as supervisor.
 The challenge here is how to write bindings that are reasonably safe but
 flexible enough to support common Erlang patterns used today.
 
-Seeing as these bindings are written entirely in Gleam with no compiler magic
-this could be a fun and useful project for someone to experiment with today.
+In future we could add some new features to Gleam that make it possible to
+create better support for processes, but if we do I want these language
+extensions to be generically useful rather than specific to processes.
 
-In future we could add some new features to Gleam that make better support for
-OTP possible, but I want these language extensions to be generically useful
-rather than specific to OTP. Any new features should be applicable to a wide
-variety of problems and make the language more powerful as a whole.
-
+Any new language extensions should be applicable to a wide variety of problems
+and make the language more powerful as a whole.
 
 ---
 class: slide-bold middle center
@@ -740,8 +712,11 @@ class: slide-bold middle center
 
 ???
 
-Speaking of which, this next feature is still in the early ideas stage, but I
-thought I'd give you a preview of what I'm currently thinking.
+And on that note I'd like to share with you an idea for a future addition to
+Gleam.
+
+This is still very much in the early design stage so it may change quite a bit
+before we come to add this to the language.
 
 
 ---
@@ -832,34 +807,38 @@ runtime.
 ## Ad hoc polymorphism
 
 ```rust
-pub trait FromString {
-  fn from_string(String) -> Self
+pub trait Default {
+  fn default() -> Self
 }
 
-let Int: FromString {
-  fn from_string(s) {
-    int.parse(s)
+let Int: Default {
+  fn default(s) {
+    0
   }
 }
 
 
-let Float: FromString {
-  fn from_string(s) {
-    float.parse(s)
+let Float: Default {
+  fn default(s) {
+    0.0
   }
 }
 ```
 ???
 
 Another cool thing about dispatching using type information is that Gleam can
-dispatch based upon a desired return type rather than just the argument.
+dispatch based upon a desired return type rather than just the argument, as is
+the case in this `default` function.
 
-Here we've got a `FromString` trait which contains a function that goes from a
-String to the type implementing the trait. This wouldn't be possible went
-dispatching on values as we need the value to find the implementation, but we
-need the implementation to find the value.
+This wouldn't be possible to implement in Elixir's protocols as we need a
+value to find the implementation to use, but the only way to obtain a value is
+to invoke the implementation.
 
-Dispatching based on types like this has much more expressive power.
+We have a chicken and egg problem.
+
+This is however possible is we dispatch using type information, so in this way
+it much more expressive power and I think we could find many exciting uses for
+a system like this.
 
 
 ---
