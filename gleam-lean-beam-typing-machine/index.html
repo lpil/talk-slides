@@ -16,7 +16,10 @@ class: middle
 
 ???
 
-I'm Louis, I've been a heavy user of Elixir and Erlang for about 5 years now.
+Hello everyone! In 20 days I'm having my EU citizenship taken away, so welcome
+to this limited edition European talk!
+
+I'm Louis, and I've been a heavy user of Elixir and Erlang for about 5 years now.
 
 I'm the founder of a small ad-tech company called Waive that uses Elixir for
 everything, and I also do some open source work.
@@ -35,27 +38,29 @@ the iex.
 But today I'm not here to talk about any of those things, I'm here to talk
 about Gleam!
 
-What is Gleam?
-
-
 ---
 class: slide-dark middle center
 <img style="width: 75%; padding-right: 45px" src="img/gleam-pink.svg">
 
 ???
 
-Gleam is a new functional programming language for the BEAM. Like Elixir it
-compiles to Erlang and adds no runtime overhead so we should always be at
-least as performant as typical Elixir and Erlang code.
+What is Gleam?
 
-Gleam is intended to integrate well into the larger BEAM ecosystem, so it's
-straightforward and zero cost to call Erlang and Elixir from Gleam, or to call
-Gleam from Erlang and Elixir. We want to enrichen and contribute to the BEAM
-ecosystem through collaboration, not fracture it.
+Gleam is a new functional programming language for the BEAM.
+
+It is like Elixir in it compiles to Erlang and adds no runtime overhead, so it
+should always be at least as performant as typical Elixir and Erlang code.
+
+It's straightforward and zero cost to call Erlang and Elixir from Gleam, or to
+call Gleam from Erlang and Elixir.
+
+In this way Gleam aims to integrate well with other BEAM languages. We want to
+enrichen and contribute to the BEAM ecosystem through collaboration, not
+fracture it.
 
 Possibly the most distinct and interesting of Gleam's features is it's type
 system. Gleam has a strong static type system inspired by ML family languages
-such as Elm, Haskell, and Rust. I think this type system is where most the
+such as Haskell, Elm, and Rust. I think this type system is where most the
 value of Gleam can be found.
 
 
@@ -70,8 +75,9 @@ class: slide-bold middle center
 # Why Gleam?
 ???
 
-Here's the first question I want to answer- Why make this new language at all
-when there are already so many other languages out there?
+Here's the first question I want to answer- Why make a new language at all?
+What's the point of Gleam?
+
 
 ---
 class: middle
@@ -89,10 +95,13 @@ best language runtimes available today.
 <img class="color-adjust center-element" style="max-width: 90%" src="img/processes.png">
 ???
 
-It has powerful concurrency features in the form of actor model, allowing us
-to spin up hundreds of thousands of lightweight threads called processes
-inside our programs, making full use of modern computer processors, which
-these days have more and more cores.
+It has powerful concurrency features in the form of actor model.
+
+With it we can spin up hundreds of thousands of lightweight threads called
+processes inside our programs,
+
+allowing us to make full use of modern computer processors,
+which these days have more and more cores.
 
 ---
 ## Messages
@@ -100,10 +109,12 @@ these days have more and more cores.
 <img class="color-adjust center-element" style="max-width: 90%" src="img/messages.png">
 ???
 
-These processes communicate by sending messages to each other, but what's
-amazing about this is that it doesn't matter if the processes are running on
-the same instance of the BEAM, a second instance of the BEAM on the same
-computer, or even on a completely different machine on the network.
+These processes communicate by sending messages to each other,
+
+but what's amazing about this is that it doesn't matter if the processes are
+running on the same instance of the BEAM, different instances of the BEAM on
+the same computer, or even two completely different computers connected by a
+network.
 
 Distributed computing is built into the BEAM, a typical BEAM program written
 in Erlang or Elixir can be turned into distributed program that runs on a
@@ -118,8 +129,8 @@ Like most runtimes the BEAM offers garbage collection, however what makes it
 unusual is that it is performed on a per-process basis.
 
 This mean there is no stop-the-world pause for memory to be cleaned up,
-meaning programs on the BEAM can have predictable low latency and are often
-referred to as being soft real time.
+so programs on the BEAM tend to have predictable and consistent low latency,
+and can be thought as being soft real time.
 
 ---
 ## Fault tolerance
@@ -133,8 +144,10 @@ work being undertaken by the program.
 
 An Erlang program that takes advantage of this property can self heal by
 restarting the process and trying again, hopefully succeeding now that any
-corrupt state has been shed, must like pods on the popular Kubernetes
-container orchestrator from Google.
+corrupt state has been shed.
+
+In this way the BEAM is much like Kubernetes, the popular container
+orchestrator from Google.
 
 What makes the BEAM different from Kubernetes is that this state shedding can
 happen at a much more fine grained level- we won't lose the state of the
@@ -148,7 +161,7 @@ single process that had the problem.
 ???
 
 So yes, the BEAM is wonderful piece of technology to work with, and I'm sure
-that you'll all understand why I wanted to use target it.
+that you'll all understand why I wanted to use it with Gleam.
 
 However I've not answer the question of why make a new language at all- we
 already have several fantastic languages on the BEAM such as Erlang, Elixir,
@@ -241,16 +254,17 @@ class: minimal-padding middle
 ???
 
 And lastly, once the tests have passed again the code is deployed to
-production, and released to our users.
+production, and released to our users. Satisfied with a job well done, I go for
+lunch.
 
 But then! Disaster strikes! Users are reporting that the application no longer
 works as intended. Right at the very beginning when I was editing the code I
 made a mistake and introduced a bug.
 
-Each one of these steps has failed to detect the problem and now it has snuck
-into production. Luckily the application is written in Erlang so the impact of
-the problem has been minimised, but I still need to fix the problem as a
-matter of urgency.
+Each one of these steps has failed to detect the problem and now the bug has
+snuck into production. Luckily the application is written in Erlang so the
+impact of the problem has been minimised, but I still need to fix the problem
+as a matter of urgency.
 
 ---
 class: center middle
@@ -277,9 +291,13 @@ class: center middle
 The larger the gap between the mistake being made and the problem being
 detected the more difficult it will be to fix.
 
+Of course this isn't the only factor in the difficulty, but it is an important
+multiplier.
+
 Erlang gives us powerful tools to tolerate mistakes and debug them, but they
-largely only help us once the code is in production, and that time cost is far
-from optimal.
+largely only help us once the code is in production, and that time cost and
+loss of familiarity is far from optimal.
+
 ---
 class: minimal-padding middle center
 <img class="color-adjust" src="img/bug-detected.png">
@@ -300,8 +318,8 @@ class: minimal-padding center middle
 Gleam aims to provide that fast and safe feedback loop by introducing a type
 inspired by those found in the ML family of languages.
 
-Why these languages? Because I believe they are the languages that currently
-do best in this regard.
+Why these languages? Because I believe they are currently the languages that
+do best at providing this rapid feedback loop.
 
 Let's look at some examples:
 
@@ -328,6 +346,10 @@ Back in 2016 they started converting the web client from Javascript to a
 dialect of OCaml called Reason. A year later 50% of their code was written in
 Reason and they had this to say:
 
+**QUOTE**
+
+Quite an impressive statement!
+
 
 ---
 ## Elm
@@ -348,14 +370,16 @@ https://twitter.com/rtfeldman/status/961051166783213570
 NoRedInk are a company in the United States that provide education software.
 
 Back in 2016 they started adding Elm code to their Coffeescript web
-application with great success. In 2018 one of their engineers posted this
-tweet:
+application with great success. In 2018 one of their engineers, Richard
+Feldman, posted this tweet:
 
 **QUOTE**
 
-This is not to say the engineers at NoRedInk are without error, they make as
-many mistakes as you or I. They are catching their mistakes before they get to
-production, or at least the ones that cause runtime errors.
+This is not to say the engineers at NoRedInk and Facebook are without error,
+they make as many mistakes as you or I.
+
+The key takeaway here is that they are discovering and fixing their mistakes
+before they get to production, or at least the ones that cause runtime errors.
 
 
 ---
@@ -373,8 +397,8 @@ https://www.lumi.dev/blog/purescript-and-haskell-at-lumi
 
 ???
 
-Lumi is a company that provide eco-friendly branded packaging for online
-stores.
+Lumi is a company that provide custom eco-friendly branded packaging for
+online stores.
 
 In 2018 they started converting their Javascript frontend into a Purescript
 frontend. After a few months of Purescript in anger engineer Brandon Martin
@@ -385,8 +409,9 @@ had this to say:
 What I like about this is the feeling of trust in the compiler, that it is
 something that can be relied on.
 
-I want to create the experience of the compiler being like a pair programming
-partner, there to help by catching mistakes and providing additional insight.
+I want to create the experience in the BEAM ecosystem of the compiler being
+like a pair programming partner, there to help by catching mistakes and
+providing additional insight.
 
 
 ---
@@ -395,8 +420,11 @@ class: middle
 
 ???
 
-In order to give a brief introduction to Gleam as a language I'm going to a
-very simple web application using the Erlang Elli web server.
+And now for the scary bit!
+
+In order to give a brief introduction to Gleam as a language I'm going to
+write a very simple web application on top of an Erlang web server, using
+Gleam's Erlang FFI.
 
 ---
 class: slide-bold middle
@@ -426,10 +454,11 @@ version.matches(
 ```
 ???
 
-With functions that take multiple argument it can be difficult to difficult to
-remember what the arguments are and which order they are expected in
+With functions that take multiple argument it can be difficult to remember
+what the arguments are and in which order they go.
 
-This is especially true when reading unfamiliar code.
+This is especially true when a function has not very descriptive types, such
+as this one that takes String, String, Bool
 
 
 ---
@@ -445,7 +474,7 @@ version.matches(
 ```
 ???
 
-Future versions of Gleam will have labelled arguments, a popular feature from
+The next version of Gleam will have labelled arguments, a popular feature from
 languages such as Python and OCaml.
 
 With this feature arguments can optionally have names at the call site, making
@@ -486,7 +515,7 @@ Let's say I've defined a Pet type in my codebase. It's an enum with 2
 variants: Cat and Dog.
 
 Elsewhere in my code I define a to_string function which pattern matches on a
-pet and returns the string "kitty" for cats, and "doggo" for dogs.
+pet and returns an appropriate string for each.
 
 ---
 class: l-code center
@@ -515,18 +544,19 @@ called a Tamagotchi. Not wanting to be left behind I add a Tamagotchi variant
 to the Pet enum and ship my code to production.
 
 Sadly I've forgotten to update the `to_string` function, so later when the
-function is called with the Tamagotchi variant no clause matches and the
-process crashes, causing degraded functionality in my web application.
+function is called with the Tamagotchi variant no clause matches causing the
+process running the code to crash.
 
 It's easy to see on this slide that the `to_string` function needs to be
 updated, but in a codebase of tens or hundreds of thousands of lines of code
 it's hard to find all the places that need to be updated when a new variant is
 added.
 
-Once Gleam has exhaustiveness checking this will kind of mistake will be
-detected at compile time. It'll show the location of the incomplete pattern
-match and show what values will cause the pattern match to crash, making this
-kind of error impossible.
+Once Gleam has exhaustiveness checking this kind of mistake will be
+detected at compile time.
+
+The compiler will halt and show the location of the problem and show what
+patterns are missing, making this kind of error impossible.
 
 
 ---
@@ -540,15 +570,16 @@ Productivity is a core value for Gleam, and having good development tooling is
 important for productivity.
 
 We want the experience of writing Gleam code to be as slick and enjoyable as
-possible, no matter what the editor the programmer is using.
+possible, no matter what the editor the programmer is using. To achieve this
+Gleam will implement Microsoft's Language Server Protocol.
 
-By implementing Microsoft's Language Server Protocol in the Gleam compiler
-users of vim, emacs, atom, vs code and more will be able to do the following:
+Once implemented users of vim, emacs, atom, vs code and more will be able to
+do the following:
 
-- Display type errors in editor after every keystroke.
+- Display type errors in editor after every keystroke
 - Provide code completion options for variables, modules, functions
 - Show documentation and type information in the editor
-- jump-to-definition
+- jump to the definition of functions and types
 - Perform language aware renaming of variables, functions, and more with a
   single command
 - format code automatically when saving a file, like with exfmt
@@ -563,14 +594,13 @@ possible with other BEAM languages.
 
 ???
 
-Another (perhaps more important) part of the developer experience puzzle is
-documentation.
+Another part of the developer experience puzzle is documentation.
 
 I don't know if anyone here has written a program in Gleam but right now it's
-not as easy as it could be.
+not as easy as it ought to be.
 
-Unless you want to read the source code of the standard library or other
-libraries there's no way to learn what modules and functions are available.
+Unless you want to read the source code of any libraries you're using there's
+no way to learn what modules and functions are available.
 
 ---
 class: splash-image
@@ -587,9 +617,6 @@ for Gleam too.
 
 Exactly what the best approach to take here is unclear, though we are
 currently looking at whether we could use Elixir's ex_doc for Gleam.
-
-This could be a great place someone to contribute a lot of value to Gleam,
-especially someone comfortable working in Elixir.
 
 
 ---
@@ -612,10 +639,10 @@ class: middle
 <img class="center-element" src="img/exercism-learn.png">
 ???
 
-How does it work? The programmer decides what language they want to practice
-and Exercism gives them an exercise to complete.
+How does it work? A programmer picks a language they want to practice and
+Exercism gives them an exercise to complete.
 
-Each exercises has instructions, some skeleton code to fill in, and a full set
+Each exercise has instructions, some skeleton code to fill in, and a full set
 of unit tests to make pass.
 
 
@@ -644,12 +671,12 @@ class: center
 
 ???
 
-Exercism has 51 languages tracks and has given the thumbs up for a Gleam
-track.
+Exercism currently has 51 live languages tracks and has given the thumbs up
+for a Gleam track.
 
-Exercisms exercises need to be implemented for Gleam and documentation needs
-to be written, but once done we'll have a top notch experience for learning
-and practicing Gleam.
+The exercises need to be ported to Gleam and documentation needs to be
+written, but once done we'll have a top notch experience for learning and
+practicing Gleam.
 
 Exercism is community run, open source, and very well organised so if you're
 interested in contributing to Gleam this could be a great place to create
@@ -793,14 +820,13 @@ for a given type.
 
 Elixir inspects the value at runtime, which is why Elixir's protocols can only
 be defined for structs and a few special types. It is not possible to
-implement a protocol for types that have the same runtime representation such
-as Erlang records, tuples, and queues, or different kinds of pids.
+implement a protocol for types that have the same runtime representation.
+
+For example, it is not possible to have an implementation for an Erlang record
+and another for a queue, as both are tuples at runtime.
 
 Gleam's traits instead will dispatch using type information, so a trait can be
 implemented for two types even if they have the same runtime representation.
-
-For example, a user id and a number of euros, which are both integers at
-runtime.
 
 
 ---
@@ -827,18 +853,19 @@ let Float: Default {
 ???
 
 Another cool thing about dispatching using type information is that Gleam can
-dispatch based upon a desired return type rather than just the argument, as is
-the case in this `default` function.
+dispatch based upon a return type rather than just the argument, as is the
+case in this `default` function.
 
 This wouldn't be possible to implement in Elixir's protocols as we need a
 value to find the implementation to use, but the only way to obtain a value is
-to invoke the implementation.
+to invoke the correct implementation.
 
 We have a chicken and egg problem.
 
-This is however possible is we dispatch using type information, so in this way
-it much more expressive power and I think we could find many exciting uses for
-a system like this.
+This is however possible if we dispatch using type information
+
+This type based polymorphism has much more expressive power and I think we
+could find many exciting uses for a system like this.
 
 
 ---
