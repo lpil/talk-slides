@@ -11,8 +11,10 @@ class: middle center slide-bold
 <img style="width: 65%" src="img/lucy-charcoal-3.svg">
 
 ---
-class: middle
+class: middle,center
 ## Hi, I'm Louis!
+
+https://lpil.uk/talk-slides/codemesh-2019
 
 ???
 
@@ -21,17 +23,14 @@ Hello everyone! I'm Louis! Welcome to my CodeMesh talk!
 There's two other excellent talks happening right now so thank you very much
 for taking a chance with me.
 
-I'm here today to talk about Gleam, which is a new statically typed
-programming language for the Erlang virtual machine that I've been working on
-for the last 2 years or so.
+Hopefully everyone can see the slides OK, but just in case these slides can be
+found at this URL.
 
-Gleam draws inspiration from both BEAM languages such as Elixir and Erlang,
-and ML languages such as Haskell and Elm.
+I usually talk at Erlang events so I wasn't sure what kind of audience I'd
+attract today. If at any point what I'm saying doesn't make sense to you
+please wave your hand and I'll try again.
 
-In this talk I'd like to share a little of what I think makes these languages
-special, and why I thought it was a good idea to make a new language in their
-image.
-
+Let's get started!
 
 ---
 class: slide-dark middle center
@@ -39,25 +38,19 @@ class: slide-dark middle center
 
 ???
 
-What is Gleam?
+I'm here today to talk about Gleam, which is a new statically typed
+programming language for the Erlang virtual machine that I've been working on
+for the last 2 years or so.
 
-Gleam is a new functional programming language for the BEAM, the Erlang
-virtual machine.
+Gleam draws inspiration from both BEAM languages such as Elixir and Erlang,
+and ML languages such as Haskell and Elm.
 
-It is like Elixir in it compiles to Erlang and adds no runtime overhead, so it
-should always be at least as performant as typical Elixir and Erlang code.
+In this talk I'm going to take a look at these two sets of language and see
+why I think they're each special in their own way.
 
-It's straightforward and zero cost to call Erlang and Elixir from Gleam, or to
-call Gleam from Erlang and Elixir.
-
-In this way Gleam aims to integrate well with other BEAM languages. We want to
-enrichen and contribute to the BEAM ecosystem through collaboration, not
-fracture it.
-
-Possibly the most distinct and interesting of Gleam's features is it's type
-system. Gleam has a strong static type system inspired by ML family languages
-such as Haskell, Elm, and Rust. I think this type system is where most the
-value of Gleam can be found.
+After that we can take a look at this new language Gleam, and see how it
+attempts to bring together some of the best traits of both ML languages and
+BEAM languages.
 
 
 ---
@@ -68,11 +61,13 @@ class: slide-bold middle center
 <br>
 <br>
 <br>
-# Why Gleam?
+# Why Erlang?
 ???
 
-Here's the first question I want to answer- Why make a new language at all?
-What's the point of Gleam?
+One of Gleam's greatest strengths is that it compiles to Erlang and as such
+can take advantage of all the wonderful things that Erlang has to offer.
+
+So, what's so special about Erlang?
 
 
 ---
@@ -83,11 +78,25 @@ class: middle
 A large part of the answer to that question is the BEAM, the Erlang virtual
 machine.
 
-The Erlang virtual machine is a fantastic piece of software and one of the
-best language runtimes available today.
+Erlang is slightly unusual for a functional programming language in that it
+originated largely from industry rather than academia. Back in the 80s the
+telephony company Ericsson were looking for the ideal language for writing
+telephone switch firmware in, and from this Erlang was born.
+
+In order to meet the unusual requirements of the telephony environment Erlang
+and the BEAM developed some rather exciting features.
+
+---
+
+TODO:
+- an Erlang is a unit of concurrency
+- telephone switches serve many people at once
+- cute telephone graphic
+- concurrency is required
 
 ---
 ## Processes
+
 <img class="color-adjust center-element" style="max-width: 90%" src="img/processes.png">
 ???
 
