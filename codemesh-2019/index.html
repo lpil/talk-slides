@@ -87,12 +87,75 @@ In order to meet the unusual requirements of the telephony environment Erlang
 and the BEAM developed some rather exciting features.
 
 ---
+class: middle
+TODO: cute telephone graphic
+???
+
+For a telephone switch to be useful it needs to be able to support multiple
+phone calls at the same time. If you had to wait for your neighbour to get off
+the phone before you could make a call I suspect telephones probably wouldn't
+have caught on.
+
+Because of this Erlang had to have great concurrency features, any program
+written in it needed to be able to trivially perform a great number of tasks
+at the same time.
+
+This was such an important feature they ended up naming the language after it.
+An Erlang is a unit of concurrency, it measures seconds per second.
+
+A telephone switch that can hold 100 simultaneous calls can support a load of
+100 Erlangs.
+
+---
+class: middle
+TODO: cute telephone graphic with multiple processes
+???
+
+So how does the BEAM scale when it comes to concurrency? We can look at some
+benchmarks of real-world systems.
+
+ejabberd is a websocket based chat server, a fork of which powers WhatsApp,
+the popular chat app from Facebook. In their benchmarks the ejabberd team
+recorded 2 million active connections to a single server, which is quite a
+feat.
+
+https://blog.process-one.net/ejabberd-massive-scalability-1node-2-million-concurrent-users/
+
+Phoenix Channels is a websocket based pubsub system with present features. In
+their benchmarks they also scaled to 2 million active connections on a single
+machine, and they found they could publish events to all of them in under a
+second.
+
+A common feature of both these benchmarks is that the limiting factor was
+reported as being not the BEAM itself, but the underlying network hardware and
+the Linux networking stack making it difficult to open and use 2 million TCP
+sockets.
+
+https://phoenixframework.org/blog/the-road-to-2-million-websocket-connections
+
+
+Lastly, in a more contrived benchmark the Erlang team at Ericsson tested to
+see how many threads they could create in a single program. On a computer with
+16GB of RAM they found they could create 20 million threads without problem.
+
+On average it took 5 nano-seconds to create a thread, and 6 nano-seconds for
+any of these threads to respond to a message sent to it.
+
+https://groups.google.com/forum/#!original/comp.lang.functional/5kldn1QJ73c/T3py-yqmtzMJ
+
+---
+class: middle
+TODO: cute telephone graphic with multiple processes
+???
+
+
+
 
 TODO:
-- an Erlang is a unit of concurrency
-- telephone switches serve many people at once
-- cute telephone graphic
-- concurrency is required
+- concurrency benchmarks
+  - https://blog.process-one.net/ejabberd-massive-scalability-1node-2-million-concurrent-users/
+  - https://phoenixframework.org/blog/the-road-to-2-million-websocket-connections
+  - Ericsson ran 20 million processes on a computer with 16GB of RAM
 
 ---
 ## Processes
