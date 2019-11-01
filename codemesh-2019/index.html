@@ -86,9 +86,10 @@ telephone switch firmware in, and from this Erlang was born.
 In order to meet the unusual requirements of the telephony environment Erlang
 and the BEAM developed some rather exciting features.
 
+
 ---
 class: middle
-TODO: cute telephone graphic
+TODO cute telephone graphic
 ???
 
 For a telephone switch to be useful it needs to be able to support multiple
@@ -106,9 +107,10 @@ An Erlang is a unit of concurrency, it measures seconds per second.
 A telephone switch that can hold 100 simultaneous calls can support a load of
 100 Erlangs.
 
+
 ---
 class: middle
-TODO: cute telephone graphic with multiple processes
+TODO ejabberd
 ???
 
 So how does the BEAM scale when it comes to concurrency? We can look at some
@@ -120,6 +122,12 @@ recorded 2 million active connections to a single server, which is quite a
 feat.
 
 https://blog.process-one.net/ejabberd-massive-scalability-1node-2-million-concurrent-users/
+
+
+---
+class: middle
+TODO phoenix
+???
 
 Phoenix Channels is a websocket based pubsub system with present features. In
 their benchmarks they also scaled to 2 million active connections on a single
@@ -134,6 +142,11 @@ sockets.
 https://phoenixframework.org/blog/the-road-to-2-million-websocket-connections
 
 
+---
+class: middle
+TODO ericsson
+???
+
 Lastly, in a more contrived benchmark the Erlang team at Ericsson tested to
 see how many threads they could create in a single program. On a computer with
 16GB of RAM they found they could create 20 million threads without problem.
@@ -143,33 +156,60 @@ any of these threads to respond to a message sent to it.
 
 https://groups.google.com/forum/#!original/comp.lang.functional/5kldn1QJ73c/T3py-yqmtzMJ
 
+
 ---
 class: middle
-TODO: cute telephone graphic with multiple processes
+TODO same cute telephone graphic again
 ???
 
+The BEAM can scale in this way, but it's not good enough to mearly be
+possible, it has to be relatively easy for the programmer.
 
+Asynchronous programming is notoriously difficult, especially if you're
+working with tools like locks, callbacks, and shared mutable state, so the
+creators of Erlang went down a different route.
 
-
-TODO:
-- concurrency benchmarks
-  - https://blog.process-one.net/ejabberd-massive-scalability-1node-2-million-concurrent-users/
-  - https://phoenixframework.org/blog/the-road-to-2-million-websocket-connections
-  - Ericsson ran 20 million processes on a computer with 16GB of RAM
 
 ---
-## Processes
-
-<img class="color-adjust center-element" style="max-width: 90%" src="img/processes.png">
+class: middle
+TODO cute telephone graphic with multiple processes
 ???
 
-It has powerful concurrency features in the form of actor model.
+Rather than having a small number of threads each handling a large number of
+concurrent tasks, in the Erlang world we use a great number of threads, but
+each thread only has 1 task to perform.
 
-With it we can spin up hundreds of thousands of lightweight threads called
-processes inside our programs,
+In this way each thread, which in the Erlang world we call a Process, can be
+written entirely synchronously, dramatically simplifying the problem.
 
-allowing us to make full use of modern computer processors,
-which these days have more and more cores.
+If each process only has to do one thing it can be written in a sequential
+fashion. The programmer doesn't have to write any asynchronous code within the
+single process.
+
+To paraphrase the late Joe Armstrong, creator of Erlang, it's easier to have 2
+million web servers handling 2 million sessions than it is to have 1 web
+server handling 2 million sessions.
+
+
+---
+class: middle
+TODO Erlang processes and OS threads
+???
+
+To support concurrency this high Erlang processes are not implemented as
+operating systems threads, instead they are lightweight green threads
+with their own scheduler within the BEAM.
+
+Back in the late 80s computer processors only had a single core, so while
+Erlang programs were highly concurrent they were still single threaded.
+
+When processors with multiple cores started to appear the BEAM was upgraded to
+schedule Erlang processes across all available cores, making full use of all
+processing power available.
+
+Overnight all Erlang program became multi-core programs, and now writing a
+multi-core program in Erlang is no more difficult than any other program.
+
 
 ---
 ## Messages
@@ -177,28 +217,47 @@ which these days have more and more cores.
 <img class="color-adjust center-element" style="max-width: 90%" src="img/messages.png">
 ???
 
-These processes communicate by sending messages to each other,
+Sadly the processes in these telephony switches couldn't be completely
+isolated from each other, there's always going to need to be some
+communication between threads in any program.
 
-but what's amazing about this is that it doesn't matter if the processes are
+Rather than using shared state communicate each Erlang processes by sending
+messages to each other asynchronously.
+
+What's more interesting is that processes within a telephone switch don't need
+to just talk to processes within the same switch, they also need to
+communicate with many other devices in the network as calls are routed through
+various bits hardware to get to their destination.
+
+Because of this need it is that it doesn't matter if the processes are
 running on the same instance of the BEAM, different instances of the BEAM on
 the same computer, or even two completely different computers connected by a
-network.
+network: The processes can still send messages to each other.
 
 Distributed computing is built into the BEAM, a typical BEAM program written
 in Erlang or Elixir can be turned into distributed program that runs on a
 cluster of networked computers with minimal effort.
+
 
 ---
 ## Garbage collection
 <img class="color-adjust center-element" src="img/garbage-collection.png">
 ???
 
-Like most runtimes the BEAM offers garbage collection, however what makes it
-unusual is that it is performed on a per-process basis.
+Ericsson didn't want their programmers to have to deal with the error prone
+business of manual memory management, so the BEAM implements garbage
+collection.
 
-This mean there is no stop-the-world pause for memory to be cleaned up,
-so programs on the BEAM tend to have predictable and consistent low latency,
-and can be thought as being soft real time.
+This however posed a problem. Many runtimes will pause all computation in
+order to perform garbage collection, but here that's not an option. The switch
+can't let all calls hang for a second while it sorts out the memory, it needs
+to continue to operate continuously without interruption.
+
+So instead of performing garbage collection on the entire program the BEAM
+performs it on a per process basis. Rather than stopping everything only
+individual processes that are due a clean-up will be paused, giving Erlang
+programs predictable low-latency.
+
 
 ---
 ## Fault tolerance
@@ -223,10 +282,28 @@ entire program and all the requests being handled by it, instead just the
 single process that had the problem.
 
 ---
+TODO telephone to internet graphic
+???
+
+The BEAM was created with the problem of telephony in mind, but it turns out
+that what was once quite a niche set of problems is actually quite commonplace
+today.
+
+Concurrency, parallelism, distribution, low latency, and fault tolerance:
+these are characteristics we want in networked services today.
+
+The BEAM has almost by chance has become an excellent platform for building
+web applications, databases, message brokers, or many of these other things
+that web developers deal with on a daily basis.
+
+
+---
 ## Why a new language?
 <br>
 <img class="center-element" src="img/beam-languages.png">
 ???
+
+So now hopefully we
 
 So yes, the BEAM is wonderful piece of technology to work with, and I'm sure
 that you'll all understand why I wanted to use it with Gleam.
@@ -481,6 +558,10 @@ I want to create the experience in the BEAM ecosystem of the compiler being
 like a pair programming partner, there to help by catching mistakes and
 providing additional insight.
 
+
+---
+TODO
+- Kris makes an excellent argument about ADTs being how you write down your assumptions so they can be checked later. https://youtu.be/5AtyWgQ3vv0?t=844
 
 ---
 class: middle
