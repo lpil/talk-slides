@@ -194,7 +194,8 @@ server handling 2 million sessions.
 
 
 ---
-class: minimal-padding middle
+class: minimal-padding
+## Multi-threaded
 <img class="color-adjust center-element" style="" src="img/multi-threaded.png">
 ???
 
@@ -638,8 +639,14 @@ It might seem like with this ML style error detection the BEAM's runtime fault
 tolerance is somewhat redunant, but I think they can complement each other
 quite nicely.
 
-The ML error detection means that we are aware of place where there can be a
-problem, and then we can make a decision about how we want to handle it.
+The error detection means that we are aware of all the places where there can
+be a problem, and then we can make an explicit decision about how we want to
+handle it.
+
+If the decision of how to handle an error is explicit then the compiler can
+tell if something is intentional, or if a mistake has been made.
+
+Let's look at some examples.
 
 ---
 ## Programmer mistake
@@ -648,6 +655,7 @@ fn main() {
   list.reverse("hello") // Error! Not a list
 }
 ```
+<center><h3>⇩⇩⇩ fix ⇩⇩⇩</h3><center>
 ```rust
 fn main() {
   string.reverse("hello") // That's better :)
@@ -655,13 +663,16 @@ fn main() {
 ```
 ???
 
-Imagine a problem caused by a mistake on my part as a programmer, say by
-trying to reverse a string using a function that reverses lists.
+Imagine a problem caused by a mistake on my part as a programmer
 
-In this case once the error has been highlighted I'm going to fix the bug.
+For example, I'm trying to reverse a binary string, but I'm using a function
+that reverses lists.
 
-Erlang's fault tolerance wasn't needed here. If the programmer has made a
-mistake we want to find it, and we want to fix it.
+In this case once the error has been highlighted and I'm aware that I've made
+amistake then I'm going to fix the bug.
+
+Erlang's fault tolerance wasn't needed here. If a trivial mistake like this
+has been made I want to find it and I want to fix it.
 
 
 ---
@@ -672,6 +683,7 @@ fn handle(request) {
   save_record(input) // Error! JSON could be invalid
 }
 ```
+<center><h3>⇩⇩⇩ fix ⇩⇩⇩</h3><center>
 ```rust
 fn handle(request) {
   let result = decode_json_body(request)
@@ -685,11 +697,14 @@ fn handle(request) {
 
 Another situation in which errors may arise if when dealing with user input.
 
-Take this request handler function with a web application; it decodes some
-data in JSON format, taken from the body of the request.
+Here we have a handler function from a web application; it takes a request
+data structure and returns an appropriate response.
+
+In doing this it reads some data from the request body that has been in
+encoded in the JSON format.
 
 The problem here is that the request body might not contain valid JSON, we
-can't rely on the correct input from the outside world.
+can't rely on always getting the correct input from the outside world.
 
 Here the most practical thing to do is to check whether the JSON is valid or
 not, and to instead return an error message to the user if they made a
