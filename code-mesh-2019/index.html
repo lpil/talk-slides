@@ -14,11 +14,11 @@ class: middle center slide-bold
 class: middle,center
 ## Hi, I'm Louis!
 
-https://lpil.uk/talk-slides/codemesh-2019
+https://lpil.uk/talk-slides/code-mesh-2019
 
 ???
 
-Hello everyone! I'm Louis! Welcome to my CodeMesh talk!
+Hello everyone! I'm Louis! Welcome to my Code Mesh talk!
 
 There's two other excellent talks happening right now so thank you very much
 for taking a chance with me.
@@ -89,7 +89,7 @@ and the BEAM developed some rather exciting features.
 
 ---
 class: middle
-TODO cute telephone graphic
+<img class="color-adjust center-element" style="" src="img/telephone-switch.png">
 ???
 
 For a telephone switch to be useful it needs to be able to support multiple
@@ -109,8 +109,8 @@ A telephone switch that can hold 100 simultaneous calls can support a load of
 
 
 ---
-class: middle
-TODO ejabberd
+## 2 million ejabberd connections
+<img class="center-element" style="max-width: 75%" src="img/ejabberd.png">
 ???
 
 So how does the BEAM scale when it comes to concurrency? We can look at some
@@ -125,8 +125,8 @@ https://blog.process-one.net/ejabberd-massive-scalability-1node-2-million-concur
 
 
 ---
-class: middle
-TODO phoenix
+## 2 million Phoenix connections
+<img class="center-element" style="max-width: 90%" src="img/phoenix.png">
 ???
 
 Phoenix Channels is a websocket based pubsub system with present features. In
@@ -143,8 +143,10 @@ https://phoenixframework.org/blog/the-road-to-2-million-websocket-connections
 
 
 ---
-class: middle
-TODO ericsson
+## 20 million Erlang threads
+<br>
+<br>
+<img class="center-element" style="" src="img/ericsson.png">
 ???
 
 Lastly, in a more contrived benchmark the Erlang team at Ericsson tested to
@@ -159,7 +161,7 @@ https://groups.google.com/forum/#!original/comp.lang.functional/5kldn1QJ73c/T3py
 
 ---
 class: middle
-TODO same cute telephone graphic again
+<img class="color-adjust center-element" style="" src="img/telephone-switch.png">
 ???
 
 The BEAM can scale in this way, but it's not good enough to mearly be
@@ -172,7 +174,7 @@ creators of Erlang went down a different route.
 
 ---
 class: middle
-TODO cute telephone graphic with multiple processes
+<img class="color-adjust center-element" style="" src="img/telephone-switches.png">
 ???
 
 Rather than having a small number of threads each handling a large number of
@@ -192,8 +194,8 @@ server handling 2 million sessions.
 
 
 ---
-class: middle
-TODO Erlang processes and OS threads
+class: minimal-padding middle
+<img class="color-adjust center-element" style="" src="img/multi-threaded.png">
 ???
 
 To support concurrency this high Erlang processes are not implemented as
@@ -282,7 +284,8 @@ entire program and all the requests being handled by it, instead just the
 single process that had the problem.
 
 ---
-TODO telephone to internet graphic
+## Getting less niche
+<img class="color-adjust center-element" style="" src="img/telephones-to-computers.png">
 ???
 
 The BEAM was created with the problem of telephony in mind, but it turns out
@@ -558,15 +561,277 @@ I want to create the experience in the BEAM ecosystem of the compiler being
 like a pair programming partner, there to help by catching mistakes and
 providing additional insight.
 
+How do they achieve this? Through static analysis.
+
+The compiler walks the code and keeps track of the type of every single
+function and value throughout the program and lets you know if your code has
+any potentially dangerous inconsistencies.
+
+It also informs the programmer precisely where the inconsistency can be found,
+and with this precise feedback the way we write code changes.
 
 ---
-TODO
+<br>
+```rust
+fn get_user_name(user) {
+  let User(name: name) = user
+  name
+}
+```
+<center><h3>⇩⇩⇩ becomes ⇩⇩⇩</h3><center>
+```rust
+fn get_user_name(user) {
+  let User(name: name) = user
+  case name {
+    "" -> Null
+    _ -> Just(name)
+  }
+}
+```
+???
+
+First the programmer makes an edit, informing the compiler of the change they
+wish to make. For example, perhaps a function has been changed to sometimes
+return a null value under certain circumstances.
+
+In languages like Erlang without this static analysis it is up to the
+programmer to now find all the the places in the codebase that need to be
+updated to correctly handle this new nullable value, possibly using a mix of
+already existing unit tests and their familiary with the codebase.
+
+---
+<br>
+<img class="center-element" style="" src="img/nullable-error.png">
+???
+
+In ML languages the compiler outputs a TODO list of inconsistencies, and the
+programmer just has to go through them one by one, fixing them one by one.
+
+No need for doing discovery work- just state the change to be made, and the
+compiler then shows you how to integrate that change.
+
+As I said before you can achieve the same with a robust set of unit tests, but
+I think this system has a few advantages.
+
+We don't have to write the tests, the compiler does this checking for us. This
+static analysis can be thought of as basic full test coverage for free.
+
+Secondly this static analysis is fast. A large codebase can be checked in
+seconds or fractions of a second, while the tests may take minutes.
+
+TODO maybe
+- walk through how the inference works
 - Kris makes an excellent argument about ADTs being how you write down your assumptions so they can be checked later. https://youtu.be/5AtyWgQ3vv0?t=844
 
 ---
-class: middle
-# TODO: This was the demo. what now?
+class: slide-bold middle center
+<img style="width: 50%; position: absolute; top: 5%; left: 25%" src="img/lucy-charcoal-5.svg">
+<br>
+<br>
+<br>
+<br>
+<br>
+## Do we need fault tolerance?
+
 ???
+It might seem like with this ML style error detection the BEAM's runtime fault
+tolerance is somewhat redunant, but I think they can complement each other
+quite nicely.
+
+The ML error detection means that we are aware of place where there can be a
+problem, and then we can make a decision about how we want to handle it.
+
+---
+## Programmer mistake
+```rust
+fn main() {
+  list.reverse("hello") // Error! Not a list
+}
+```
+```rust
+fn main() {
+  string.reverse("hello") // That's better :)
+}
+```
+???
+
+Imagine a problem caused by a mistake on my part as a programmer, say by
+trying to reverse a string using a function that reverses lists.
+
+In this case once the error has been highlighted I'm going to fix the bug.
+
+Erlang's fault tolerance wasn't needed here. If the programmer has made a
+mistake we want to find it, and we want to fix it.
+
+
+---
+## Incorrect user input
+```rust
+fn handle(request) {
+  let input = decode_json_body(request)
+  save_record(input) // Error! JSON could be invalid
+}
+```
+```rust
+fn handle(request) {
+  let result = decode_json_body(request)
+  case result {
+    Ok(input) -> save_record(input)
+    Error(reason) -> unprocessable_entity(reason)
+  }
+}
+```
+???
+
+Another situation in which errors may arise if when dealing with user input.
+
+Take this request handler function with a web application; it decodes some
+data in JSON format, taken from the body of the request.
+
+The problem here is that the request body might not contain valid JSON, we
+can't rely on the correct input from the outside world.
+
+Here the most practical thing to do is to check whether the JSON is valid or
+not, and to instead return an error message to the user if they made a
+mistake.
+
+Erlang's fault tolerance wasn't needed here.
+
+If we can pass an error back up the chain to the origin of the problem then
+that's often the best thing to do.
+
+---
+## Background processing
+```rust
+fn process_video(id) {
+  let metadata = lookup_metadata(id)
+  create_thumbnails(metadata)
+  transcode_video(metadata)
+  "done!"
+}
+```
+???
+
+I used to work at a start up that did video transcoding and we had a lot of
+jobs that ran in the background and didn't immediately have a user attached to
+them.
+
+We had jobs that looked like this: They performed a series of steps such as
+looking up metadata from the database, creating thumbnail images, and
+transcoding video into some other format.
+
+Each one of these steps is expected to always succeed according to our
+business logic, but because of the nature of the universe there is very real
+chance these things could fail. A fault hard drive could corrupt a video file,
+or the unreliable network could cause a database lookup to fail.
+
+
+---
+## Defensive programming
+```rust
+fn process_video(id) {
+  case lookup_metadata(id) {
+    Ok(metadata) ->
+      case create_thumbnails(metadata) {
+        Ok(result) ->
+          case transcode_video(metadata) {
+            Ok(_) -> "done!"
+            Error(transcoder_error) -> ???
+          }
+        Error(transcoder_error) -> ???
+      }
+    Error(database_error) -> ???
+  }
+}
+```
+???
+
+The ML style error detection forces the programmer to acknowledge these
+potential problems, and we end up this verbose nested code.
+
+After each step the programmer has to check to see whether if failed, and then
+do *something* with the error if it did.
+
+
+---
+## Defensive programming
+```rust
+fn process_video(id) {
+  let result = id
+    |> lookup_metadata
+    |> result.then(fn(metadata) {
+      let actions = [create_thumbnails, transcode_video]
+      list.traverse(actions, fn(fun) { fun(metadata) })
+    })
+  case result {
+    Ok(_) -> "done!"
+    Error(e) -> ??? // What do we do with the error?
+  }
+}
+```
+???
+
+It's possible to rewrite the the function using some higher order functions
+that extract some of the conditional logic.
+
+This removes some of the nesting but now the reader needs to be familiar with
+all of the extra functions used to understand the code, and the code is still
+much more complicated than what we started with.
+
+To make matters worse it's not even clear what we should do with the error
+once we have it. There's no user to return it to. Perhaps we need to create
+some kind of error logging system.
+
+At this point I suspect that any Erlang people in the audience are itching to
+jump up and shout there is another way to approach this.
+
+
+---
+## Offensive programming
+```rust
+fn process_video(id) {
+  assert Ok(metadata) = lookup_metadata(id)
+  assert Ok(_) = create_thumbnails(metadata)
+  assert Ok(_) = transcode_video(metadata)
+  "done!"
+}
+```
+???
+
+Offensive programming.
+
+If your business logic says that something should never fail, and you have no
+way of handling the failure, don't check for the error.
+
+Instead make an assertion saying "in order to continue no error must happened".
+
+If there was an error we crash process, because the process doesn't have the
+ability to handle the problem, it doesn't have enough context.
+
+And now the BEAM's fault tolerant properties come into play- the crash is
+logged and reported, and the process can be restarted as required. The rest of
+the program continues running without problem.
+
+As the Erlang saying goes, let it crash.
+
+---
+class: slide-bold middle center
+# Let it crash!
+### (if you're sure)
+???
+
+The ML style type system helps us find all places where failure can happen,
+and then we can categorised them into two different groups.
+
+The errors that are expected within our domain, such as invalid user input,
+which we deal with locally with conditional logic.
+
+The errors which are exceptional and outside out domain, such as data
+corruption, can be handled non-locally using processes and the BEAM.
+
+If an error is truely unexpected it shouldn't get in the way of your business
+logic, and you shouldn't have to write extra code for your program to tolerate
+it.
 
 
 ---
@@ -578,129 +843,18 @@ class: slide-bold middle
 <br>
 <br>
 # What's next for Gleam?
+???
+
+TODO
+- Gleam is new but ready for people to try
+- time to build community
+- make the experience of trying Gleam as welcoming and enjoyable as possible
+- code of conduct
 
 ???
 
 Gleam's a new language and there's many things still to come, so what's coming
 up next?
-
----
-class: xl-code
-## Function arguments
-
-```rust
-version.matches(
-  "3.0.3",
-  "3.0",
-  False,
-)
-```
-???
-
-With functions that take multiple argument it can be difficult to remember
-what the arguments are and in which order they go.
-
-This is especially true when a function has not very descriptive types, such
-as this one that takes String, String, Bool
-
-
----
-class: xl-code
-## Labelled function arguments
-
-```rust
-version.matches(
-  version: "3.0.3",
-  requirement: "3.0",
-  allow_pre: False,
-)
-```
-???
-
-The next version of Gleam will have labelled arguments, a popular feature from
-languages such as Python and OCaml.
-
-With this feature arguments can optionally have names at the call site, making
-it clearer what they are and allowing them to be given in any order.
-
-Sometimes in Erlang and Elixir we will give arguments in a map or a keyword
-list to name arguments, but there is a small performance penalt to this.
-
-Gleam's labelled arguments will be resolved entirely at compile time and have
-no performance cost.
-
-
----
-class: l-code center
-## Exhaustiveness checking
-
-```rust
-enum Pet =
-| Cat
-| Dog
-```
-
-```rust
-fn to_string(pet) {
-  case pet {
-  | Cat -> "kitty"
-  | Dog -> "doggo"
-  }
-}
-```
-
-???
-
-This feature is a personal favourite of mine and something that I'm really
-looking forward to.
-
-Let's say I've defined a Pet type in my codebase. It's an enum with 2
-variants: Cat and Dog.
-
-Elsewhere in my code I define a to_string function which pattern matches on a
-pet and returns an appropriate string for each.
-
----
-class: l-code center
-## Exhaustiveness checking
-
-```rust
-enum Pet =
-| Cat
-| Dog
-| Tamagotchi
-```
-
-```rust
-fn to_string(pet) {
-  case pet {
-  | Cat -> "kitty"
-  | Dog -> "doggo"
-  }
-}
-```
-
-???
-
-Shortly afterward a new craze takes the nation by storm, an electronic pet
-called a Tamagotchi. Not wanting to be left behind I add a Tamagotchi variant
-to the Pet enum and ship my code to production.
-
-Sadly I've forgotten to update the `to_string` function, so later when the
-function is called with the Tamagotchi variant no clause matches causing the
-process running the code to crash.
-
-It's easy to see on this slide that the `to_string` function needs to be
-updated, but in a codebase of tens or hundreds of thousands of lines of code
-it's hard to find all the places that need to be updated when a new variant is
-added.
-
-Once Gleam has exhaustiveness checking this kind of mistake will be
-detected at compile time.
-
-The compiler will halt and show the location of the problem and show what
-patterns are missing, making this kind of error impossible.
-
 
 ---
 ## Editor integration
@@ -868,146 +1022,6 @@ extensions to be generically useful rather than specific to processes.
 
 Any new language extensions should be applicable to a wide variety of problems
 and make the language more powerful as a whole.
-
----
-class: slide-bold middle center
-<img style="width: 50%; position: absolute; top: 5%; left: 25%" src="img/lucy-charcoal-5.svg">
-<br>
-<br>
-<br>
-<br>
-<br>
-# On the horizon
-
-???
-
-And on that note I'd like to share with you an idea for a future addition to
-Gleam.
-
-This is still very much in the early design stage so it may change quite a bit
-before we come to add this to the language.
-
-
----
-## Ad hoc polymorphism
-
-```elixir
-defprotocol String.Chars do
-  @spec to_string(t) :: String.t()
-  def to_string(term)
-end
-
-defimpl String.Chars, for: Integer do
-  def to_string(term) do
-    Integer.to_string(term)
-  end
-end
-
-defimpl String.Chars, for: Float do
-  def to_string(term) do
-    term |> :io_lib_format.fwrite_g() |> IO.iodata_to_binary()
-  end
-end
-```
-???
-
-Today all functions in Gleam are monomorphic, it's not possible to write a
-function that takes a list OR a map.
-
-Another problem is that we can't take a function (behaviour) from a library
-and make it work with types that we have defined. If someone writes a function
-that takes a list we can't give it a new vector type that we have implemented,
-even if conceptually a vector would work OK for what the function does.
-
-Elixir solves this with protocols.
-
-For example, Elixir's String.Char protocol allows the `to_string` function to
-work on Lists, Atoms, Ints, Floats and more.
-
-If we want the `to_string` function to work on new types that we have created
-we can implement the protocol for that type.
-
----
-## Ad hoc polymorphism
-
-```rust
-pub trait ToString {
-  fn to_string(Self) -> String
-}
-
-let Int: ToString {
-  fn to_string(term) {
-    int.to_string(term)
-  }
-}
-
-
-let Float: ToString {
-  fn to_string(term) {
-    term |> fwrite_g |> iodata.to_string
-  }
-}
-```
-???
-
-Here's what the same protocol may look like in Gleam, though right now we're
-calling them traits.
-
-It's similar in that there's a definition for the `ToString` trait and two
-implementations, and now the `to_string` function can be used on either `Ints`
-or `Floats`.
-
-What's different is how the language dispatches to the correct implementation
-for a given type.
-
-Elixir inspects the value at runtime, which is why Elixir's protocols can only
-be defined for structs and a few special types. It is not possible to
-implement a protocol for types that have the same runtime representation.
-
-For example, it is not possible to have an implementation for an Erlang record
-and another for a queue, as both are tuples at runtime.
-
-Gleam's traits instead will dispatch using type information, so a trait can be
-implemented for two types even if they have the same runtime representation.
-
-
----
-## Ad hoc polymorphism
-
-```rust
-pub trait Default {
-  fn default() -> Self
-}
-
-let Int: Default {
-  fn default(s) {
-    0
-  }
-}
-
-
-let Float: Default {
-  fn default(s) {
-    0.0
-  }
-}
-```
-???
-
-Another cool thing about dispatching using type information is that Gleam can
-dispatch based upon a return type rather than just the argument, as is the
-case in this `default` function.
-
-This wouldn't be possible to implement in Elixir's protocols as we need a
-value to find the implementation to use, but the only way to obtain a value is
-to invoke the correct implementation.
-
-We have a chicken and egg problem.
-
-This is however possible if we dispatch using type information
-
-This type based polymorphism has much more expressive power and I think we
-could find many exciting uses for a system like this.
 
 
 ---
