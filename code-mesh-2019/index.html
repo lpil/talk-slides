@@ -23,12 +23,13 @@ Hello everyone! I'm Louis! Welcome to my Code Mesh talk!
 There's two other excellent talks happening right now so thank you very much
 for taking a chance with me.
 
-Hopefully everyone can see the slides OK, but just in case these slides can be
-found at this URL.
+Hopefully everyone can see the slides OK, but just in case you can find a copy
+at this URL.
 
-I usually talk at Erlang events so I wasn't sure what kind of audience I'd
-attract today. If at any point what I'm saying doesn't make sense to you
-please wave your hand and I'll try again.
+I'm an Erlang person and I usually talk at Erlang events so I wasn't sure what
+kind of audience I'd attract today. If at any point what I'm saying doesn't
+make sense to you please wave your hand or ask a question and I'll try and
+clear things up.
 
 Let's get started!
 
@@ -45,12 +46,15 @@ for the last 2 years or so.
 Gleam draws inspiration from both BEAM languages such as Elixir and Erlang,
 and ML languages such as Haskell and Elm.
 
-In this talk I'm going to take a look at these two sets of language and see
-why I think they're each special in their own way.
+In this talk I'm going to take a look at these two language family and see why
+I think they're fantastic to work with.
 
-After that we can take a look at this new language Gleam, and see how it
-attempts to bring together some of the best traits of both ML languages and
-BEAM languages.
+We'll take a look at some of their strengths, some of their weaknesses, and
+how Gleam, this new language, attempts to bring together some of the best
+traits of both.
+
+Lastly I want to share a little of where Gleam is going next, hopefully with
+some time for questions at the end.
 
 
 ---
@@ -64,10 +68,12 @@ class: slide-bold middle center
 # Why Erlang?
 ???
 
+Question #1: Why Erlang?
+
 One of Gleam's greatest strengths is that it compiles to Erlang and as such
 can take advantage of all the wonderful things that Erlang has to offer.
 
-So, what's so special about Erlang?
+This begs the question: what's so special about Erlang?
 
 
 ---
@@ -81,11 +87,17 @@ machine.
 Erlang is slightly unusual for a functional programming language in that it
 originated largely from industry rather than academia. Back in the 80s the
 telephony company Ericsson were looking for the ideal language for writing
-telephone switch firmware in, and from this Erlang was born.
+telephone switch firmware in, and from this real-world need Erlang was born.
 
-In order to meet the unusual requirements of the telephony environment Erlang
-and the BEAM developed some rather exciting features.
+In order to meet the unusual requirements of the telephony hardware
+environment Erlang and the BEAM developed some rather novel features.
 
+---
+TODO telegraph pole graphic, pointing to Erlang. Check to see if this is where
+the switches live
+???
+
+TODO explain what a telephone switch is
 
 ---
 class: middle
@@ -102,44 +114,50 @@ written in it needed to be able to trivially perform a great number of tasks
 at the same time.
 
 This was such an important feature they ended up naming the language after it.
-An Erlang is a unit of concurrency, it measures seconds per second.
+As well as being a programming language an Erlang is a unit of concurrency, it
+measures seconds per second.
 
 A telephone switch that can hold 100 simultaneous calls can support a load of
 100 Erlangs.
 
-
----
-## 2 million ejabberd connections
-<img class="center-element" style="max-width: 75%" src="img/ejabberd.png">
-???
-
 So how does the BEAM scale when it comes to concurrency? We can look at some
 benchmarks of real-world systems.
 
+
+---
+## 2 million ejabberd connections
+<img class="center-element" style="max-width: 70%" src="img/ejabberd.png">
+<cite>
+https://blog.process-one.net/ejabberd-massive-scalability-1node-2-million-concurrent-users/
+</cite>
+???
+
 ejabberd is a websocket based chat server, a fork of which powers WhatsApp,
-the popular chat app from Facebook. In their benchmarks the ejabberd team
+the popular chat app owned by Facebook. In their benchmarks the ejabberd team
 recorded 2 million active connections to a single server, which is quite a
 feat.
-
-https://blog.process-one.net/ejabberd-massive-scalability-1node-2-million-concurrent-users/
 
 
 ---
 ## 2 million Phoenix connections
-<img class="center-element" style="max-width: 90%" src="img/phoenix.png">
+<img class="center-element" style="max-width: 85%" src="img/phoenix.png">
+<cite>
+https://phoenixframework.org/blog/the-road-to-2-million-websocket-connections
+</cite>
 ???
 
-Phoenix Channels is a websocket based pubsub system with present features. In
-their benchmarks they also scaled to 2 million active connections on a single
-machine, and they found they could publish events to all of them in under a
-second.
+Phoenix Channels is a websocket based pubsub system with sophisticated
+presence features.
 
-A common feature of both these benchmarks is that the limiting factor was
-reported as being not the BEAM itself, but the underlying network hardware and
-the Linux networking stack making it difficult to open and use 2 million TCP
-sockets.
+In their benchmarks the Phoenix team also scaled to 2 million active
+connections on a single machine, and even with this load they were able to
+publish events to all the connected clients in under a second.
 
-https://phoenixframework.org/blog/the-road-to-2-million-websocket-connections
+A common feature of both this and the ejabberd benchmark is that the limiting
+factor was reported as being not the BEAM itself, but the underlying network
+hardware and the Linux networking stack making.
+
+Turns out it is somewhat difficult to open and use 2 million TCP sockets.
 
 
 ---
@@ -147,16 +165,26 @@ https://phoenixframework.org/blog/the-road-to-2-million-websocket-connections
 <br>
 <br>
 <img class="center-element" style="" src="img/ericsson.png">
+<br>
+<br>
+<br>
+<cite>
+https://groups.google.com/forum/#!original/comp.lang.functional/5kldn1QJ73c/T3py-yqmtzMJ
+</cite>
+
 ???
 
-Lastly, in a more contrived benchmark the Erlang team at Ericsson tested to
-see how many threads they could create in a single program. On a computer with
-16GB of RAM they found they could create 20 million threads without problem.
+Lastly, in a more contrived benchmark, the Erlang team at Ericsson tested to
+see how many threads they could create in a single Erlang program. On a
+computer with 16GB of RAM they found they could create 20 million threads
+without problem.
 
-On average it took 5 nano-seconds to create a thread, and 6 nano-seconds for
-any of these threads to respond to a message sent to it.
+During this benchmark it took an average it took 5 nano-seconds to create a
+thread, and 6 nano-seconds for any of these threads to respond to a message
+sent to it.
 
-https://groups.google.com/forum/#!original/comp.lang.functional/5kldn1QJ73c/T3py-yqmtzMJ
+This benchmark was undertaken back in TODO YEAR so by today's standards this
+was on a somewhat underpowered machine.
 
 
 ---
@@ -164,22 +192,23 @@ class: middle
 <img class="color-adjust center-element" style="" src="img/telephone-switch.png">
 ???
 
-The BEAM can scale in this way, but it's not good enough to mearly be
-possible, it has to be relatively easy for the programmer.
+When it comes to concurrency the BEAM can definitely scale, but it's not good
+enough to mearly be possible; Ericsson needed this to be relatively easy so
+their firmware developers could be as productive as possible.
 
 Asynchronous programming is notoriously difficult, especially if you're
 working with tools like locks, callbacks, and shared mutable state, so the
 creators of Erlang went down a different route.
+
+Rather than having a small number of threads each handling a large number of
+concurrent tasks, in the Erlang world we use a great number of threads, but
+each thread only has 1 task to perform.
 
 
 ---
 class: middle
 <img class="color-adjust center-element" style="" src="img/telephone-switches.png">
 ???
-
-Rather than having a small number of threads each handling a large number of
-concurrent tasks, in the Erlang world we use a great number of threads, but
-each thread only has 1 task to perform.
 
 In this way each thread, which in the Erlang world we call a Process, can be
 written entirely synchronously, dramatically simplifying the problem.
@@ -199,9 +228,9 @@ class: minimal-padding
 <img class="color-adjust center-element" style="" src="img/multi-threaded.png">
 ???
 
-To support concurrency this high Erlang processes are not implemented as
-operating systems threads, instead they are lightweight green threads
-with their own scheduler within the BEAM.
+To support this level of concurrency Erlang processes are not implemented as
+operating systems threads, instead they are lightweight green threads, running
+on their own scheduler within the BEAM.
 
 Back in the late 80s computer processors only had a single core, so while
 Erlang programs were highly concurrent they were still single threaded.
@@ -210,8 +239,9 @@ When processors with multiple cores started to appear the BEAM was upgraded to
 schedule Erlang processes across all available cores, making full use of all
 processing power available.
 
-Overnight all Erlang program became multi-core programs, and now writing a
-multi-core program in Erlang is no more difficult than any other program.
+Overnight all Erlang program became multi-threaded programs, and now writing a
+multi-threaded program in Erlang is no more difficult than writing a
+single-threaded one.
 
 
 ---
