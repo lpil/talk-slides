@@ -18,18 +18,17 @@ https://lpil.uk/talk-slides/code-mesh-2019
 
 ???
 
-Hello everyone! I'm Louis! Welcome to my Code Mesh talk!
+Hello everyone! Welcome!
 
-There's two other excellent talks happening right now so thank you very much
-for taking a chance with me.
+I'm Louis! I'm an Erlang person and I usually talk at Erlang events so I
+wasn't sure what kind of audience I'd attract today.
+
+I've tried to write this talk so that you don't need any Erlang or ML
+experience, but if at any point what I'm saying doesn't make sense to you
+please wave your hand or ask a question and I'll try and clear things up.
 
 Hopefully everyone can see the slides OK, but just in case you can find a copy
 at this URL.
-
-I'm an Erlang person and I usually talk at Erlang events so I wasn't sure what
-kind of audience I'd attract today. If at any point what I'm saying doesn't
-make sense to you please wave your hand or ask a question and I'll try and
-clear things up.
 
 Let's get started!
 
@@ -46,7 +45,7 @@ for the last 2 years or so.
 Gleam draws inspiration from both BEAM languages such as Elixir and Erlang,
 and ML languages such as Haskell and Elm.
 
-In this talk I'm going to take a look at these two language family and see why
+In this talk I'm going to take a look at these two language families and see why
 I think they're fantastic to work with.
 
 We'll take a look at some of their strengths, some of their weaknesses, and
@@ -84,20 +83,34 @@ class: middle
 A large part of the answer to that question is the BEAM, the Erlang virtual
 machine.
 
-Erlang is slightly unusual for a functional programming language in that it
-originated largely from industry rather than academia. Back in the 80s the
-telephony company Ericsson were looking for the ideal language for writing
+Erlang is slightly unusual for an older functional programming language in
+that it originated largely from industry rather than academia. Back in the 80s
+the telephony company Ericsson were looking for the ideal language for writing
 telephone switch firmware in, and from this real-world need Erlang was born.
 
-In order to meet the unusual requirements of the telephony hardware
-environment Erlang and the BEAM developed some rather novel features.
-
 ---
-TODO telegraph pole graphic, pointing to Erlang. Check to see if this is where
-the switches live
+class: middle
+<img class="color-adjust center-element" style="" src="img/telephone-switch-one-call.png">
 ???
 
-TODO explain what a telephone switch is
+A telephone switch is a piece of hardware connects phone calls.
+
+When a person dials a number of their phone, their local switch identifies
+where the call is attempting to connect to and creates a complete circuit
+between the caller and the receiver.
+
+Back when the telephone was first invented this would have been the job of a
+person sitting at a switch-board, physically connecting different circuits
+with bits of wire.
+
+After that came automatic mechanical switches that didn't require a person to
+make the connection, and later digital switches, which would create virtual
+circuits within software.
+
+It was these digital switches for which Erlang was created in the 80s.
+
+In order to meet the unusual requirements of the telephony hardware
+Erlang and the BEAM developed some rather novel features.
 
 ---
 class: middle
@@ -109,9 +122,11 @@ phone calls at the same time. If you had to wait for your neighbour to get off
 the phone before you could make a call I suspect telephones probably wouldn't
 have caught on.
 
-Because of this Erlang had to have great concurrency features, any program
-written in it needed to be able to trivially perform a great number of tasks
-at the same time.
+Because of this Erlang had to have great concurrency features so that one
+switch could handle many calls at once.
+
+Any program written in Erlang needed to be able to trivially perform a great
+number of tasks at the same time.
 
 This was such an important feature they ended up naming the language after it.
 As well as being a programming language an Erlang is a unit of concurrency, it
@@ -137,6 +152,9 @@ the popular chat app owned by Facebook. In their benchmarks the ejabberd team
 recorded 2 million active connections to a single server, which is quite a
 feat.
 
+Another interesting fact is that WhatsApp was capable of running their
+ejabberd based chat platform with 900 million users with only 50 engineers.
+
 
 ---
 ## 2 million Phoenix connections
@@ -155,9 +173,10 @@ publish events to all the connected clients in under a second.
 
 A common feature of both this and the ejabberd benchmark is that the limiting
 factor was reported as being not the BEAM itself, but the underlying network
-hardware and the Linux networking stack making.
+hardware and the Linux networking stack.
 
-Turns out it is somewhat difficult to open and use 2 million TCP sockets.
+Turns out it is somewhat difficult to open and use 2 million TCP sockets on
+your average Linux server in a public cloud.
 
 
 ---
@@ -183,8 +202,9 @@ During this benchmark it took an average it took 5 nano-seconds to create a
 thread, and 6 nano-seconds for any of these threads to respond to a message
 sent to it.
 
-This benchmark was undertaken back in TODO YEAR so by today's standards this
-was on a somewhat underpowered machine.
+This benchmark was undertaken back in 2005 so by today's standards this
+was on a somewhat underpowered machine, we could likely beat this with Erlang
+today.
 
 
 ---
@@ -210,16 +230,17 @@ class: middle
 <img class="color-adjust center-element" style="" src="img/telephone-switches.png">
 ???
 
-In this way each thread, which in the Erlang world we call a Process, can be
-written entirely synchronously, dramatically simplifying the problem.
-
-If each process only has to do one thing it can be written in a sequential
+If each thread only has to do one thing it can be written in a sequential
 fashion. The programmer doesn't have to write any asynchronous code within the
-single process.
+single thread.
 
-To paraphrase the late Joe Armstrong, creator of Erlang, it's easier to have 2
-million web servers handling 2 million sessions than it is to have 1 web
-server handling 2 million sessions.
+To paraphrase the late Joe Armstrong, creator of Erlang:
+
+It's difficult to write a web server capable handling 2 million sessions.
+
+However, it is much easier to a write web server capable of handling a single
+session, and to then run 2 million instances of it.
+
 
 
 ---
@@ -228,9 +249,9 @@ class: minimal-padding
 <img class="color-adjust center-element" style="" src="img/multi-threaded.png">
 ???
 
-To support this level of concurrency Erlang processes are not implemented as
-operating systems threads, instead they are lightweight green threads, running
-on their own scheduler within the BEAM.
+To support this level of concurrency Erlang threads are not implemented as
+operating systems threads, instead they are lightweight threads called
+Processes, running on their own scheduler within the BEAM.
 
 Back in the late 80s computer processors only had a single core, so while
 Erlang programs were highly concurrent they were still single threaded.
@@ -239,9 +260,13 @@ When processors with multiple cores started to appear the BEAM was upgraded to
 schedule Erlang processes across all available cores, making full use of all
 processing power available.
 
-Overnight all Erlang program became multi-threaded programs, and now writing a
+Overnight all Erlang programs became multi-threaded programs, and now writing a
 multi-threaded program in Erlang is no more difficult than writing a
 single-threaded one.
+
+Sadly the processes in these telephony switches couldn't be completely
+isolated from each other, there's always going to need to be some
+communication between threads in any program.
 
 
 ---
@@ -250,22 +275,21 @@ single-threaded one.
 <img class="color-adjust center-element" style="max-width: 90%" src="img/messages.png">
 ???
 
-Sadly the processes in these telephony switches couldn't be completely
-isolated from each other, there's always going to need to be some
-communication between threads in any program.
+Rather than using shared state communicate each Erlang processes communicate
+by sending messages to each other.
 
-Rather than using shared state communicate each Erlang processes by sending
-messages to each other asynchronously.
+What's more processes within a telephone switch don't need to just talk to
+processes within the same switch, they also need to communicate with many
+other devices in the network, as calls are routed through various pieces of
+telephone hardware to get to their destination.
 
-What's more interesting is that processes within a telephone switch don't need
-to just talk to processes within the same switch, they also need to
-communicate with many other devices in the network as calls are routed through
-various bits hardware to get to their destination.
+To facilitate cross-network communication the BEAM has distributed computing
+features built in. When sending a message it doesn't matter if
+- the processes are running on the same instance of the BEAM,
+- different instances of the BEAM on the same computer,
+- or even two completely different computers connected by a network:
 
-Because of this need it is that it doesn't matter if the processes are
-running on the same instance of the BEAM, different instances of the BEAM on
-the same computer, or even two completely different computers connected by a
-network: The processes can still send messages to each other.
+The processes can still send messages to each other.
 
 Distributed computing is built into the BEAM, a typical BEAM program written
 in Erlang or Elixir can be turned into distributed program that runs on a
@@ -337,15 +361,12 @@ that web developers deal with on a daily basis.
 <img class="center-element" src="img/beam-languages.png">
 ???
 
-So now hopefully we
+So now we've seen a little of why I think the BEAM is a wonderful platform,
+but I've not answer the question of why make a new language at all.
 
-So yes, the BEAM is wonderful piece of technology to work with, and I'm sure
-that you'll all understand why I wanted to use it with Gleam.
-
-However I've not answer the question of why make a new language at all- we
-already have several fantastic languages on the BEAM such as Erlang, Elixir,
-and LFE. Why spend all this time creating Gleam when we could use one of
-these?
+We already have several fantastic languages on the BEAM such as Erlang,
+Elixir, and LFE. Why spend all this time creating Gleam when we could use one
+of these?
 
 To answer this question I'd like to take a closer look at the BEAM's self
 healing properties and how that impacts us as developers and operators of
@@ -592,14 +613,13 @@ I want to create the experience in the BEAM ecosystem of the compiler being
 like a pair programming partner, there to help by catching mistakes and
 providing additional insight.
 
-How do they achieve this? Through static analysis.
+How do they achieve this? By having a compiler capable of analysing the code
+for inconsistencies, and providing precise feedback to the programmer,
+detailing every place where a problem may arise.
 
-The compiler walks the code and keeps track of the type of every single
-function and value throughout the program and lets you know if your code has
-any potentially dangerous inconsistencies.
+Once the programmer has this ability to discover all the possible problems in
+the application, the way they approach writing code can change.
 
-It also informs the programmer precisely where the inconsistency can be found,
-and with this precise feedback the way we write code changes.
 
 ---
 <br>
@@ -627,16 +647,19 @@ return a null value under certain circumstances.
 
 In languages like Erlang without this static analysis it is up to the
 programmer to now find all the the places in the codebase that need to be
-updated to correctly handle this new nullable value, possibly using a mix of
-already existing unit tests and their familiary with the codebase.
+updated to correctly handle this new nullable value.
+
+In Erlang they would possibly do this using a mix of already existing unit
+tests and their familiarly with the codebase. That would aid their manual
+search.
 
 ---
 <br>
 <img class="center-element" style="" src="img/nullable-error.png">
 ???
 
-In ML languages the compiler outputs a TODO list of inconsistencies, and the
-programmer just has to go through them one by one, fixing them one by one.
+In Gleam and ML languages the compiler outputs a TODO list of inconsistencies,
+and the programmer goes through the list, fixing them one by one.
 
 No need for doing discovery work- just state the change to be made, and the
 compiler then shows you how to integrate that change.
@@ -650,9 +673,6 @@ static analysis can be thought of as basic full test coverage for free.
 Secondly this static analysis is fast. A large codebase can be checked in
 seconds or fractions of a second, while the tests may take minutes.
 
-TODO maybe
-- walk through how the inference works
-- Kris makes an excellent argument about ADTs being how you write down your assumptions so they can be checked later. https://youtu.be/5AtyWgQ3vv0?t=844
 
 ---
 class: slide-bold middle center
@@ -699,7 +719,7 @@ For example, I'm trying to reverse a binary string, but I'm using a function
 that reverses lists.
 
 In this case once the error has been highlighted and I'm aware that I've made
-amistake then I'm going to fix the bug.
+a mistake then I'm going to fix the bug.
 
 Erlang's fault tolerance wasn't needed here. If a trivial mistake like this
 has been made I want to find it and I want to fix it.
@@ -725,25 +745,26 @@ fn handle(request) {
 ```
 ???
 
-Another situation in which errors may arise if when dealing with user input.
+Another situation in which errors may arise is when dealing with user input.
 
 Here we have a handler function from a web application; it takes a request
 data structure and returns an appropriate response.
 
-In doing this it reads some data from the request body that has been in
-encoded in the JSON format.
+As part of this it reads some data from the request body, and that data has
+been in encoded in the JSON format.
 
 The problem here is that the request body might not contain valid JSON, we
 can't rely on always getting the correct input from the outside world.
 
-Here the most practical thing to do is to check whether the JSON is valid or
-not, and to instead return an error message to the user if they made a
-mistake.
-
-Erlang's fault tolerance wasn't needed here.
+Once this problem has been highlighted to us by the static analysis the most
+practical thing to do is to check whether the JSON is valid or not. If it
+isn't we can then return an error message to the user, informing them that
+there is something wrong with their JSON encoding.
 
 If we can pass an error back up the chain to the origin of the problem then
 that's often the best thing to do.
+
+Erlang's fault tolerance wasn't needed here.
 
 ---
 ## Background processing
@@ -761,14 +782,18 @@ I used to work at a start up that did video transcoding and we had a lot of
 jobs that ran in the background and didn't immediately have a user attached to
 them.
 
-We had jobs that looked like this: They performed a series of steps such as
+One of jobs that looked like this: It performed a series of steps such as
 looking up metadata from the database, creating thumbnail images, and
 transcoding video into some other format.
 
 Each one of these steps is expected to always succeed according to our
 business logic, but because of the nature of the universe there is very real
-chance these things could fail. A fault hard drive could corrupt a video file,
-or the unreliable network could cause a database lookup to fail.
+chance these things could fail.
+
+- A faulty hard drive could corrupt a video file,
+- the unreliable network could cause a database lookup to fail.
+- There could be a bug in the third party transcoder software that causes it
+  to crash.
 
 
 ---
@@ -795,7 +820,10 @@ The ML style error detection forces the programmer to acknowledge these
 potential problems, and we end up this verbose nested code.
 
 After each step the programmer has to check to see whether if failed, and then
-do *something* with the error if it did.
+do *something* with the error if it is present.
+
+This code is much less clear than the previous version. It's harder to tell
+what the business logic is here as it is obscured by error handling.
 
 
 ---
@@ -805,9 +833,11 @@ fn process_video(id) {
   let result = id
     |> lookup_metadata
     |> result.then(fn(metadata) {
-      let actions = [create_thumbnails, transcode_video]
-      list.traverse(actions, fn(fun) { fun(metadata) })
+      metadata
+      |> create_thumbnails
+      |> result.map(fn(_) { metadata })
     })
+    |> result.then(transcode_video)
   case result {
     Ok(_) -> "done!"
     Error(e) -> ??? // What do we do with the error?
@@ -816,8 +846,8 @@ fn process_video(id) {
 ```
 ???
 
-It's possible to rewrite the the function using some higher order functions
-that extract some of the conditional logic.
+It's possible to rewrite the job using some higher order functions that
+extract some of the conditional logic.
 
 This removes some of the nesting but now the reader needs to be familiar with
 all of the extra functions used to understand the code, and the code is still
@@ -848,10 +878,9 @@ Offensive programming.
 If your business logic says that something should never fail, and you have no
 way of handling the failure, don't check for the error.
 
-Instead make an assertion saying "in order to continue no error must happened".
-
-If there was an error we crash process, because the process doesn't have the
-ability to handle the problem, it doesn't have enough context.
+Instead make an assertion saying "in order to continue no error must
+happened", and if there was an error we crash the process as there's no
+sensible way to continue *at the process level*.
 
 And now the BEAM's fault tolerant properties come into play- the crash is
 logged and reported, and the process can be restarted as required. The rest of
@@ -890,16 +919,18 @@ class: slide-bold middle
 # What's next for Gleam?
 ???
 
-TODO
-- Gleam is new but ready for people to try
-- time to build community
-- make the experience of trying Gleam as welcoming and enjoyable as possible
-- code of conduct
+So hopefully now you can see a little of the value of bringing together these
+two language families, and what is the appeal of Gleam.
 
-???
+Now let's take a bit more of a mundane look at what's coming next.
 
-Gleam's a new language and there's many things still to come, so what's coming
-up next?
+Gleam as a language, a compiler, and a standard library are ready to be used
+in people's projects, however we're missing many of the niceties that are
+required for programmers to be productive.
+
+My current focus is to supply everything that is required for people to be
+productive with Gleam in order to build the community, and once that is done
+we can look at more exciting language enhancements.
 
 ---
 ## Editor integration
@@ -908,23 +939,14 @@ up next?
 
 ???
 
-Productivity is a core value for Gleam, and having good development tooling is
-important for productivity.
+Having good development tooling is important for productivity.
 
 We want the experience of writing Gleam code to be as slick and enjoyable as
 possible, no matter what the editor the programmer is using. To achieve this
 Gleam will implement Microsoft's Language Server Protocol.
 
-Once implemented users of vim, emacs, atom, vs code and more will be able to
-do the following:
-
-- Display type errors in editor after every keystroke
-- Provide code completion options for variables, modules, functions
-- Show documentation and type information in the editor
-- jump to the definition of functions and types
-- Perform language aware renaming of variables, functions, and more with a
-  single command
-- format code automatically when saving a file, like with exfmt
+Once implemented Gleam programmers will have high quality IDE like features no
+matter what text editor they are using.
 
 And what's more thanks to Gleam's type system and static analysis this tooling
 will be able to provide much richer information to the programmer than is
@@ -1023,50 +1045,30 @@ Exercism is community run, open source, and very well organised so if you're
 interested in contributing to Gleam this could be a great place to create
 help out.
 
-
 ---
-## Typed OTP
-
-```rust
-pub struct Spec(arg, state, call, reply, cast) {
-  init:
-    fn(arg) -> Init(state)
-
-  handle_call:
-    fn(call, state) -> Call(reply, state)
-
-  handle_cast:
-    fn(cast, state) -> Cast(state)
-
-  handle_info:
-    fn(Any, state) -> Cast(state)
-}
-
-pub external fn start_link(Spec(a, b, c, d, e))
-  -> Result(GenServer(b, c, d, e), InitError)
-  = "gleam_gen_server" "start_link"
-```
+class: slide-bold middle center
+<h1 style="font-size: 4em">Gleam 💕 Erlang</h1>
 ???
 
-One question that is frequently asked is how does Gleam type processes and
-OTP. The short answer is that it doesn't.
+As I said before Gleam's greatest strength is that it builds on top of Erlang,
+and as such we want to integrate into the wider BEAM community as much as
+possible.
 
-Gleam doesn't currently have any special first class support for processes or
-OTP, instead these Erlang features are to be used via the Erlang FFI.
+Gleam uses the standard Erlang built tools and package management, we don't to
+create an alternative, and we don't want to fracture the ecosystem.
 
-Today we have some simple bindings to `gen_server` that allow us to define and
-use them in a type safe way, but we lack type safe bindings to other
-behaviours such as supervisor.
+It's straightforward to use Erlang libraries from Gleam, giving us access to a
+healthy ecosystem of production ready packages libraries to use in our
+programs.
 
-The challenge here is how to write bindings that are reasonably safe but
-flexible enough to support common Erlang patterns used today.
+We also want to give back to other BEAM languages, so it should be just as
+easy to use Gleam libraries in them. An Erlang or Elixir programmer will be
+able to import and use a Gleam library without needing to modify their build
+pipeline, or having to learn anything about Gleam.
 
-In future we could add some new features to Gleam that make it possible to
-create better support for processes, but if we do I want these language
-extensions to be generically useful rather than specific to processes.
-
-Any new language extensions should be applicable to a wide variety of problems
-and make the language more powerful as a whole.
+The aim is for Gleam to enrich the ecosystem further for users of all BEAM
+languages, and to provide a new way of programming on the BEAM that will
+hopefully draw in a wider collection of people.
 
 
 ---
@@ -1091,7 +1093,7 @@ class: middle, slide-bold
 
 That's all I've got to share today.
 
-If any of this sounds interesting to you please do check out and website and
+If any of this sounds interesting to you please do check out the website and
 always feel free to message me on IRC, GitHub or Twitter with any questions
 you might have.
 
