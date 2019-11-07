@@ -239,7 +239,7 @@ To paraphrase the late Joe Armstrong, creator of Erlang:
 It's difficult to write a web server capable handling 2 million sessions.
 
 However, it is much easier to a write web server capable of handling a single
-session, and to then run 2 million instances of it.
+session, and to then run 2 million copies of it.
 
 
 
@@ -266,7 +266,7 @@ single-threaded one.
 
 Sadly the processes in these telephony switches couldn't be completely
 isolated from each other, there's always going to need to be some
-communication between threads in any program.
+communication and synchronisation between threads in any program.
 
 
 ---
@@ -275,8 +275,8 @@ communication between threads in any program.
 <img class="color-adjust center-element" style="max-width: 90%" src="img/messages.png">
 ???
 
-Rather than using shared state communicate each Erlang processes communicate
-by sending messages to each other.
+Rather than using shared state communicate with each other Erlang processes
+communicate by sending messages to each other.
 
 What's more processes within a telephone switch don't need to just talk to
 processes within the same switch, they also need to communicate with many
@@ -338,6 +338,11 @@ happen at a much more fine grained level- we won't lose the state of the
 entire program and all the requests being handled by it, instead just the
 single process that had the problem.
 
+You could image the relationship between the BEAM and Kubernetes being similar
+to the relationship between Kubernetes and datacenter failover. They're
+similar, but they operate at different levels of abstraction.
+
+
 ---
 ## Getting less niche
 <img class="color-adjust center-element" style="" src="img/telephones-to-computers.png">
@@ -347,7 +352,7 @@ The BEAM was created with the problem of telephony in mind, but it turns out
 that what was once quite a niche set of problems is actually quite commonplace
 today.
 
-Concurrency, parallelism, distribution, low latency, and fault tolerance:
+Concurrency, parallelism, distribution, consistent low latency, and fault tolerance:
 these are characteristics we want in networked services today.
 
 The BEAM has almost by chance has become an excellent platform for building
@@ -405,7 +410,7 @@ class: minimal-padding middle
 ???
 
 Once uploaded the code triggers a build on the CI server. It runs all the unit
-and integration tests, and runs some linters such as Credo to spot any mistakes.
+and integration tests, and runs some linters to try and spot any mistakes.
 
 ---
 class: minimal-padding middle
@@ -445,8 +450,8 @@ class: minimal-padding middle
 ???
 
 
-All the tests are run again to ensure no problems were introduced during the
-merge.
+All the tests and linters are run again to ensure no problems were introduced
+during the merging process.
 
 ---
 class: minimal-padding middle
@@ -597,7 +602,7 @@ https://www.lumi.dev/blog/purescript-and-haskell-at-lumi
 
 ???
 
-Lumi is a company that provide custom eco-friendly branded packaging for
+Lumi are a company that provide custom eco-friendly branded packaging for
 online stores.
 
 In 2018 they started converting their Javascript frontend into a Purescript
@@ -609,16 +614,27 @@ had this to say:
 What I like about this is the feeling of trust in the compiler, that it is
 something that can be relied on.
 
-I want to create the experience in the BEAM ecosystem of the compiler being
-like a pair programming partner, there to help by catching mistakes and
-providing additional insight.
+With Gleam I want to create the experience in the BEAM ecosystem of the
+compiler being like a pair programming partner, there to help by catching
+mistakes and providing additional insight.
+
+---
+class: slide-bold middle center
+<img style="width: 45%; position: absolute; top: 5%; left: 27%" src="img/lucy-charcoal-6.svg">
+<br>
+<br>
+<br>
+<br>
+<br>
+# Error detection
+???
 
 How do they achieve this? By having a compiler capable of analysing the code
 for inconsistencies, and providing precise feedback to the programmer,
 detailing every place where a problem may arise.
 
 Once the programmer has this ability to discover all the possible problems in
-the application, the way they approach writing code can change.
+the application the way they approach writing code can change.
 
 
 ---
@@ -668,10 +684,16 @@ As I said before you can achieve the same with a robust set of unit tests, but
 I think this system has a few advantages.
 
 We don't have to write the tests, the compiler does this checking for us. This
-static analysis can be thought of as basic full test coverage for free.
+static analysis can be thought of as basic full test coverage for free. It
+even covers code that is hard to test, such as code that performs IO.
 
 Secondly this static analysis is fast. A large codebase can be checked in
 seconds or fractions of a second, while the tests may take minutes.
+
+Thirdly the compiler can provide the precise location of the cause of the
+error, while tests can only ever give you the location of a resulting symptom.
+Once a test presents an error it is up to the programmer to determine if the
+problem originated there or somewhere else entirely.
 
 
 ---
@@ -685,18 +707,19 @@ class: slide-bold middle center
 ## Do we need fault tolerance?
 
 ???
-It might seem like with this ML style error detection the BEAM's runtime fault
-tolerance is somewhat redunant, but I think they can complement each other
-quite nicely.
+
+It might seem like **with** this ML style error detection the BEAM's runtime
+fault tolerance and error handling features are somewhat redunant, but I think
+they can complement each other quite nicely.
 
 The error detection means that we are aware of all the places where there can
 be a problem, and then we can make an explicit decision about how we want to
 handle it.
 
-If the decision of how to handle an error is explicit then the compiler can
-tell if something is intentional, or if a mistake has been made.
+And because the decision of how to handle an error is now explicit the
+compiler can tell if a crash is intentional, or if a mistake has been made.
 
-Let's look at some examples.
+This isn't very clear, so let's look at some examples.
 
 ---
 ## Programmer mistake
@@ -705,7 +728,7 @@ fn main() {
   list.reverse("hello") // Error! Not a list
 }
 ```
-<center><h3>⇩⇩⇩ fix ⇩⇩⇩</h3><center>
+<center><h3>⇩⇩⇩ use the correct function ⇩⇩⇩</h3><center>
 ```rust
 fn main() {
   string.reverse("hello") // That's better :)
@@ -718,10 +741,10 @@ Imagine a problem caused by a mistake on my part as a programmer
 For example, I'm trying to reverse a binary string, but I'm using a function
 that reverses lists.
 
-In this case once the error has been highlighted and I'm aware that I've made
-a mistake then I'm going to fix the bug.
+In this case once the error has been highlighted to me by the compiler I
+realise I've made a mistake, and then I'm going to fix the bug.
 
-Erlang's fault tolerance wasn't needed here. If a trivial mistake like this
+Erlang's fault tolerance wasn't useful here. If a trivial mistake like this
 has been made I want to find it and I want to fix it.
 
 
@@ -733,7 +756,7 @@ fn handle(request) {
   save_record(input) // Error! JSON could be invalid
 }
 ```
-<center><h3>⇩⇩⇩ fix ⇩⇩⇩</h3><center>
+<center><h3>⇩⇩⇩ handle invalid input ⇩⇩⇩</h3><center>
 ```rust
 fn handle(request) {
   let result = decode_json_body(request)
@@ -761,10 +784,10 @@ practical thing to do is to check whether the JSON is valid or not. If it
 isn't we can then return an error message to the user, informing them that
 there is something wrong with their JSON encoding.
 
-If we can pass an error back up the chain to the origin of the problem then
-that's often the best thing to do.
+If we can pass an error back up the chain to the user then that's often the
+best thing to do.
 
-Erlang's fault tolerance wasn't needed here.
+Erlang's fault tolerance wasn't useful here either.
 
 ---
 ## Background processing
@@ -778,13 +801,14 @@ fn process_video(id) {
 ```
 ???
 
-I used to work at a start up that did video transcoding and we had a lot of
-jobs that ran in the background and didn't immediately have a user attached to
-them.
+I used to work at a start up that did video transcoding. We had a lot of jobs
+that ran in the background and as a result they didn't immediately have a user
+attached to them.
 
-One of jobs that looked like this: It performed a series of steps such as
-looking up metadata from the database, creating thumbnail images, and
-transcoding video into some other format.
+One of jobs that looked like this:
+- first it looked up some metadata from the database
+- then it created some thumbnail images
+- lastly it transcoded a video into some other format
 
 Each one of these steps is expected to always succeed according to our
 business logic, but because of the nature of the universe there is very real
@@ -858,7 +882,8 @@ once we have it. There's no user to return it to. Perhaps we need to create
 some kind of error logging system.
 
 At this point I suspect that any Erlang people in the audience are itching to
-jump up and shout there is another way to approach this.
+jump up and shout there is another way to approach this. There is an
+alternative to this defensive programming.
 
 
 ---
@@ -873,7 +898,7 @@ fn process_video(id) {
 ```
 ???
 
-Offensive programming.
+And that alternative is offensive programming.
 
 If your business logic says that something should never fail, and you have no
 way of handling the failure, don't check for the error.
@@ -890,15 +915,15 @@ As the Erlang saying goes, let it crash.
 
 ---
 class: slide-bold middle center
-# Let it crash!
-### (if you're sure)
+<h1 style="font-size: 5em">Let it crash</h1>
+## (if you're sure)
 ???
 
-The ML style type system helps us find all places where failure can happen,
+The ML style type system helps us find all places where error can happen,
 and then we can categorised them into two different groups.
 
 The errors that are expected within our domain, such as invalid user input,
-which we deal with locally with conditional logic.
+we can deal with locally with conditional logic.
 
 The errors which are exceptional and outside out domain, such as data
 corruption, can be handled non-locally using processes and the BEAM.
@@ -1058,7 +1083,7 @@ Gleam uses the standard Erlang built tools and package management, we don't to
 create an alternative, and we don't want to fracture the ecosystem.
 
 It's straightforward to use Erlang libraries from Gleam, giving us access to a
-healthy ecosystem of production ready packages libraries to use in our
+healthy ecosystem of battle tested packages and libraries to use in our
 programs.
 
 We also want to give back to other BEAM languages, so it should be just as
