@@ -805,7 +805,7 @@ I used to work at a start up that did video transcoding. We had a lot of jobs
 that ran in the background and as a result they didn't immediately have a user
 attached to them.
 
-One of jobs that looked like this:
+One of the jobs looked like this:
 - first it looked up some metadata from the database
 - then it created some thumbnail images
 - lastly it transcoded a video into some other format
@@ -901,7 +901,7 @@ fn process_video(id) {
 And that alternative is offensive programming.
 
 If your business logic says that something should never fail, and you have no
-way of handling the failure, don't check for the error.
+way of reasonably handling the failure, don't check for the error.
 
 Instead make an assertion saying "in order to continue no error must
 happened", and if there was an error we crash the process as there's no
@@ -997,14 +997,12 @@ class: splash-image
 ???
 
 Meanwhile Elixir has the beautiful, searchable, mobile friendly documentation
-generated from the code itself by the ex_doc tool, hosted on the hexdocs
-website and linked directly to the hex package itself.
+generated from the code itself, hosted on hexdocs (a unified website for BEAM
+documentation), and linked directly to the BEAM package management system.
 
 In Elixir it's easy to find the documentation you need, whether it's online,
-in your editor, or on the command line, and we intend for this to be the case
-for Gleam too.
-
-Currently looking at whether we could use Elixir's ex_doc for Gleam.
+in your editor, or on the command line, or even within your program itself,
+and we intend for this to be the case for Gleam too.
 
 
 ---
@@ -1067,8 +1065,8 @@ written, but once done we'll have a top notch experience for learning and
 practicing Gleam.
 
 Exercism is community run, open source, and very well organised so if you're
-interested in contributing to Gleam this could be a great place to create
-help out.
+interested in contributing to Gleam or if you just want to learn some new
+languages I would encourage you to check it out.
 
 ---
 class: slide-bold middle center
