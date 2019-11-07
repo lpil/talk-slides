@@ -856,12 +856,12 @@ what the business logic is here as it is obscured by error handling.
 fn process_video(id) {
   let result = id
     |> lookup_metadata
-    |> result.then(fn(metadata) {
+    |> result.then(_, fn(metadata) {
       metadata
       |> create_thumbnails
-      |> result.map(fn(_) { metadata })
+      |> result.map(_, fn(_) { metadata })
     })
-    |> result.then(transcode_video)
+    |> result.then(_, transcode_video)
   case result {
     Ok(_) -> "done!"
     Error(e) -> ??? // What do we do with the error?
