@@ -7,32 +7,6 @@
 </head>
   <body>
     <textarea id="source">
-class: middle center slide-bold
-<img style="width: 65%" src="img/lucy-charcoal-3.svg">
-
----
-class: middle,center
-## Hi, I'm Louis!
-
-https://lpil.uk/talk-slides/code-mesh-2019
-
-???
-
-Hello everyone! Welcome!
-
-I'm Louis! I'm an Erlang person and I usually talk at Erlang events so I
-wasn't sure what kind of audience I'd attract today.
-
-I've tried to write this talk so that you don't need any Erlang or ML
-experience, but if at any point what I'm saying doesn't make sense to you
-please wave your hand or ask a question and I'll try and clear things up.
-
-Hopefully everyone can see the slides OK, but just in case you can find a copy
-at this URL.
-
-Let's get started!
-
----
 class: slide-dark middle center
 <img style="width: 75%; padding-right: 45px" src="img/gleam-pink.svg">
 
@@ -40,7 +14,7 @@ class: slide-dark middle center
 
 I'm here today to talk about Gleam, which is a new statically typed
 programming language for the Erlang virtual machine that I've been working on
-for the last 2 years or so.
+for the last 2 or 3 years.
 
 Gleam draws inspiration from both BEAM languages such as Elixir and Erlang,
 and ML languages such as Haskell and Elm.
@@ -58,7 +32,11 @@ some time for questions at the end.
 
 ---
 class: slide-bold middle center
-<img style="width: 45%; position: absolute; top: 5%; left: 27%" src="img/lucy-charcoal-6.svg">
+<img style="width: 45%; position: absolute; top: 0%; left: 27%" src="img/lucy-charcoal-6.svg">
+<br>
+<br>
+<br>
+<br>
 <br>
 <br>
 <br>
@@ -67,30 +45,14 @@ class: slide-bold middle center
 # Why Erlang?
 ???
 
-Question #1: Why Erlang?
-
-One of Gleam's greatest strengths is that it compiles to Erlang and as such
-can take advantage of all the wonderful things that Erlang has to offer.
-
-This begs the question: what's so special about Erlang?
-
-
 ---
 class: middle
 <img class="color-adjust center-element" src="img/the-beam.png">
 ???
 
-A large part of the answer to that question is the BEAM, the Erlang virtual
-machine.
-
-Erlang is slightly unusual for an older functional programming language in
-that it originated largely from industry rather than academia. Back in the 80s
-the telephony company Ericsson were looking for the ideal language for writing
-telephone switch firmware in, and from this real-world need Erlang was born.
-
 ---
 class: middle
-<img class="color-adjust center-element" style="" src="img/telephone-switch-one-call.png">
+<img class="color-adjust center-element" style="max-width: 81%" src="img/telephone-switch-one-call.png">
 ???
 
 A telephone switch is a piece of hardware connects phone calls.
@@ -114,7 +76,7 @@ Erlang and the BEAM developed some rather novel features.
 
 ---
 class: middle
-<img class="color-adjust center-element" style="" src="img/telephone-switch.png">
+<img class="color-adjust center-element" style="max-width: 81%" src="img/telephone-switch.png">
 ???
 
 For a telephone switch to be useful it needs to be able to support multiple
@@ -135,85 +97,33 @@ measures seconds per second.
 A telephone switch that can hold 100 simultaneous calls can support a load of
 100 Erlangs.
 
-So how does the BEAM scale when it comes to concurrency? We can look at some
-benchmarks of real-world systems.
-
-
 ---
-## 2 million ejabberd connections
-<img class="center-element" style="max-width: 70%" src="img/ejabberd.png">
-<cite>
-https://blog.process-one.net/ejabberd-massive-scalability-1node-2-million-concurrent-users/
-</cite>
+class: middle
+## Agner Krarup Erlang
+<img class="center-element" style="" src="img/agner-erlang.jpg">
+<br>
+<br>
 ???
 
-ejabberd is a websocket based chat server, a fork of which powers WhatsApp,
-the popular chat app owned by Facebook. In their benchmarks the ejabberd team
-recorded 2 million active connections to a single server, which is quite a
-feat.
+And the unit Erlang was named after this chap Mr Agner Erlang.
 
-Another interesting fact is that WhatsApp was capable of running their
-ejabberd based chat platform with 900 million users with only 50 engineers.
+He was a danish mathematician who in the late 1800s invented the Erlang
+formula, which continues to be a foundational element in the analysis of
+telecommunication networks and concurrent system to this day.
 
-
----
-## 2 million Phoenix connections
-<img class="center-element" style="max-width: 85%" src="img/phoenix.png">
-<cite>
-https://phoenixframework.org/blog/the-road-to-2-million-websocket-connections
-</cite>
-???
-
-Phoenix Channels is a websocket based pubsub system with sophisticated
-presence features.
-
-In their benchmarks the Phoenix team also scaled to 2 million active
-connections on a single machine, and even with this load they were able to
-publish events to all the connected clients in under a second.
-
-A common feature of both this and the ejabberd benchmark is that the limiting
-factor was reported as being not the BEAM itself, but the underlying network
-hardware and the Linux networking stack.
-
-Turns out it is somewhat difficult to open and use 2 million TCP sockets on
-your average Linux server in a public cloud.
-
-
----
-## 20 million Erlang threads
-<br>
-<br>
-<img class="center-element" style="" src="img/ericsson.png">
-<br>
-<br>
-<br>
-<cite>
-https://groups.google.com/forum/#!original/comp.lang.functional/5kldn1QJ73c/T3py-yqmtzMJ
-</cite>
-
-???
-
-Lastly, in a more contrived benchmark, the Erlang team at Ericsson tested to
-see how many threads they could create in a single Erlang program. On a
-computer with 16GB of RAM they found they could create 20 million threads
-without problem.
-
-During this benchmark it took an average it took 5 nano-seconds to create a
-thread, and 6 nano-seconds for any of these threads to respond to a message
-sent to it.
-
-This benchmark was undertaken back in 2005 so by today's standards this
-was on a somewhat underpowered machine, we could likely beat this with Erlang
-today.
+By all accounts quite an impressive person, and a good bit of history for our
+ecosystem to have a link to.
 
 
 ---
 class: middle
-<img class="color-adjust center-element" style="" src="img/telephone-switch.png">
+<img class="color-adjust center-element" style="max-width: 81%" src="img/telephone-switch.png">
 ???
 
+Fast forward 100 years:
+
 When it comes to concurrency the BEAM can definitely scale, but it's not good
-enough to mearly be possible; Ericsson needed this to be relatively easy so
+enough to merely be possible; Ericsson needed this to be relatively easy so
 their firmware developers could be as productive as possible.
 
 Asynchronous programming is notoriously difficult, especially if you're
@@ -227,7 +137,7 @@ each thread only has 1 task to perform.
 
 ---
 class: middle
-<img class="color-adjust center-element" style="" src="img/telephone-switches.png">
+<img class="color-adjust center-element" style="max-width: 80%" src="img/telephone-switches.png">
 ???
 
 If each thread only has to do one thing it can be written in a sequential
@@ -244,25 +154,13 @@ session, and to then run 2 million copies of it.
 
 
 ---
-class: minimal-padding
-## Multi-threaded
-<img class="color-adjust center-element" style="" src="img/multi-threaded.png">
+class: middle minimal-padding
+<img class="color-adjust center-element" style="max-width: 95%" src="img/multi-threaded.png">
 ???
 
 To support this level of concurrency Erlang threads are not implemented as
 operating systems threads, instead they are lightweight threads called
 Processes, running on their own scheduler within the BEAM.
-
-Back in the late 80s computer processors only had a single core, so while
-Erlang programs were highly concurrent they were still single threaded.
-
-When processors with multiple cores started to appear the BEAM was upgraded to
-schedule Erlang processes across all available cores, making full use of all
-processing power available.
-
-Overnight all Erlang programs became multi-threaded programs, and now writing a
-multi-threaded program in Erlang is no more difficult than writing a
-single-threaded one.
 
 Sadly the processes in these telephony switches couldn't be completely
 isolated from each other, there's always going to need to be some
@@ -270,8 +168,7 @@ communication and synchronisation between threads in any program.
 
 
 ---
-## Messages
-<br>
+class: middle
 <img class="color-adjust center-element" style="max-width: 90%" src="img/messages.png">
 ???
 
@@ -293,31 +190,12 @@ The processes can still send messages to each other.
 
 Distributed computing is built into the BEAM, a typical BEAM program written
 in Erlang or Elixir can be turned into distributed program that runs on a
-cluster of networked computers with minimal effort.
+cluster of networked computers with minimal effort. Fantastic!
 
 
 ---
-## Garbage collection
-<img class="color-adjust center-element" src="img/garbage-collection.png">
-???
-
-Ericsson didn't want their programmers to have to deal with the error prone
-business of manual memory management, so the BEAM implements garbage
-collection.
-
-This however posed a problem. Many runtimes will pause all computation in
-order to perform garbage collection, but here that's not an option. The switch
-can't let all calls hang for a second while it sorts out the memory, it needs
-to continue to operate continuously without interruption.
-
-So instead of performing garbage collection on the entire program the BEAM
-performs it on a per process basis. Rather than stopping everything only
-individual processes that are due a clean-up will be paused, giving Erlang
-programs predictable low-latency.
-
-
----
-## Fault tolerance
+class: middle
+<br>
 <img class="color-adjust center-element" src="img/isolation.png">
 ???
 
@@ -338,13 +216,13 @@ happen at a much more fine grained level- we won't lose the state of the
 entire program and all the requests being handled by it, instead just the
 single process that had the problem.
 
-You could image the relationship between the BEAM and Kubernetes being similar
+I like to think the relationship between the BEAM and Kubernetes being similar
 to the relationship between Kubernetes and datacenter failover. They're
-similar, but they operate at different levels of abstraction.
+similar, but they operate at different levels of abstraction. And they can
+compliment each other quite well.
 
 
 ---
-## Getting less niche
 <img class="color-adjust center-element" style="" src="img/telephones-to-computers.png">
 ???
 
@@ -361,8 +239,7 @@ that web developers deal with on a daily basis.
 
 
 ---
-## Why a new language?
-<br>
+class: middle
 <img class="center-element" src="img/beam-languages.png">
 ???
 
@@ -378,8 +255,8 @@ healing properties and how that impacts us as developers and operators of
 software.
 
 ---
-class: minimal-padding middle
-<img class="color-adjust" src="img/cycle-1.png">
+class: minimal-padding middle center
+<img style="max-width: 85%" class="color-adjust" src="img/cycle-1.png">
 ???
 
 It's a normal day at work and I've got a change to make to an application.
@@ -389,64 +266,64 @@ I'm making some sort of change.
 I spend some time editing the code, making my changes.
 
 ---
-class: minimal-padding middle
-<img class="color-adjust" src="img/cycle-2.png">
+class: minimal-padding middle center
+<img style="max-width: 85%" class="color-adjust" src="img/cycle-2.png">
 ???
 
 Once satisfied run the compiler to build the application, which completes
 successfully, reporting no problems.
 
 ---
-class: minimal-padding middle
-<img class="color-adjust" src="img/cycle-3.png">
+class: minimal-padding middle center
+<img style="max-width: 85%" class="color-adjust" src="img/cycle-3.png">
 ???
 
 After that I run the unit tests on my laptop to ensure I've not broken
 anything, and then push my changes to GitHub.
 
 ---
-class: minimal-padding middle
-<img class="color-adjust" src="img/cycle-4.png">
+class: minimal-padding middle center
+<img style="max-width: 85%" class="color-adjust" src="img/cycle-4.png">
 ???
 
 Once uploaded the code triggers a build on the CI server. It runs all the unit
 and integration tests, and runs some linters to try and spot any mistakes.
 
 ---
-class: minimal-padding middle
-<img class="color-adjust" src="img/cycle-5.png">
+class: minimal-padding middle center
+<img style="max-width: 85%" class="color-adjust" src="img/cycle-5.png">
 ???
 
 If all those checks pass then it deploys the new application version to a
 staging environment.
 
 ---
-class: minimal-padding middle
-<img class="color-adjust" src="img/cycle-6.png">
+class: minimal-padding middle center
+<img style="max-width: 85%" class="color-adjust" src="img/cycle-6.png">
 ???
 
 On the staging environment I manually test the application and demo the new
 behaviour to stakeholders who give the green light to continue.
 
 ---
-class: minimal-padding middle
-<img class="color-adjust" src="img/cycle-7.png">
+class: minimal-padding middle center
+<img style="max-width: 85%" class="color-adjust" src="img/cycle-7.png">
 ???
 
 Meanwhile, on GitHub the code is reviewed by some of the other programmers on
 my team, as they may have some context or insights that I do not.
 
 ---
-class: minimal-padding middle
-<img class="color-adjust" src="img/cycle-8.png">
+class: minimal-padding middle center
+<img style="max-width: 85%" class="color-adjust" src="img/cycle-8.png">
 ???
 
 Happy with my changes they approve it and the code is merged into
 master, triggering another CI build.
 
 ---
-class: minimal-padding middle
-<img class="color-adjust" src="img/cycle-9.png">
+class: minimal-padding middle center
+<img style="max-width: 85%" class="color-adjust" src="img/cycle-9.png">
 ???
 
 
@@ -454,8 +331,8 @@ All the tests and linters are run again to ensure no problems were introduced
 during the merging process.
 
 ---
-class: minimal-padding middle
-<img class="color-adjust" src="img/cycle.png">
+class: minimal-padding middle center
+<img style="max-width: 85%" class="color-adjust" src="img/cycle.png">
 ???
 
 And lastly, once the tests have passed again the code is deployed to
@@ -473,7 +350,7 @@ as a matter of urgency.
 
 ---
 class: center middle
-<img class="color-adjust" src="img/time.png">
+<img style="max-width: 83%" class="color-adjust" src="img/time.png">
 ???
 
 In this instance the problem was discovered just a few hours after I made the
@@ -490,7 +367,7 @@ before.
 
 ---
 class: center middle
-<img class="color-adjust" src="img/science.png">
+<img style="max-width: 71%; position: relative; left: -20px" class="color-adjust" src="img/science.png">
 ???
 
 The larger the gap between the mistake being made and the problem being
@@ -504,8 +381,8 @@ largely only help us once the code is in production, and that time cost and
 loss of familiarity is far from optimal.
 
 ---
-class: minimal-padding middle center
-<img class="color-adjust" src="img/bug-detected.png">
+class: minimal-padding middle center center
+<img style="max-width: 85%" class="color-adjust" src="img/bug-detected.png">
 ???
 
 What I really want is to for problems to be detected here, immediately after the
@@ -517,7 +394,7 @@ providing business value).
 
 ---
 class: minimal-padding center middle
-<img class="color-adjust" style="padding-bottom: 40px" src="img/ml-family.png">
+<img class="color-adjust" style="max-width: 90%" src="img/ml-family.png">
 ???
 
 Gleam aims to provide that fast and safe feedback loop by introducing a type
@@ -620,7 +497,10 @@ mistakes and providing additional insight.
 
 ---
 class: slide-bold middle center
-<img style="width: 45%; position: absolute; top: 5%; left: 27%" src="img/lucy-charcoal-6.svg">
+<img style="width: 45%; position: absolute; top: 0%; left: 27%" src="img/lucy-charcoal-6.svg">
+<br>
+<br>
+<br>
 <br>
 <br>
 <br>
@@ -638,20 +518,19 @@ the application the way they approach writing code can change.
 
 
 ---
+class: l-code extra-padding
 <br>
 ```rust
 fn get_user_name(user) {
-  let User(name: name) = user
-  name
+  user.name
 }
 ```
 <center><h3>⇩⇩⇩ becomes ⇩⇩⇩</h3><center>
 ```rust
 fn get_user_name(user) {
-  let User(name: name) = user
-  case name {
-    "" -> Null
-    _ -> Just(name)
+  case user.name {
+    "" -> Error(Nil)
+    _ -> Ok(name)
   }
 }
 ```
@@ -671,7 +550,7 @@ search.
 
 ---
 <br>
-<img class="center-element" style="" src="img/nullable-error.png">
+<img class="center-element" style="max-width: 80%" src="img/nullable-error.png">
 ???
 
 In Gleam and ML languages the compiler outputs a TODO list of inconsistencies,
@@ -698,7 +577,9 @@ problem originated there or somewhere else entirely.
 
 ---
 class: slide-bold middle center
-<img style="width: 50%; position: absolute; top: 5%; left: 25%" src="img/lucy-charcoal-5.svg">
+<img style="width: 50%; position: absolute; top: -5%; left: 25%" src="img/lucy-charcoal-5.svg">
+<br>
+<br>
 <br>
 <br>
 <br>
@@ -722,7 +603,7 @@ compiler can tell if a crash is intentional, or if a mistake has been made.
 This isn't very clear, so let's look at some examples.
 
 ---
-class: l-code
+class: l-code extra-padding
 ## Programmer mistake
 ```rust
 fn main() {
@@ -750,7 +631,7 @@ has been made I want to find it and I want to fix it.
 
 
 ---
-class: l-code
+class: l-code extra-padding
 ## Incorrect user input
 ```rust
 fn handle(request) {
@@ -792,7 +673,7 @@ best thing to do.
 Erlang's fault tolerance wasn't useful here either.
 
 ---
-class: l-code
+class: l-code extra-padding
 ## Background processing
 ```rust
 fn process_video(id) {
@@ -824,7 +705,7 @@ chance these things could fail.
 
 
 ---
-class: l-code
+class: l-code extra-padding
 ## Defensive programming
 ```rust
 fn process_video(id) {
@@ -834,11 +715,11 @@ fn process_video(id) {
         Ok(result) ->
           case transcode_video(metadata) {
             Ok(_) -> "done!"
-            Error(transcoder_error) -> ???
+            Error(transcoder_error) -> todo
           }
-        Error(transcoder_error) -> ???
+        Error(transcoder_error) -> todo
       }
-    Error(database_error) -> ???
+    Error(database_error) -> todo
   }
 }
 ```
@@ -855,7 +736,7 @@ what the business logic is here as it is obscured by error handling.
 
 
 ---
-class: l-code
+class: l-code extra-padding
 ## Defensive programming
 ```rust
 fn process_video(id) {
@@ -869,7 +750,7 @@ fn process_video(id) {
     |> result.then(_, transcode_video)
   case result {
     Ok(_) -> "done!"
-    Error(e) -> ??? // What do we do here?
+    Error(e) -> todo // What do we do here?
   }
 }
 ```
@@ -892,7 +773,7 @@ alternative to this defensive programming.
 
 
 ---
-class: l-code
+class: l-code extra-padding
 ## Offensive programming
 ```rust
 fn process_video(id) {
@@ -934,14 +815,16 @@ we can deal with locally with conditional logic.
 The errors which are exceptional and outside out domain, such as data
 corruption, can be handled non-locally using processes and the BEAM.
 
-If an error is truely unexpected it shouldn't get in the way of your business
+If an error is truly unexpected it shouldn't get in the way of your business
 logic, and you shouldn't have to write extra code for your program to tolerate
 it.
 
 
 ---
 class: slide-bold middle
-<img style="width: 45%; position: absolute; top: 5%; left: 30%" src="img/lucy-charcoal-2.svg">
+<img style="width: 45%; position: absolute; top: 0%; left: 30%" src="img/lucy-charcoal-2.svg">
+<br>
+<br>
 <br>
 <br>
 <br>
@@ -950,159 +833,9 @@ class: slide-bold middle
 # What's next for Gleam?
 ???
 
-So hopefully now you can see a little of the value of bringing together these
-two language families, and what is the appeal of Gleam.
-
-Now let's take a bit more of a mundane look at what's coming next.
-
-Gleam as a language, a compiler, and a standard library are ready to be used
-in people's projects, however we're missing many of the niceties that are
-required for programmers to be productive.
-
-My current focus is to supply everything that is required for people to be
-productive with Gleam in order to build the community, and once that is done
-we can look at more exciting language enhancements.
-
----
-## Editor integration
-
-<img class="center-element" style="" src="img/editors.png">
-
-???
-
-Having good development tooling is important for productivity.
-
-We want the experience of writing Gleam code to be as slick and enjoyable as
-possible, no matter what the editor the programmer is using. To achieve this
-Gleam will implement Microsoft's Language Server Protocol.
-
-Once implemented Gleam programmers will have high quality IDE like features no
-matter what text editor they are using.
-
-And what's more thanks to Gleam's type system and static analysis this tooling
-will be able to provide much richer information to the programmer than is
-possible with other BEAM languages.
-
----
-## Documentation
-<img class="center-element" alt="documentation" style="" src="img/documentation.png">
-
-???
-
-Another part of the developer experience puzzle is documentation.
-
-I don't know if anyone here has written a program in Gleam but right now it's
-not as easy as it ought to be.
-
-Unless you want to read the source code of any libraries you're using there's
-no way to learn what modules and functions are available.
-
----
-class: splash-image
-<img src="img/hexdocs.png">
-???
-
-Meanwhile Elixir has the beautiful, searchable, mobile friendly documentation
-generated from the code itself, hosted on hexdocs (a unified website for BEAM
-documentation), and linked directly to the BEAM package management system.
-
-In Elixir it's easy to find the documentation you need, whether it's online,
-in your editor, or on the command line, or even within your program itself,
-and we intend for this to be the case for Gleam too.
-
-
----
-class: center
-## Exercism
-<img class="center-element" style="max-width: 70%" src="img/exercism.png">
-
-https://exercism.io
-
-???
-
-Who's familiar with Exercism?
-
-Exercism is a fantastic place for people to learn new programming languages
-and to practice their coding skills.
-
----
-class: middle
-
-<img class="center-element" src="img/exercism-learn.png">
-???
-
-How does it work? A programmer picks a language they want to practice and
-Exercism gives them an exercise to complete.
-
-Each exercise has instructions, some skeleton code to fill in, and a full set
-of unit tests to make pass.
-
-
----
-class: middle
-
-<img class="center-element" style="padding-top: 69px" src="img/exercism-chat.png">
-
-
-???
-
-Once the programmer has completed their solution they can to submit it back to
-Exercism, where they get getting friendly and constructive feedback from track
-mentors and other students.
-
-They can also view solutions from other people and learn different approaches
-to the same problem.
-
-
----
-class: center
-
-## 51 Languages and counting
-
-<img class="center-element" src="img/exercism-languages.png">
-
-???
-
-Exercism currently has 51 live languages tracks and has given the thumbs up
-for a Gleam track.
-
-The exercises need to be ported to Gleam and documentation needs to be
-written, but once done we'll have a top notch experience for learning and
-practicing Gleam.
-
-Exercism is community run, open source, and very well organised so if you're
-interested in contributing to Gleam or if you just want to learn some new
-languages I would encourage you to check it out.
-
----
-class: slide-bold middle center
-<h1 style="font-size: 4em">Gleam 💕 Erlang</h1>
-???
-
-As I said before Gleam's greatest strength is that it builds on top of Erlang,
-and as such we want to integrate into the wider BEAM community as much as
-possible.
-
-Gleam uses the standard Erlang built tools and package management, we don't
-want to create an alternative, and we don't want to fracture the ecosystem.
-
-It's straightforward to use Erlang libraries from Gleam, giving us access to a
-healthy ecosystem of battle tested packages and libraries to use in our
-programs.
-
-We also want to give back to other BEAM languages, so it should be just as
-easy to use Gleam libraries in them. An Erlang or Elixir programmer will be
-able to import and use a Gleam library without needing to modify their build
-pipeline, or having to learn anything about Gleam.
-
-The aim is for Gleam to enrich the ecosystem further for users of all BEAM
-languages, and to provide a new way of programming on the BEAM that will
-hopefully draw in a wider collection of people.
-
-
 ---
 class: middle, slide-bold
-<img style="width: calc(100% - 580px); position: absolute; right: 30px; bottom: 10px" src="img/lucy-charcoal.svg">
+<img style="width: calc(100% - 540px); position: absolute; right: -10px; bottom: 10px" src="img/lucy-charcoal.svg">
 
 <img style="width: 300px; margin: -110px -20px" src="img/gleam-charcoal.svg">
 
@@ -1110,27 +843,15 @@ class: middle, slide-bold
 - https://github.com/gleam-lang/gleam
 - IRC `#gleam-lang` on Freenode
 
-### Griffics' art
+### Sponsor Gleam
 
-- https://www.griffics.com/
+- https://github.com/sponsors/lpil
 
 ### Call me?
 
 - twitter @louispilfold
 
 ???
-
-That's all I've got to share today.
-
-If any of this sounds interesting to you please do check out the website and
-always feel free to message me on IRC, GitHub or Twitter with any questions
-you might have.
-
-Lastly I would like to say a huge thank you to Griffics for designing the
-beautiful Gleam logo and Lucy the star. Go checkout his website, it's full of
-lots of really fun and playful artwork.
-
-Thank you very much for listening.
 
 
     </textarea>

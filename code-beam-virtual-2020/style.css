@@ -162,3 +162,8 @@ cite a {
 .minimal-padding {
   padding: 5px;
 }
+
+.extra-padding {
+  padding-left: 18%;
+  padding-right: 18%;
+}
