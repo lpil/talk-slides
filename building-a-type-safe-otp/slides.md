@@ -86,10 +86,9 @@ image: /daniele-franchi-S4jPaP071KI-unsplash.jpg
 ---
 
 
-<img src="/gleam.svg" style="max-width: 90%; margin-bottom: 2rem">
+<img src="/gleam.svg" style="max-width: 90%; margin: 2rem 0 5rem 0">
 
 A new programming language
-
 
 - Runs on the BEAM
 - Has a strong static type system
