@@ -70,17 +70,17 @@ class: text-center
 <br>
 
 <!--
-When I speak of types
+I wanted to add types to Erlang
 
 People would say not possible
 
 Disappointing
 
-but I enjoy types!
+But most Erlang code isn't OTP
 
-Let's try anyway
+We know FP can be typed
 
-Most Erlang code isn't OTP
+Let's type that
 -->
 ---
 layout: image-right
@@ -90,12 +90,18 @@ image: /daniele-franchi-S4jPaP071KI-unsplash.jpg
 
 <img src="/gleam.svg" style="max-width: 90%; margin: 2rem 0 5rem 0">
 
-A new programming language
+A friendly programming language
 
 - Runs on the BEAM
 - Has a strong static type system
 
----
+<!--
+Resulted in Gleam
+
+BEAM: actors, distributed, multi-core, fault tolerant
+
+Types: like Elm. Compiler trying to help
+-->
 ---
 
 # A brief history of Gleam
@@ -130,9 +136,84 @@ class: text-center
 
 # What do you mean by type safe?
 
+<!--
+Pit of success
+
+The most obvious solution should be optimal
+
+Invalid solutions should not be possible
+
+Compiler helps you
+
+That's the goal
+-->
+
 ---
 ---
-- What does "type safe" mean?
+
+# External types
+
+<div grid="~ cols-2 gap-4">
+<div>
+
+Define in Erlang
+```erlang
+@opaque my_type() :: term().
+```
+
+</div>
+<div>
+
+Import into Gleam
+
+```rust
+external type MyType
+```
+
+</div>
+</div>
+
+<!--
+-->
+---
+---
+
+# External functions
+
+<div grid="~ cols-2 gap-4">
+<div>
+
+Define in Erlang
+```erlang
+-export([add/2]).
+
+-spec add(float(), float()) -> float().
+add(A, B) -> A + B.
+```
+
+</div>
+<div>
+
+Import into Gleam
+
+```rust
+
+
+external fn add(Float, Float) -> Float =
+  "my_erlang_module" "add"
+```
+
+</div>
+</div>
+
+<!--
+-->
+
+---
+---
+
+---
+---
 - [[#Gleam crash course]]
 	- It's a statically typed language that runs on the Erlang VM
 	- Can define Erlang records (called custom types)
