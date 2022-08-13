@@ -101,13 +101,14 @@ Resulted in Gleam
 BEAM: actors, distributed, multi-core, fault tolerant
 
 Types: like Elm. Compiler trying to help
+
+I am not going to sell types to you
 -->
 ---
 
 # A brief history of Gleam
 
-- 2016: Development beings
-- 2018: Rewrite in Rust
+- 2018: Development beings
 - 2019: v0.1 released
 - 2020: Language refinement, formatter, html docs, OTP
 - 2021: Build tool, new parser, JavaScript, typespecs
@@ -150,23 +151,83 @@ That's the goal
 
 ---
 ---
+```rust {all|1-3|5-11|8}
+pub type Language {
+  Language(name: String, magic: String)
+}
+
+pub fn add_beamers(languages) {
+  [ Language(name: "Erlang", magic: "Actors"),
+    Language(name: "Elixir", magic: "Macros"),
+    Language(name: "Gleam"),
+    ..languages,
+  ]
+}
+```
+
+<v-click>
+
+```
+  ┌─ ./src/main.gleam:9:5
+  │
+9 │     Language(name: "Gleam"),
+  │     ^^^^^^^^^^^^^^^^^^^^^^^ expected 2 arguments, got 1
+
+This call accepts these additional labelled arguments:
+  - magic
+```
+
+</v-click>
+<!--
+A quick intro to Gleam
+
+**CLICK**  Define a record
+
+**CLICK**  Use it in a function
+
+No annotations needed
+
+**CLICK**  Mistake: missing argument
+
+**CLICK** The compiler lets us know
+-->
+---
+layout: center
+class: text-center
+---
+
+# No send or receive in Gleam!
+We gotta import them
+
+<!-- 
+No send/receive
+
+To work with processes you must use Erlang FFI
+-->
+
+---
+---
 
 # External types
 
 <div grid="~ cols-2 gap-4">
 <div>
 
-Define in Erlang
+In Erlang
 ```erlang
+-module(my_erlang_module).
+
+% Define a type
 @opaque my_type() :: term().
 ```
 
 </div>
 <div>
 
-Import into Gleam
+In Gleam
 
 ```rust
+// Import it into Gleam
 external type MyType
 ```
 
@@ -174,6 +235,7 @@ external type MyType
 </div>
 
 <!--
+Permits referencing Erlang types in Gleam
 -->
 ---
 ---
@@ -183,57 +245,140 @@ external type MyType
 <div grid="~ cols-2 gap-4">
 <div>
 
-Define in Erlang
-```erlang
+In Erlang
+```erlang {all|0}
+-module(my_erlang_module).
 -export([add/2]).
 
+% Define a function
 -spec add(float(), float()) -> float().
-add(A, B) -> A + B.
+add(A, B) ->
+    A + B.
 ```
 
 </div>
 <div>
 
-Import into Gleam
+In Gleam
 
-```rust
-
-
+```rust {all|2}
+// Import it into Gleam
 external fn add(Float, Float) -> Float =
   "my_erlang_module" "add"
+
+pub fn main() {
+  add(1.0, 2.2) // <- Use it!
+}
 ```
 
 </div>
 </div>
 
 <!--
+Permits calling Erlang functions in Gleam
+
+**CLICK CLICK**
+
+Have to give the type of arguments + return
+
+Enough Gleam. Let's make type safe OTP!
 -->
+---
+---
+# Let's wrap gen_server
+
+<div grid="~ cols-2 gap-4">
+<div>
+
+```erlang {all|0}
+init(_Args) ->
+    {ok, 0}.
+
+
+handle_call(increment, _From, X) ->
+    {reply, X, X + 1};
+handle_call(is_zero, _From, X) ->
+    {reply, X, X =:= 0}.
+
+
+
+handle_cast(reset, _) ->
+    {noreply, 0}.
+```
+
+</div>
+<div>
+
+```rust {all|7-8}
+pub fn init(_args) {
+  Ok(0)
+}
+
+pub fn handle_call(msg, _from, x) {
+  case msg {
+    Increment -> Reply(x, x + 1)
+    IsZero -> Reply(x, x == 0)
+  }
+}
+
+pub fn handle_cast(msg, _x) {
+  case msg {
+    Reset -> Noreply(0)
+  }
+}
+```
+
+</div>
+</div>
+
+<!--
+One to one wrapping
+
+Can you see the problem?
+
+**CLICK CLICK**
+
+Increment returns reply of int  
+IsZero returns reply of bool
+
+Gleam won't permit it
+
+Also: Unsatisfying. High level. Limited
+
+Not powerful enough to represent OTP
+-->
+---
+layout: center
+class: text-center
+---
+# OTP is implemented in Erlang
+
+Gleam should be as powerful
+
+<!--
+OTP is just Erlang
+
+We don't want to be limited
+
+Gleam should be as powerful
+
+Right primitives -> we can implement OTP
+-->
+---
+layout: image-left
+image: /jake-weirick-dWUPJdXiC-M-unsplash.jpg
+---
+# The primitives
+
+- send
+- receive
+- spawn
+- link
+- monitor
+- trap_exits
 
 ---
 ---
-
----
----
-- [[#Gleam crash course]]
-	- It's a statically typed language that runs on the Erlang VM
-	- Can define Erlang records (called custom types)
-	- Can call Erlang code without cost (like Elixir can)
-	- Functions can be imported (external fn)
-	- Data types can be imported (external type)
-	- No send/receive etc in the core language
-- [[#Wrapping gen_servers]]
-	- It's the building block of OTP, most commonly used to build other abstractions
-	- Use external fn to import a gen_server's functional facade
-	- Use it via that imported facade
-- [[#Defining gen_servers]]
-	- Define each callback function
-	- Define functional interface
-	- Is this good enough?
-	- It doesn't catch mistakes
-		- Function names
-		- Incorrect return values
-		- Missing functions
-	- We want full type safety. Mistakes should be impossible.
 - Wrapping OTP is not enough
 	- If we wrap gen_server we can't do everything
 	- Elixir's task, gen_statem, etc
