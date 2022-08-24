@@ -108,7 +108,7 @@ I am not going to sell types to you
 
 # A brief history of Gleam
 
-- 2018: Development beings
+- 2018: Development begins
 - 2019: v0.1 released
 - 2020: Language refinement, formatter, html docs, OTP
 - 2021: Build tool, new parser, JavaScript, typespecs
