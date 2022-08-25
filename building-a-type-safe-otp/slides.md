@@ -28,7 +28,7 @@ canvasWidth: 775 # default is 980
 twitter: @louispilfold
 
 <!--
-The last comment block of each slide will be treated as slide notes. It will be visible and editable in Presenter Mode along with the slide. [Read more in the docs](https://sli.dev/guide/syntax.html#notes)
+Hello!
 -->
 
 ---
@@ -51,6 +51,13 @@ github: @lpil
 <img src="/lucy-circle-pride.svg">
 
 <!--
+Who am I
+
+I love Erlang, Elixir, BEAM, the experience
+
+I love types, ML languages, the experience
+
+I made Gleam
 -->
 
 ---
@@ -78,6 +85,8 @@ Disappointing
 
 But most Erlang code isn't OTP
 
+**CLICK**
+
 We know FP can be typed
 
 Let's type that
@@ -103,6 +112,8 @@ BEAM: actors, distributed, multi-core, fault tolerant
 Types: like Elm. Compiler trying to help
 
 I am not going to sell types to you
+
+A new way to write code on the BEAM
 -->
 ---
 
@@ -151,45 +162,93 @@ That's the goal
 
 ---
 ---
-```rust {all|1-3|5-11|8}
-pub type Language {
-  Language(name: String, magic: String)
-}
+# Records
 
-pub fn add_beamers(languages) {
-  [ Language(name: "Erlang", magic: "Actors"),
-    Language(name: "Elixir", magic: "Macros"),
-    Language(name: "Gleam"),
-    ..languages,
-  ]
+```rust
+pub type Language {
+  Language(name: String, origin: Int)
 }
 ```
 
-<v-click>
+<br>
+
+```erlang
+-module(my_erlang_module).
+-export_type([language/0]).
+
+-record(language, {name :: binary(), origin :: integer()}).
+-type language() :: #language{}.
+```
+
+<!--
+Quick intro to Gleam
+
+Gleam top, Erlang bottom
+
+Declaring a record
+-->
+---
+---
+# Functions
+
+```rust
+pub fn add_gleam(languages) {
+  let gleam = Language(name: "Gleam")
+  [gleam, ..languages]
+}
+```
+<br>
+
+```erlang
+-module(my_erlang_module).
+-export([add_gleam/1]).
+
+-spec add_gleam(list(#language{})) -> list(#language{})
+add_gleam(Languages) ->
+    Gleam = #language{ name = <<"Gleam">>} 
+    [Gleam | languages]
+```
+
+<!--
+Declare a function
+
+Constructs a language record
+
+Prepend it to a list
+
+No annotations needed!
+-->
+
+---
+---
+# Contract violation detection
+
+```rust {2}
+pub fn add_gleam(languages) {
+  let gleam = Language(name: "Gleam")
+  [gleam, ..languages]
+}
+```
+<br>
 
 ```
   ┌─ ./src/main.gleam:9:5
   │
-9 │     Language(name: "Gleam"),
-  │     ^^^^^^^^^^^^^^^^^^^^^^^ expected 2 arguments, got 1
+9 │     let gleam = Language(name: "Gleam"),
+  │                 ^^^^^^^^^^^^^^^^^^^^^^^ expected 2 arguments, got 1
 
 This call accepts these additional labelled arguments:
-  - magic
+  - origin
 ```
 
-</v-click>
 <!--
-A quick intro to Gleam
+Gleam will tell you about mistakes
 
-**CLICK**  Define a record
+We said Language has 2 fields
 
-**CLICK**  Use it in a function
+We only gave 1
 
-No annotations needed
-
-**CLICK**  Mistake: missing argument
-
-**CLICK** The compiler lets us know
+Helping to catch mistakes
 -->
 ---
 layout: center
@@ -210,29 +269,19 @@ To work with processes you must use Erlang FFI
 
 # External types
 
-<div grid="~ cols-2 gap-4">
-<div>
-
-In Erlang
 ```erlang
 -module(my_erlang_module).
+-export_type([my_type/0]).
 
-% Define a type
+% Define a type in Erlang
 @opaque my_type() :: term().
 ```
-
-</div>
-<div>
-
-In Gleam
+<br>
 
 ```rust
 // Import it into Gleam
 external type MyType
 ```
-
-</div>
-</div>
 
 <!--
 Permits referencing Erlang types in Gleam
@@ -242,11 +291,7 @@ Permits referencing Erlang types in Gleam
 
 # External functions
 
-<div grid="~ cols-2 gap-4">
-<div>
-
-In Erlang
-```erlang {all|0}
+```erlang
 -module(my_erlang_module).
 -export([add/2]).
 
@@ -255,13 +300,9 @@ In Erlang
 add(A, B) ->
     A + B.
 ```
+<br>
 
-</div>
-<div>
-
-In Gleam
-
-```rust {all|2}
+```rust
 // Import it into Gleam
 external fn add(Float, Float) -> Float =
   "my_erlang_module" "add"
@@ -271,17 +312,10 @@ pub fn main() {
 }
 ```
 
-</div>
-</div>
-
 <!--
 Permits calling Erlang functions in Gleam
 
-**CLICK CLICK**
-
-Have to give the type of arguments + return
-
-Enough Gleam. Let's make type safe OTP!
+That's enough. Let's make type safe OTP!
 -->
 ---
 ---
@@ -290,7 +324,7 @@ Enough Gleam. Let's make type safe OTP!
 <div grid="~ cols-2 gap-4">
 <div>
 
-```erlang {all|0}
+```erlang
 init(_Args) ->
     {ok, 0}.
 
@@ -309,7 +343,7 @@ handle_cast(reset, _) ->
 </div>
 <div>
 
-```rust {all|7-8}
+```rust
 pub fn init(_args) {
   Ok(0)
 }
@@ -334,14 +368,141 @@ pub fn handle_cast(msg, _x) {
 <!--
 One to one wrapping
 
-Can you see the problem?
+Gleam checks consistency within functions
 
-**CLICK CLICK**
+Similar to what Elixir does
 
-Increment returns reply of int  
-IsZero returns reply of bool
+Is this good enough?
+-->
+---
+---
+# Consistently wrong
 
-Gleam won't permit it
+<div grid="~ cols-2 gap-4">
+<div>
+
+```erlang
+init(_Args) ->
+    {ok, 0}.
+
+
+handle_call(increment, _From, X) ->
+    {reply, X, X + 1};
+handle_call(is_zero, _From, X) ->
+    {reply, X, X =:= 0}.
+
+
+
+handle_cast(reset, _) ->
+    {noreply, 0}.
+```
+
+</div>
+<div>
+
+```rust
+// pub fn init(_args) {
+//   Ok(0)
+// }
+
+pub fn handle_call(msg, _from, x) {
+  case msg {
+    Increment -> Reply(x, x + 1)
+    IsZero -> Reply(x, x == 0)
+  }
+}
+
+pub fn handle_cast(msg, _x) {
+  case msg {
+    Reset -> Noreply(0)
+  }
+}
+```
+
+</div>
+</div>
+
+<!--
+What if we forgot a function?
+
+This is consistent
+
+wrong for gen_server
+
+Gleam doesn't know about Erlang behaviours
+
+We could add a module system (complexity)
+
+Is that enough?
+-->
+
+---
+---
+# Internally inconsistent
+
+<div grid="~ cols-2 gap-4">
+<div>
+
+```erlang {0}
+init(_Args) ->
+    {ok, 0}.
+
+
+handle_call(increment, _From, X) ->
+    {reply, X, X + 1};
+handle_call(is_zero, _From, X) ->
+    {reply, X, X =:= 0}.
+
+
+
+handle_cast(reset, _) ->
+    {noreply, 0}.
+```
+
+</div>
+<div>
+
+```rust {7-8}
+pub fn init(_args) {
+  Ok(0)
+}
+
+pub fn handle_call(msg, _from, x) {
+  case msg {
+    Increment -> Reply(x, x + 1)
+    IsZero -> Reply(x, x == 0)
+  }
+}
+
+pub fn handle_cast(msg, _x) {
+  case msg {
+    Reset -> Noreply(0)
+  }
+}
+```
+
+</div>
+</div>
+
+<!--
+Look closer
+
+- Increment returns reply of int
+- IsZero returns reply of bool
+
+Violates the contract- functions return a specific type
+
+Elixir solves with set-theoretic types
+
+But! no relationship between message & response!
+
+Could reply with bool to Increment. consistent but wrong
+-->
+
+---
+---
+
+Can't just replicate an untyped API. Need a new one.
 
 Also: Unsatisfying. High level. Limited
 
