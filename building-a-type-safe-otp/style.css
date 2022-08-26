@@ -4,3 +4,7 @@
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
+
+code, kbd, samp, pre {
+  font-size: 0.8rem;
+}

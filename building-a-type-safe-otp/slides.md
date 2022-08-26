@@ -2,7 +2,6 @@
 # https://sli.dev/builtin/layouts.html#statement
 
 theme: default
-# background: images/pawel-czerwinski-vjuSjU3Dfm0-unsplash.jpg
 background: /ernest-brillo-Qi8CvonsYnM-unsplash.jpg
 # apply any windi css classes to the current slide
 class: 'text-center'
@@ -61,11 +60,45 @@ I made Gleam
 -->
 
 ---
+---
+# This is a talk about OTP & types
+
+- ❌ Sales pitch
+- ❌ Introduction to types
+- ✅ Exploring OTP internals
+- ✅ Solving a technical problem
+
+<style>
+  h1 {
+    text-align: center;
+  }
+  ul {
+    display: block;
+    margin: 0 auto !important;
+    width: 80%;
+  }
+  li {
+    font-size: 1.3rem;
+  }
+</style>
+
+<!--
+People like to debate types: I'm not doing that
+
+Not an introduction
+
+Assuming existing interest + understanding of basics
+
+Explore OTP, share what Gleamers have been working on
+-->
+
+---
 layout: quote
 class: text-center
 ---
 
 # "It is not possible to type OTP"
+<i>- seemingly everyone in 2015</i>
 
 <h3 v-click>
   ✨ OK, let's type all the other bits ✨
@@ -110,8 +143,6 @@ Resulted in Gleam
 BEAM: actors, distributed, multi-core, fault tolerant
 
 Types: like Elm. Compiler trying to help
-
-I am not going to sell types to you
 
 A new way to write code on the BEAM
 -->
@@ -500,13 +531,21 @@ Could reply with bool to Increment. consistent but wrong
 -->
 
 ---
+layout: center
+class: text-center
 ---
+# New constraints: new API
 
-Can't just replicate an untyped API. Need a new one.
+<!--
+gen_server is ideal for Erlang
 
-Also: Unsatisfying. High level. Limited
+It was designed for Erlang
 
-Not powerful enough to represent OTP
+We need an API designed for types
+
+Compatible, equivalent, but different
+
+Make full use of Gleam.
 -->
 ---
 layout: center
@@ -517,11 +556,11 @@ class: text-center
 Gleam should be as powerful
 
 <!--
-OTP is just Erlang
+OTP is Erlang
 
-We don't want to be limited
+Gleam's OTP should be in Gleam
 
-Gleam should be as powerful
+If we can't then our abstraction isn't powerful enough
 
 Right primitives -> we can implement OTP
 -->
@@ -531,329 +570,513 @@ image: /jake-weirick-dWUPJdXiC-M-unsplash.jpg
 ---
 # The primitives
 
+- spawn
+- monitor
 - send
 - receive
-- spawn
 - link
-- monitor
 - trap_exits
 
+<!--
+These are the concurrency primitives
+
+used to implement OTP in Erlang
+
+If we have this power in Gleam we can do the same
+
+Erlang imports these from C
+
+Gleam will import them from Erlang
+-->
 ---
 ---
-- Wrapping OTP is not enough
-	- If we wrap gen_server we can't do everything
-	- Elixir's task, gen_statem, etc
-	- We want type safe versions of the primitives
-		- send
-		- receive
-		- spawn
-		- link
-		- monitor
-		- trap_exits
-- Type safe primitives
-	- define Pid type (no parameter)
-	- link (easy, just a fn)
-	- monitor (Monitor type + fn)
-	- trap_exits (Erlang wrapper + fn)
-	- send
-		- How do we know what type of message a pid accepts?
-		- Parameterise pids with the message type
-	- spawn (fn)
-	- receive
-		- gen_server style eager receive fn
-		- need to have a reference to self in order to know own message type
-- Show spawning a process and sending a message to it
-- Let's implement `call`
-	- Sending a message and getting a response.
-	- Show the code
-	- What if the response isn't the first message in the inbox?
-	- How does OTP do it?
-		- send `{call, {Pid, Ref}, Msg}`, reply with `{Ref, Reply}`
-		- the reference is used to add some semantic information to messages being received
-		- We need selective receive!
-	- Selecting for one specific tag tuple
-	- `receive` can select from multiple expected messages at once
-		- Selecting multiple tags at once with Selector
-	- implement call with it
-	- Wait! There's a problem!
-	- We can't reply because the caller pid might not accept that message type
-	- Having a pid accept only one type of message is not enough
-	- We need to add semantic information to messages being sent
-	- Use subjects again!
----
-layout: image-right
-image: https://source.unsplash.com/collection/94734566/1920x1080
----
+# Spawn
 
-# Code
+```rust
+pub external type Pid
 
-Use code snippets and get the highlighting directly![^1]
-
-```ts {all|2|1-6|9|all}
-interface User {
-  id: number
-  firstName: string
-  lastName: string
-  role: string
-}
-
-function updateUser(id: number, update: User) {
-  const user = getUser(id)
-  const newUser = { ...user, ...update }
-  saveUser(id, newUser)
-}
+pub external fn spawn(fn() -> a) -> Pid
+  "erlang" "spawn"
+```
+<br>
+```rust
+let pid = spawn(fn() {
+  // Do stuff!
+})
 ```
 
-<arrow v-click="3" x1="400" y1="420" x2="230" y2="330" color="#564" width="3" arrowSize="1" />
+<!--
+Start with an easy one: Spawn
 
-[^1]: [Learn More](https://sli.dev/guide/syntax.html#line-highlighting)
+Import the Pid type from Erlang
 
-<style>
-.footnotes-sep {
-  @apply mt-20 opacity-10;
-}
-.footnotes {
-  @apply text-sm opacity-75;
-}
-.footnote-backref {
-  display: none;
-}
-</style>
+Import the spawn function
+
+1 to 1 mapping. No changes
+-->
 
 ---
+---
+# Link
 
-# Components
-
-<div grid="~ cols-2 gap-4">
-<div>
-
-You can use Vue components directly inside your slides.
-
-We have provided a few built-in components like `<Tweet/>` and `<Youtube/>` that you can use directly. And adding your custom components is also super easy.
-
-```html
-<Counter :count="10" />
+```rust
+pub external fn link(Pid) -> Bool =
+  "erlang" "link"
 ```
 
-<!-- ./components/Counter.vue -->
-<Counter :count="10" m="t-4" />
+<!--
+Link
 
-Check out [the guides](https://sli.dev/builtin/components.html) for more.
+Really easy, just import the function from Erlang
+-->
 
-</div>
-<div>
+---
+---
+# Trap exits
 
-```html
-<Tweet id="1390115482657726468" />
+```rust
+pub external fn trap_exits(Bool) -> Nil =
+  "gleam_otp_erl" "trap_exits"
 ```
-
-<Tweet id="1390115482657726468" scale="0.65" />
-
-</div>
-</div>
-
-
----
-class: px-20
----
-
-# Themes
-
-Slidev comes with powerful theming support. Themes can provide styles, layouts, components, or even configurations for tools. Switching between themes by just **one edit** in your frontmatter:
-
-<div grid="~ cols-2 gap-2" m="-t-2">
-
-```yaml
----
-theme: default
----
-```
-
-```yaml
----
-theme: seriph
----
-```
-
-<img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-default/01.png?raw=true">
-
-<img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-seriph/01.png?raw=true">
-
-</div>
-
-Read more about [How to use a theme](https://sli.dev/themes/use.html) and
-check out the [Awesome Themes Gallery](https://sli.dev/themes/gallery.html).
-
----
-preload: false
----
-
-# Animations
-
-Animations are powered by [@vueuse/motion](https://motion.vueuse.org/).
-
-```html
-<div
-  v-motion
-  :initial="{ x: -80 }"
-  :enter="{ x: 0 }">
-  Slidev
-</div>
-```
-
-<div class="w-60 relative mt-6">
-  <div class="relative w-40 h-40">
-    <img
-      v-motion
-      :initial="{ x: 800, y: -100, scale: 1.5, rotate: -50 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-square.png"
-    />
-    <img
-      v-motion
-      :initial="{ y: 500, x: -100, scale: 2 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-circle.png"
-    />
-    <img
-      v-motion
-      :initial="{ x: 600, y: 400, scale: 2, rotate: 100 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-triangle.png"
-    />
-  </div>
-
-  <div
-    class="text-5xl absolute top-14 left-40 text-[#2B90B6] -z-1"
-    v-motion
-    :initial="{ x: -80, opacity: 0}"
-    :enter="{ x: 0, opacity: 1, transition: { delay: 2000, duration: 1000 } }">
-    Slidev
-  </div>
-</div>
-
-<!-- vue script setup scripts can be directly used in markdown, and will only affects current page -->
-<script setup lang="ts">
-const final = {
-  x: 0,
-  y: 0,
-  rotate: 0,
-  scale: 1,
-  transition: {
-    type: 'spring',
-    damping: 10,
-    stiffness: 20,
-    mass: 2
-  }
-}
-</script>
-
-<div
-  v-motion
-  :initial="{ x:35, y: 40, opacity: 0}"
-  :enter="{ y: 0, opacity: 1, transition: { delay: 3500 } }">
-
-[Learn More](https://sli.dev/guide/animations.html#motion)
-
-</div>
-
----
-
-# LaTeX
-
-LaTeX is supported out-of-box powered by [KaTeX](https://katex.org/).
-
 <br>
 
-Inline $\sqrt{3x-1}+(1+x)^2$
+```erlang
+% Erlang wrapper to simplify API
+trap_exits(Bool) ->
+    erlang:process_flag(trap_exit, Bool),
+    nil.
+```
 
-Block
-$$
-\begin{array}{c}
+<!--
+Next: Trap exits
 
-\nabla \times \vec{\mathbf{B}} -\, \frac1c\, \frac{\partial\vec{\mathbf{E}}}{\partial t} &
-= \frac{4\pi}{c}\vec{\mathbf{j}}    \nabla \cdot \vec{\mathbf{E}} & = 4 \pi \rho \\
+Diverged from Erlang API slightly
 
-\nabla \times \vec{\mathbf{E}}\, +\, \frac1c\, \frac{\partial\vec{\mathbf{B}}}{\partial t} & = \vec{\mathbf{0}} \\
+We could import all the `process_flag` functionality
 
-\nabla \cdot \vec{\mathbf{B}} & = 0
+but here we keep it simple
 
-\end{array}
-$$
+small Erlang wrapper
 
-<br>
+Making a dedicated `trap_exits` function
+-->
 
-[Learn more](https://sli.dev/guide/syntax#latex)
 
 ---
+---
+# Monitor
 
-# Diagrams
+```rust {all|6|0}
+pub external type Monitor
 
-You can create diagrams / graphs from textual descriptions, directly in your Markdown.
+pub external fn monitor(Pid) -> Monitor =
+  "gleam_otp_erl" "monitor_process"
 
-<div class="grid grid-cols-3 gap-10 pt-4 -mb-6">
+pub external fn demonitor(Monitor) -> Nil =
+  "gleam_otp_erl" "demonitor_process"
+```
+<br>
 
-```mermaid {scale: 0.5}
+```erlang {all|4|7}
+-opaque monitor() :: reference().
+
+monitor_process(Pid) ->
+    erlang:monitor(process, Pid).
+
+demonitor_process(Ref) ->
+    erlang:demonitor(Ref, [flush]),
+    nil.
+```
+
+<!--
+Import monitor type, monitor + demonitor functions
+
+Diverged from the Erlang API more
+
+Erlang wrapper functions to make invalid states impossible.
+
+- **CLICKS EACH**
+- Can't use a non-monitor reference with unlink
+- Can't pass the wrong atom, it is always correct
+- Can't forget to flush outdated messages
+
+Small changes, easier to use
+-->
+
+---
+---
+# Send & receive
+
+```rust {all|1|4}
+pub external fn send(Pid, msg) -> msg =
+  "erlang" "send"
+
+pub external fn receive(Int) -> Option(UnknownType) =
+  "gleam_otp_erl" "receive_"
+```
+<br>
+
+```erlang
+receive_(Timeout) ->
+    receive
+        Msg -> {some, Msg}
+    after Timeout -> none
+    end.
+```
+
+<!--
+The last bit! Send & receive
+
+Import send directly, import a wrapper around receive
+
+Problem: pids getting the right messages
+
+**CLICK** send lets you send any message
+
+**CLICK** receive doesn't know kind of message it returns
+
+Type safe OTP => only correct messages get sent
+-->
+
+---
+---
+# Parameterise Pids
+
+```rust
+pub external type Pid(msg)
+
+pub external fn send(Pid(msg), msg) -> msg =
+  "erlang" "send"
+```
+<br>
+
+```rust
+pub fn main(pid) {
+  send(pid, "Hello!") // It must be a Pid(String)
+  send(pid, 123)      // Inconsistent! Wrong message type!
+}
+```
+
+<!--
+Solution: parameterise pids with the message they accept
+
+pid accepts strings: Pid(String) type
+
+pid accepts floats: Pid(Float) type
+
+`send` must have a pid and message of the same type
+-->
+
+---
+---
+# What about replies?
+
+<div class="text-center">
+
+```mermaid { scale: 0.8 }
 sequenceDiagram
-    Alice->John: Hello John, how are you?
-    Note over Alice,John: A typical interaction
-```
-
-```mermaid {theme: 'neutral', scale: 0.8}
-graph TD
-B[Text] --> C{Decision}
-C -->|One| D[Result 1]
-C -->|Two| E[Result 2]
-```
-
-```plantuml {scale: 0.7}
-@startuml
-
-package "Some Group" {
-  HTTP - [First Component]
-  [Another Component]
-}
-
-node "Other Groups" {
-  FTP - [Second Component]
-  [First Component] --> FTP
-}
-
-cloud {
-  [Example 1]
-}
-
-
-database "MySql" {
-  folder "This is my folder" {
-    [Folder 3]
-  }
-  frame "Foo" {
-    [Frame 4]
-  }
-}
-
-
-[Another Component] --> [Example 1]
-[Example 1] --> [Folder 3]
-[Folder 3] --> [Frame 4]
-
-@enduml
+    participant U as UI Process
+    participant T as Thermometer Process
+    participant W as Weather Process
+    U->>T: GetTemp
+    T->>U: 14.2
+    U->>W: GetWeather
+    W->>U: "Raining"
 ```
 
 </div>
 
-[Learn More](https://sli.dev/guide/syntax.html#diagrams)
+<!--
+3 processes in an app
 
+UI sends `GetTemp`: gets Float reply
+
+UI sends `GetWeather`: gets String reply
+
+Problem! The replies have different types!
+
+UI needs to accept Float & String replies
+
+Erlang processes are complex
+
+cannot be limited to one message type
+
+Where to store semantic information if not the Pid?
+-->
+
+---
+---
+# Attaching meaning to messages
+
+A problem OTP already solves ✨
+
+```erlang
+% inside OTP's gen.erl module
+
+-opaque from() :: {pid(), reference()}.
+
+-spec reply(from(), Msg) -> Msg.
+reply(From, Reply) ->
+    {To, Tag} = From,
+    To ! {Tag, Reply}.
+```
+
+<!--
+OTP had a similar problem
+
+Which message is a reply to which?
+
+Need to attach meaning to each message
+
+Solution: `from` type, a message with a tag.
+
+It wasn't for types, but the same technique applies
+-->
+
+---
+---
+# Converted to Gleam
+
+```rust
+pub type From {
+  From(pid: Pid, tag: Reference)
+}
+
+pub fn reply(from: From, reply: msg) {
+  untyped_send(from.pid, #(from.tag, reply))
+}
+
+pub external fn untyped_send(Pid, msg) -> msg =
+  "erlang" "send"
+```
+
+<!--
+Here it what it would look like in Gleam
+
+Define a `From` type, define a `reply` fn
+
+Next: have it store message type information
+-->
+
+---
+---
+# Add message type
+
+```rust
+pub type From(msg) {
+  From(pid: Pid, tag: Reference)
+}
+
+pub fn reply(from: From(msg), reply: msg) {
+  untyped_send(from.pid, #(from.tag, reply))
+}
+
+pub external fn untyped_send(Pid, msg) -> msg =
+  "erlang" "send"
+```
+
+<!--
+`From` has message type as a parameter
+
+`reply` fn states that `From` and `msg` must have same type
+-->
+
+---
+---
+# Not just for replying
+
+```rust
+pub type Subject(msg) {
+  Subject(pid: Pid, tag: Reference)
+}
+
+pub fn send(subject: Subject(msg), reply: msg) {
+  untyped_send(subject.pid, #(subject.tag, reply))
+}
+
+pub external fn untyped_send(Pid, msg) -> msg =
+  "erlang" "send"
+```
+
+<!--
+In Erlang: just for replying
+
+In Gleam: for sending too
+
+Rename: `From` to `Subject`
+
+Rename: `reply` to `send`.
+
+`send` replaces the previous `send`
+-->
+
+---
+---
+# Make invalid use impossible
+
+```rust
+pub opaque type Subject(msg) {
+  Subject(pid: Pid, tag: Reference)
+}
+
+pub fn send(subject: Subject(msg), reply: msg) {
+  untyped_send(subject.pid, #(subject.tag, reply))
+}
+
+external fn untyped_send(Pid, msg) -> msg =
+  "erlang" "send"
+```
+
+<!--
+Make invalid use impossible
+
+Make `Subject` internals private
+
+Make `untyped_send` private
+
+The only public API is one that cannot be misused!
+
+It is not possible to send an incorrect message
+-->
+
+---
+class: text-center
+layout: center
+---
+
+# ✨ We have type safe sending ✨
+
+---
+---
+# Type safe receiving
+
+```erlang
+
+
+receive_({subject, _, Ref}, Timeout) ->
+    receive {Ref, Msg} ->
+        {some, Msg}
+    after Timeout -> none
+    end.
+```
+
+<!--
+Receiving: copy from OTP
+
+Search inbox for message with subject's tag
+
+It's a selective receive!
+-->
+
+---
+---
+# Receiving for multiple subjects
+
+```erlang
+-opaque selector(Msg) :: #{reference() => true}
+
+receive_(Selector, Timeout) ->
+    receive {Ref, Msg} when is_map_key(Ref, Selector) ->
+        {some, Msg}
+    after Timeout -> none
+    end.
+
+
+add_subject(Selector, {subject, _, Ref}) ->
+    Selector#{Ref => true}
+
+new_selector() -> #{}.
+```
+
+<!--
+Single -> multiple
+
+New selector type: map of references
+
+Receive expression selects messages with ref in map
+
+Problem: all subjects have same type
+
+We want to receive different types at once
+-->
+
+---
+---
+# Different message types
+
+```erlang
+-opaque selector(Msg) :: #{reference() => fun(term()) -> Msg}
+
+receive_(Selector, Timeout) ->
+    receive {Ref, Msg} when is_map_key(Ref, Selector) ->
+        Transformer = maps:get(Ref, Selector),
+        {some, Transformer(Msg)}
+    after Timeout -> none
+    end.
+
+add_subject(Selector, {subject, _, Ref}, Transformer) ->
+    Selector#{Ref => Transformer}
+
+new_selector() -> #{}.
+```
+
+<!--
+Need to normalise all messages into a single type
+
+Selector map holds transformer functions
+
+Transformer: subject msg type -> selector msg type
+
+Bit complex: Let's see it in Gleam
+-->
+
+---
+---
+# Gleam usage
+
+```rust
+let str_subject = new_subject()
+let int_subject = new_subject()
+
+// Send messages of different types
+send(str_subject, "Hello")
+send(int_subject, 12345)
+
+// Create a Selector(String)
+let selector = new_selector()
+  |> add_subject(str_subject, function.identity)
+  |> add_subject(int_subject, int.to_string)
+
+receive(selector, 0) // => Some("Hello")
+receive(selector, 0) // => Some("12345")
+receive(selector, 0) // => None
+```
+
+<!--
+-->
 
 ---
 layout: center
-class: text-center
 ---
+# All the primitives ✨
 
-# Learn More
+<div>
 
-[Documentations](https://sli.dev) · [GitHub](https://github.com/slidevjs/slidev) · [Showcases](https://sli.dev/showcases.html)
+- ✅ spawn
+- ✅ monitor
+- ✅ send
+- ✅ receive
+- ✅ link
+- ✅ trap_exits
+
+</div>
+
+<!--
+These are the concurrency primitives
+
+used to implement OTP in Erlang
+
+If we have this power in Gleam we can do the same
+
+Let's implement each one
+-->
