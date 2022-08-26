@@ -252,7 +252,7 @@ No annotations needed!
 
 ---
 ---
-# Contract violation detection
+# Mistake detection
 
 ```rust {2}
 pub fn add_gleam(languages) {
@@ -597,8 +597,12 @@ pub external type Pid
 
 pub external fn spawn(fn() -> a) -> Pid
   "erlang" "spawn"
+
+pub external fn spawn_link(fn() -> a) -> Pid
+  "erlang" "spawn_link"
 ```
 <br>
+
 ```rust
 let pid = spawn(fn() {
   // Do stuff!
@@ -975,7 +979,7 @@ It's a selective receive!
 ```erlang
 -opaque selector(Msg) :: #{reference() => true}
 
-receive_(Selector, Timeout) ->
+select(Selector, Timeout) ->
     receive {Ref, Msg} when is_map_key(Ref, Selector) ->
         {some, Msg}
     after Timeout -> none
@@ -1007,7 +1011,7 @@ We want to receive different types at once
 ```erlang
 -opaque selector(Msg) :: #{reference() => fun(term()) -> Msg}
 
-receive_(Selector, Timeout) ->
+select(Selector, Timeout) ->
     receive {Ref, Msg} when is_map_key(Ref, Selector) ->
         Transformer = maps:get(Ref, Selector),
         {some, Transformer(Msg)}
@@ -1047,9 +1051,9 @@ let selector = new_selector()
   |> add_subject(str_subject, function.identity)
   |> add_subject(int_subject, int.to_string)
 
-receive(selector, 0) // => Some("Hello")
-receive(selector, 0) // => Some("12345")
-receive(selector, 0) // => None
+select(selector, 0) // => Some("Hello")
+select(selector, 0) // => Some("12345")
+select(selector, 0) // => None
 ```
 
 <!--
@@ -1058,7 +1062,7 @@ receive(selector, 0) // => None
 ---
 layout: center
 ---
-# All the primitives ✨
+# ✨ All the primitives ✨
 
 <div>
 
@@ -1072,11 +1076,180 @@ layout: center
 </div>
 
 <!--
-These are the concurrency primitives
-
-used to implement OTP in Erlang
-
-If we have this power in Gleam we can do the same
-
-Let's implement each one
 -->
+
+---
+layout: image-left
+image: /daniele-franchi-S4jPaP071KI-unsplash.jpg
+---
+# gen_server
+
+TODO: new image
+
+- Synchronous start
+- Hold state
+- Handle system messages
+- Asynchronous messages
+- Synchronous messages
+
+<!--
+-->
+
+
+---
+---
+## Synchronous start
+
+```rust
+pub fn start_actor(init, on_message) {
+  let subject = process.new_subject()
+  let child = spawn_link(fn() { init_actor(init, on_message, subject) })
+
+  case receive(subject, 1000) {
+    // Child initialised or returned an error
+    Some(result) -> Ok(result)
+
+    // Child did not finish initialising in time
+    None -> {
+      kill(child)
+      Error(InitTimeout)
+    }
+  }
+}
+```
+
+<!--
+-->
+
+---
+---
+## Synchronous start
+
+```rust
+fn init_actor(init, handle_message, parent) {
+  case init() {
+    Ok(state) -> {
+      let subject = new_subject()
+      send(parent, Ok(subject))
+      loop(Data(state, subject, handle_message))
+    }
+
+    Failed(reason) -> {
+      send(parent, Error(reason))
+      exit(Abnormal)
+    }
+  }
+}
+```
+
+<!--
+-->
+
+---
+---
+## Message loop
+
+```rust
+fn loop(data) {
+  case receive_message(data) {
+    System(system) -> handle_system_message(data, system)
+
+    Message(msg) ->
+      case data.handle_message(msg, data.state) {
+        Stop(reason) -> exit(reason)
+        Continue(state) -> loop(Data(..data, state: state))
+      }
+  }
+}
+```
+
+<!--
+system: handled
+
+message: call impl, get new state
+
+or shut down
+-->
+
+---
+---
+## System messages
+
+```rust
+fn handle_system_message(data, system_message) {
+  case system_message {
+    GetState(send_reply) -> {
+      send_reply(self.state)
+      loop(self)
+    }
+    // etc...
+  }
+}
+```
+
+---
+---
+## Sending synchronous messages
+
+```rust
+pub fn call(subject, make_message) {
+  let reply_to = new_subject()
+  let monitor = monitor_process(subject.pid)
+  send(subject, make_request(reply_to))
+
+  let result =
+    new_selector()
+    |> add_subject(reply_to, Ok)
+    |> add_monitor(monitor, fn(_) { Error(CalleeDown) })
+    |> select(1000)
+  demonitor_process(monitor)
+
+  case result {
+    None -> Error(CallTimeout)
+    Some(result) -> result
+  }
+}
+```
+<!--
+gen_server:call rip-off
+-->
+
+---
+---
+## Defining an implemenation
+
+```rust
+pub fn start_counter_actor() {
+  start_actor(init: fn() { 0 }, handle_message)
+}
+
+pub type Message {
+  Increment
+  GetCount(caller: Subject(Int))
+}
+
+fn handle_message(message, count) {
+  case message {
+    GetCount(caller) -> {
+      send(caller, count)
+      Continue(count)
+    }
+    Increment -> Continue(count + 1)
+  }
+}
+```
+
+
+---
+---
+# Using the actor
+
+```rust
+let counter = start_counter_actor()
+
+send(counter, Increment)
+send(counter, Increment)
+send(counter, Increment)
+
+call(counter, GetCount) // => Ok(3)
+```
