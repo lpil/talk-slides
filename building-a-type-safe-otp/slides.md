@@ -1,25 +1,17 @@
 ---
-# https://sli.dev/builtin/layouts.html#statement
-
 theme: default
 background: /ernest-brillo-Qi8CvonsYnM-unsplash.jpg
-# apply any windi css classes to the current slide
-class: 'text-center'
-# https://sli.dev/custom/highlighters.html
+class: text-center
 highlighter: shiki
-# show line numbers in code blocks
 lineNumbers: false
-# some information about the slides, markdown enabled
 info: |
   lorem ipsum
 routerMode: hash
 colorSchema: light
-# persist drawings in exports and build
 drawings:
   persist: true
-
-# Change the scale to zoom in the slides more or less
-canvasWidth: 775 # default is 980
+canvasWidth: 775
+title: Building a Type Safe OTP
 ---
 
 # Building a Type Safe OTP
@@ -590,7 +582,7 @@ Gleam will import them from Erlang
 -->
 ---
 ---
-# Spawn
+## Spawn
 
 ```rust
 pub external type Pid
@@ -621,7 +613,7 @@ Import the spawn function
 
 ---
 ---
-# Link
+## Link
 
 ```rust
 pub external fn link(Pid) -> Bool =
@@ -636,7 +628,7 @@ Really easy, just import the function from Erlang
 
 ---
 ---
-# Trap exits
+## Trap exits
 
 ```rust
 pub external fn trap_exits(Bool) -> Nil =
@@ -668,7 +660,7 @@ Making a dedicated `trap_exits` function
 
 ---
 ---
-# Monitor
+## Monitor
 
 ```rust {all|6|0}
 pub external type Monitor
@@ -709,7 +701,7 @@ Small changes, easier to use
 
 ---
 ---
-# Send & receive
+## Send & receive
 
 ```rust {all|1|4}
 pub external fn send(Pid, msg) -> msg =
@@ -721,10 +713,9 @@ pub external fn receive(Int) -> Option(UnknownType) =
 <br>
 
 ```erlang
-receive_(Timeout) ->
+receive_() ->
     receive
         Msg -> {some, Msg}
-    after Timeout -> none
     end.
 ```
 
@@ -744,7 +735,7 @@ Type safe OTP => only correct messages get sent
 
 ---
 ---
-# Parameterise Pids
+## Parameterise Pids
 
 ```rust
 pub external type Pid(msg)
@@ -773,7 +764,7 @@ pid accepts floats: Pid(Float) type
 
 ---
 ---
-# What about replies?
+## What about replies?
 
 <div class="text-center">
 
@@ -810,7 +801,7 @@ Where to store semantic information if not the Pid?
 
 ---
 ---
-# Attaching meaning to messages
+## Attaching meaning to messages
 
 A problem OTP already solves ✨
 
@@ -839,7 +830,7 @@ It wasn't for types, but the same technique applies
 
 ---
 ---
-# Converted to Gleam
+## Converted to Gleam
 
 ```rust
 pub type From {
@@ -864,7 +855,7 @@ Next: have it store message type information
 
 ---
 ---
-# Add message type
+## Add message type
 
 ```rust
 pub type From(msg) {
@@ -887,7 +878,7 @@ pub external fn untyped_send(Pid, msg) -> msg =
 
 ---
 ---
-# Not just for replying
+## Not just for replying
 
 ```rust
 pub type Subject(msg) {
@@ -916,7 +907,7 @@ Rename: `reply` to `send`.
 
 ---
 ---
-# Make invalid use impossible
+## Make invalid use impossible
 
 ```rust
 pub opaque type Subject(msg) {
@@ -950,17 +941,23 @@ layout: center
 
 # ✨ We have type safe sending ✨
 
+<!--
+Sending done!
+
+Other half: receiving
+-->
+
 ---
----
-# Type safe receiving
+
+## Type safe receiving
 
 ```erlang
 
 
-receive_({subject, _, Ref}, Timeout) ->
-    receive {Ref, Msg} ->
-        {some, Msg}
-    after Timeout -> none
+receive_({subject, _, Ref}) ->
+    receive
+        {Ref, Msg} ->
+            {some, Msg}
     end.
 ```
 
@@ -974,15 +971,15 @@ It's a selective receive!
 
 ---
 ---
-# Receiving for multiple subjects
+## Receiving for multiple subjects
 
 ```erlang
 -opaque selector(Msg) :: #{reference() => true}
 
-select(Selector, Timeout) ->
-    receive {Ref, Msg} when is_map_key(Ref, Selector) ->
-        {some, Msg}
-    after Timeout -> none
+select(Selector) ->
+    receive
+        {Ref, Msg} when is_map_key(Ref, Selector) ->
+            {some, Msg}
     end.
 
 
@@ -1006,16 +1003,16 @@ We want to receive different types at once
 
 ---
 ---
-# Different message types
+## Different message types
 
-```erlang
+```erlang {all|1|5-7}
 -opaque selector(Msg) :: #{reference() => fun(term()) -> Msg}
 
 select(Selector, Timeout) ->
-    receive {Ref, Msg} when is_map_key(Ref, Selector) ->
-        Transformer = maps:get(Ref, Selector),
-        {some, Transformer(Msg)}
-    after Timeout -> none
+    receive
+        {Ref, Msg} when is_map_key(Ref, Selector) ->
+            Transformer = maps:get(Ref, Selector),
+            {some, Transformer(Msg)}
     end.
 
 add_subject(Selector, {subject, _, Ref}, Transformer) ->
@@ -1027,22 +1024,23 @@ new_selector() -> #{}.
 <!--
 Need to normalise all messages into a single type
 
-Selector map holds transformer functions
+**CLICK** Selector map holds transformer functions
 
 Transformer: subject msg type -> selector msg type
+
+**CLICK**: message received: apply transformer fn
 
 Bit complex: Let's see it in Gleam
 -->
 
 ---
----
-# Gleam usage
 
-```rust
+## Gleam usage
+
+```rust {all|1,2|3-6|7-10|12-14}
 let str_subject = new_subject()
 let int_subject = new_subject()
 
-// Send messages of different types
 send(str_subject, "Hello")
 send(int_subject, 12345)
 
@@ -1057,6 +1055,17 @@ select(selector, 0) // => None
 ```
 
 <!--
+Import as usual
+
+- **CLICK** Create 2 subjects.
+- **CLICK** Send a message to each. Different types
+- **CLICK** Create a Selector.
+  - String subject right type: identity
+  - Int subject: int.to_string
+- **CLICK** Receive messages
+  - 1st: string hello
+  - 2nd: 12345 transformed into String
+  - 3rd: Nothing
 -->
 
 ---
@@ -1076,40 +1085,56 @@ layout: center
 </div>
 
 <!--
+That's it
+
+All the primitives used to implement OTP
+
+Other than this untyped Erlang core: everything type safe
+
+Prove it: implement gen_server
 -->
 
 ---
 layout: image-left
-image: /daniele-franchi-S4jPaP071KI-unsplash.jpg
+image: /ben-maguire-FTYgqLeseI4-unsplash.jpg
 ---
 # gen_server
 
-TODO: new image
-
 - Synchronous start
-- Hold state
 - Handle system messages
+- Hold state
 - Asynchronous messages
 - Synchronous messages
 
+Let's do it in Gleam ✨
+
 <!--
+What does gen_server do? These main things
+
+Sync start: parent waits, is child OK? Verify environment correct at boot
+
+System messages: debugging. hidden. under the hood
+
+Hold state: update with each new message
+
+Async, sync messages: passed to the user
+
+NOW: Implement it in Gleam. Call it Actor.
 -->
 
 
 ---
 ---
-## Synchronous start
+## Synchronous starting
 
-```rust
+```rust {all|2-3|5-12}
 pub fn start_actor(init, on_message) {
-  let subject = process.new_subject()
-  let child = spawn_link(fn() { init_actor(init, on_message, subject) })
+  let done = process.new_subject()
+  let child = spawn_link(fn() { init_actor(init, on_message, done) })
 
-  case receive(subject, 1000) {
-    // Child initialised or returned an error
+  case receive(done, 1000) {
     Some(result) -> Ok(result)
 
-    // Child did not finish initialising in time
     None -> {
       kill(child)
       Error(InitTimeout)
@@ -1119,13 +1144,25 @@ pub fn start_actor(init, on_message) {
 ```
 
 <!--
+Start with the start code.
+
+Same primitives: can copy Erlang implementation. `proc_lib`
+
+- fn takes init & handle_msg callbacks
+- **CLICK**: Create subject (for child to parent)
+- Start child. Runs `init_actor` fn
+- **CLICK**: Waits for a message from child
+- If message: return result
+- If no message: timeout, kill process, return error
+
+What does `init_actor` do? run by child
 -->
 
 ---
 ---
-## Synchronous start
+## Initialisation
 
-```rust
+```rust {all|3-7|9-12}
 fn init_actor(init, handle_message, parent) {
   case init() {
     Ok(state) -> {
@@ -1134,7 +1171,7 @@ fn init_actor(init, handle_message, parent) {
       loop(Data(state, subject, handle_message))
     }
 
-    Failed(reason) -> {
+    Error(reason) -> {
       send(parent, Error(reason))
       exit(Abnormal)
     }
@@ -1143,15 +1180,26 @@ fn init_actor(init, handle_message, parent) {
 ```
 
 <!--
+More stealing. From `proc_lib` & `gen_server`.
+
+- Call programmer-supplied `init` callback.
+- **CLICK**. If OK:
+  - create subject to receive messages on
+  - send to parent to indicate initialised
+  - enter message loop, with initial state.
+- **CLICK**. If Error:
+  - send error to parent
+  - terminate process
 -->
 
 ---
 ---
 ## Message loop
 
-```rust
+```rust {all|2-3|4|6-10}
 fn loop(data) {
-  case receive_message(data) {
+  let selector = make_selector(data)
+  case select(selector) {
     System(system) -> handle_system_message(data, system)
 
     Message(msg) ->
@@ -1164,11 +1212,18 @@ fn loop(data) {
 ```
 
 <!--
-system: handled
+Loop fn, runs on actor after init
 
-message: call impl, get new state
+Different to gen_server here
 
-or shut down
+- **CLICK** make selector for subject + system messages
+- receive a message with it
+- **CLICK** if system message call handle fn
+- **CLICK** if regular message
+  - call programmer supplied handler
+  - handler returns Stop or Continue
+  - if stop, process terminates
+  - if continue, loop again with new state
 -->
 
 ---
@@ -1247,9 +1302,11 @@ fn handle_message(message, count) {
 ```rust
 let counter = start_counter_actor()
 
+// async sending
 send(counter, Increment)
 send(counter, Increment)
 send(counter, Increment)
 
+// sync sending
 call(counter, GetCount) // => Ok(3)
 ```
