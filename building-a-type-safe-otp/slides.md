@@ -26,6 +26,11 @@ Hello!
 layout: two-cols
 ---
 
+TODO: in call we use a timeout, but timeouts are not in the previous code. Put
+them back.
+
+TODO: some code examples could do with line highlighting
+
 # Hi, I'm Louis!
 
 - 🐙 I love Erlang
@@ -581,7 +586,7 @@ Erlang imports these from C
 Gleam will import them from Erlang
 -->
 ---
----
+
 ## Spawn
 
 ```rust
@@ -604,9 +609,9 @@ let pid = spawn(fn() {
 <!--
 Start with an easy one: Spawn
 
-Import the Pid type from Erlang
+**CLICK** Import the Pid type from Erlang
 
-Import the spawn function
+**CLICK** Import the spawn functions
 
 1 to 1 mapping. No changes
 -->
@@ -707,7 +712,7 @@ Small changes, easier to use
 pub external fn send(Pid, msg) -> msg =
   "erlang" "send"
 
-pub external fn receive(Int) -> Option(UnknownType) =
+pub external fn receive(Int) -> UnknownType =
   "gleam_otp_erl" "receive_"
 ```
 <br>
@@ -715,7 +720,7 @@ pub external fn receive(Int) -> Option(UnknownType) =
 ```erlang
 receive_() ->
     receive
-        Msg -> {some, Msg}
+        Msg -> Msg
     end.
 ```
 
@@ -734,7 +739,7 @@ Type safe OTP => only correct messages get sent
 -->
 
 ---
----
+
 ## Parameterise Pids
 
 ```rust
@@ -759,7 +764,7 @@ pid accepts strings: Pid(String) type
 
 pid accepts floats: Pid(Float) type
 
-`send` must have a pid and message of the same type
+**CLICK** `send` must have a pid and message of the same type
 -->
 
 ---
@@ -970,7 +975,7 @@ It's a selective receive!
 -->
 
 ---
----
+
 ## Receiving for multiple subjects
 
 ```erlang
@@ -979,7 +984,7 @@ It's a selective receive!
 select(Selector) ->
     receive
         {Ref, Msg} when is_map_key(Ref, Selector) ->
-            {some, Msg}
+            Msg
     end.
 
 
@@ -992,9 +997,9 @@ new_selector() -> #{}.
 <!--
 Single -> multiple
 
-New selector type: map of references
+**CLICK** New selector type: map of references
 
-Receive expression selects messages with ref in map
+**CLICK** Select function selective receives messages with ref in map
 
 Problem: all subjects have same type
 
@@ -1012,7 +1017,7 @@ select(Selector, Timeout) ->
     receive
         {Ref, Msg} when is_map_key(Ref, Selector) ->
             Transformer = maps:get(Ref, Selector),
-            {some, Transformer(Msg)}
+            Transformer(Msg)
     end.
 
 add_subject(Selector, {subject, _, Ref}, Transformer) ->
@@ -1049,9 +1054,8 @@ let selector = new_selector()
   |> add_subject(str_subject, function.identity)
   |> add_subject(int_subject, int.to_string)
 
-select(selector, 0) // => Some("Hello")
-select(selector, 0) // => Some("12345")
-select(selector, 0) // => None
+select(selector, 0) // => "Hello"
+select(selector, 0) // => "12345"
 ```
 
 <!--
@@ -1065,7 +1069,6 @@ Import as usual
 - **CLICK** Receive messages
   - 1st: string hello
   - 2nd: 12345 transformed into String
-  - 3rd: Nothing
 -->
 
 ---
@@ -1133,7 +1136,7 @@ pub fn start_actor(init, on_message) {
   let child = spawn_link(fn() { init_actor(init, on_message, done) })
 
   case receive(done, 1000) {
-    Some(result) -> Ok(result)
+    Some(result) -> result
 
     None -> {
       kill(child)
@@ -1227,55 +1230,70 @@ Different to gen_server here
 -->
 
 ---
----
+
 ## System messages
 
-```rust
+```rust {all|3-6}
 fn handle_system_message(data, system_message) {
   case system_message {
     GetState(send_reply) -> {
       send_reply(self.state)
       loop(self)
     }
-    // etc...
+    // Other system messages here...
   }
 }
 ```
+
+<!--
+When system message => called this function
+
+Handles all "behind the scenes" messages for you
+
+Match on message and do whatever is required
+
+- **CLICK** GetState 
+  - send state
+  - continue looping
+-->
 
 ---
 ---
 ## Sending synchronous messages
 
-```rust
+```rust {all|2-4|6-9}
 pub fn call(subject, make_message) {
   let reply_to = new_subject()
-  let monitor = monitor_process(subject.pid)
-  send(subject, make_request(reply_to))
+  let message = make_request(reply_to)
+  send(subject, message)
 
-  let result =
-    new_selector()
-    |> add_subject(reply_to, Ok)
-    |> add_monitor(monitor, fn(_) { Error(CalleeDown) })
-    |> select(1000)
-  demonitor_process(monitor)
-
-  case result {
-    None -> Error(CallTimeout)
-    Some(result) -> result
+  case receive(reply_to, 1000) {
+    Some(reply) -> Ok(reply)
+    None -> Error(Timeout)
   }
 }
 ```
 <!--
-gen_server:call rip-off
+Server side: done! Client side now
+
+Port `gen_server:call` to Gleam, to send sync messages
+
+- **CLICK** New subject to get reply on
+- Pass subject into supplied message constructor
+  - explain next slide
+- Send message to actor
+- **CLICK** wait for a response
+  - If there is one: return it
+  - If not: return timeout error
 -->
 
 ---
 ---
-## Defining an implemenation
+## Defining an actor
 
-```rust
+```rust {all|1-3|5-9|10-18}
 pub fn start_counter_actor() {
-  start_actor(init: fn() { 0 }, handle_message)
+  start_actor(fn() { 0 }, handle_message)
 }
 
 pub type Message {
@@ -1294,19 +1312,72 @@ fn handle_message(message, count) {
 }
 ```
 
+<!--
+gen_server equivalent done. Now define an actor using it
+
+- **CLICK** Function to start it.
+  - call `start_actor` with `init` + `handle_msg`
+- **CLICK** Actor accepts 2 msgs
+  - Increment
+  - GetCount. Subject as argument, to send a reply
+- **CLICK** Define `handle_msg`. Pattern match on msg
+  - Increment increments the count
+  - GetCount sends a reply msg
+-->
 
 ---
----
-# Using the actor
+
+# Interacting with it
 
 ```rust
 let counter = start_counter_actor()
 
-// async sending
+// async messages
 send(counter, Increment)
 send(counter, Increment)
 send(counter, Increment)
 
-// sync sending
+// sync messages
 call(counter, GetCount) // => Ok(3)
 ```
+
+<!--
+Now defined, we can use it
+
+Start with `start_counter_actor`
+
+async messages with normal `send`. Like `gen_server:cast`
+
+sync messages that get a response with `call`. Like `gen_server:call`.
+
+DONE! Implemented & used a type safe gen_server from scratch
+-->
+
+---
+layout: center
+class: text-center
+---
+# ✨ OTP can be typed! ✨
+<br>
+
+[gleam.run](https://gleam.run)
+
+[github.com/gleam-lang/erlang](https://github.com/gleam-lang/erlang)
+
+[github.com/gleam-lang/otp](https://github.com/gleam-lang/otp)
+
+<!--
+With right primitives => can build OTP
+
+Implemented gen_server, can do supervisor etc too.
+
+Used 1 technique, not the only way! Pros, cons. Just showing that it is possible.
+
+Used Gleam, but can use any language.
+
+Elixir & Erlang gets types => valuable to type OTP in them.
+
+Full implementation: on GitHub. + Gleam website
+
+Any question? Ask them!
+-->

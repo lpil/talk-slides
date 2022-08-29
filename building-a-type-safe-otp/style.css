@@ -8,3 +8,13 @@
 code, kbd, samp, pre {
   font-size: 0.8rem;
 }
+
+.slidev-layout a:hover,
+.slidev-layout a {
+  text-decoration: underline;
+  border-bottom: none;
+}
+
+.prose ul {
+  margin: 0 !important;
+}
