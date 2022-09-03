@@ -26,9 +26,6 @@ Hello!
 layout: two-cols
 ---
 
-TODO: in call we use a timeout, but timeouts are not in the previous code. Put
-them back.
-
 TODO: some code examples could do with line highlighting
 
 # Hi, I'm Louis!
@@ -589,7 +586,7 @@ Gleam will import them from Erlang
 
 ## Spawn
 
-```rust
+```rust {all|3-4|6-7}
 pub external type Pid
 
 pub external fn spawn(fn() -> a) -> Pid
@@ -712,15 +709,16 @@ Small changes, easier to use
 pub external fn send(Pid, msg) -> msg =
   "erlang" "send"
 
-pub external fn receive(Int) -> UnknownType =
+pub external fn receive(Int) -> Option(UnknownType) =
   "gleam_otp_erl" "receive_"
 ```
 <br>
 
 ```erlang
-receive_() ->
+receive_(Timeout) ->
     receive
-        Msg -> Msg
+        Msg -> {some, Msg}
+    after Timeout -> none
     end.
 ```
 
@@ -742,7 +740,7 @@ Type safe OTP => only correct messages get sent
 
 ## Parameterise Pids
 
-```rust
+```rust {all|3}
 pub external type Pid(msg)
 
 pub external fn send(Pid(msg), msg) -> msg =
@@ -835,6 +833,7 @@ It wasn't for types, but the same technique applies
 
 ---
 ---
+TODO: add highlighting to this
 ## Converted to Gleam
 
 ```rust
@@ -959,10 +958,11 @@ Other half: receiving
 ```erlang
 
 
-receive_({subject, _, Ref}) ->
+receive_({subject, _, Ref}, Timeout) ->
     receive
         {Ref, Msg} ->
             {some, Msg}
+    after Timeout -> none
     end.
 ```
 
@@ -981,10 +981,11 @@ It's a selective receive!
 ```erlang
 -opaque selector(Msg) :: #{reference() => true}
 
-select(Selector) ->
+select(Selector, Timeout) ->
     receive
         {Ref, Msg} when is_map_key(Ref, Selector) ->
             Msg
+    after Timeout -> none
     end.
 
 
@@ -1018,6 +1019,7 @@ select(Selector, Timeout) ->
         {Ref, Msg} when is_map_key(Ref, Selector) ->
             Transformer = maps:get(Ref, Selector),
             Transformer(Msg)
+    after Timeout -> none
     end.
 
 add_subject(Selector, {subject, _, Ref}, Transformer) ->
@@ -1054,8 +1056,9 @@ let selector = new_selector()
   |> add_subject(str_subject, function.identity)
   |> add_subject(int_subject, int.to_string)
 
-select(selector, 0) // => "Hello"
-select(selector, 0) // => "12345"
+select(selector, 0) // -> Some("Hello")
+select(selector, 0) // -> Some("12345")
+select(selector, 0) // -> None
 ```
 
 <!--
