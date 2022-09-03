@@ -26,8 +26,6 @@ Hello!
 layout: two-cols
 ---
 
-TODO: some code examples could do with line highlighting
-
 # Hi, I'm Louis!
 
 - 🐙 I love Erlang
@@ -216,7 +214,7 @@ Declaring a record
 ---
 # Functions
 
-```rust
+```rust {all|2|3|all}
 pub fn add_gleam(languages) {
   let gleam = Language(name: "Gleam")
   [gleam, ..languages]
@@ -237,11 +235,11 @@ add_gleam(Languages) ->
 <!--
 Declare a function
 
-Constructs a language record
+**CLICK** Constructs a language record
 
-Prepend it to a list
+**CLICK** Prepend it to a list
 
-No annotations needed!
+**CLICK** No annotations needed!
 -->
 
 ---
@@ -294,7 +292,7 @@ To work with processes you must use Erlang FFI
 
 # External types
 
-```erlang
+```erlang {all|5}
 -module(my_erlang_module).
 -export_type([my_type/0]).
 
@@ -303,32 +301,34 @@ To work with processes you must use Erlang FFI
 ```
 <br>
 
-```rust
+```rust {all|2}
 // Import it into Gleam
 external type MyType
 ```
 
 <!--
 Permits referencing Erlang types in Gleam
+
+**CLICK** Define in Erlang
+
+**CLICK** Import in Gleam
 -->
 ---
 ---
 
 # External functions
 
-```erlang
+```erlang {all|4-6}
 -module(my_erlang_module).
 -export([add/2]).
 
-% Define a function
 -spec add(float(), float()) -> float().
 add(A, B) ->
     A + B.
 ```
 <br>
 
-```rust
-// Import it into Gleam
+```rust {all|1-2}
 external fn add(Float, Float) -> Float =
   "my_erlang_module" "add"
 
@@ -339,6 +339,10 @@ pub fn main() {
 
 <!--
 Permits calling Erlang functions in Gleam
+
+**CLICK** Define in Erlang
+
+**CLICK** Import in Gleam
 
 That's enough. Let's make type safe OTP!
 -->
@@ -828,15 +832,16 @@ Need to attach meaning to each message
 
 Solution: `from` type, a message with a tag.
 
+Can selective receive for messages with tag.
+
 It wasn't for types, but the same technique applies
 -->
 
 ---
 ---
-TODO: add highlighting to this
 ## Converted to Gleam
 
-```rust
+```rust {all|1-3|5-8}
 pub type From {
   From(pid: Pid, tag: Reference)
 }
@@ -852,7 +857,9 @@ pub external fn untyped_send(Pid, msg) -> msg =
 <!--
 Here it what it would look like in Gleam
 
-Define a `From` type, define a `reply` fn
+**CLICK** Define a `From` type
+
+**CLICK** define a `reply` fn which send msg with tag
 
 Next: have it store message type information
 -->
@@ -1361,13 +1368,8 @@ layout: center
 class: text-center
 ---
 # ✨ OTP can be typed! ✨
-<br>
 
-[gleam.run](https://gleam.run)
-
-[github.com/gleam-lang/erlang](https://github.com/gleam-lang/erlang)
-
-[github.com/gleam-lang/otp](https://github.com/gleam-lang/otp)
+In Gleam, or any other language
 
 <!--
 With right primitives => can build OTP
@@ -1379,6 +1381,34 @@ Used 1 technique, not the only way! Pros, cons. Just showing that it is possible
 Used Gleam, but can use any language.
 
 Elixir & Erlang gets types => valuable to type OTP in them.
+-->
+
+---
+layout: center
+class: text-center
+---
+<img class="fly" src="/fly.svg" style="width: 35vh;">
+<img class="alembic" src="/alembic.svg" style="width: 25vh;">
+
+[gleam.run](https://gleam.run)
+
+[github.com/gleam-lang/erlang](https://github.com/gleam-lang/erlang)
+
+[github.com/gleam-lang/otp](https://github.com/gleam-lang/otp)
+
+<style>
+  img {
+    display: inline-block;
+    margin: 1.0rem 10vh;
+    margin-top: 0;
+  }
+  p {
+    margin: 0.2rem !important;
+  }
+</style>
+
+<!--
+Thank you to sponsors, especially Fly + Alembic.
 
 Full implementation: on GitHub. + Gleam website
 

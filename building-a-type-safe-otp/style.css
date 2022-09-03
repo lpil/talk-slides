@@ -18,3 +18,7 @@ code, kbd, samp, pre {
 .prose ul {
   margin: 0 !important;
 }
+
+.slidev-layout {
+  padding: 1.5rem 2.5rem;
+}
