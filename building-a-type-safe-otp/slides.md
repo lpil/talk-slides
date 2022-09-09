@@ -976,7 +976,7 @@ receive_({subject, _, Tag}, Timeout) ->
 <!--
 fn receives a message for a subject
 
-- tag from selector
+- take 1 subject
 - selective receive for msg with tag
 - if no msg, return none
 
@@ -1145,9 +1145,9 @@ NOW: Implement it in Gleam. Call it Actor.
 ## Synchronous starting
 
 ```rust {all|2-3|5-12}
-pub fn start_actor(init, on_message) {
+pub fn start_actor(init, handle_message) {
   let done = process.new_subject()
-  let child = spawn_link(fn() { init_actor(init, on_message, done) })
+  let child = spawn_link(fn() { init_actor(init, handle_message, done) })
 
   case receive(done, 1000) {
     Some(result) -> result
