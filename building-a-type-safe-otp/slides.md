@@ -590,7 +590,7 @@ Gleam will import them from Erlang
 
 ## Spawn
 
-```rust {all|3-4|6-7}
+```rust {all|1|3-4}
 pub external type Pid
 
 pub external fn spawn(fn() -> a) -> Pid
@@ -965,39 +965,43 @@ Other half: receiving
 ```erlang
 
 
-receive_({subject, _, Ref}, Timeout) ->
+receive_({subject, _, Tag}, Timeout) ->
     receive
-        {Ref, Msg} ->
+        {Tag, Msg} ->
             {some, Msg}
     after Timeout -> none
     end.
 ```
 
 <!--
-Receiving: copy from OTP
+fn receives a message for a subject
 
-Search inbox for message with subject's tag
+- tag from selector
+- selective receive for msg with tag
+- if no msg, return none
 
-It's a selective receive!
+Copied from Erlang OTP reply receive code
+
+Works for 1 subject. We want to wait on many
 -->
 
 ---
 
 ## Receiving for multiple subjects
 
-```erlang
+```erlang {all|1|4-6}
 -opaque selector(Msg) :: #{reference() => true}
 
 select(Selector, Timeout) ->
     receive
-        {Ref, Msg} when is_map_key(Ref, Selector) ->
+        {Tag, Msg} when is_map_key(Tag, Selector) ->
             Msg
     after Timeout -> none
     end.
 
 
-add_subject(Selector, {subject, _, Ref}) ->
-    Selector#{Ref => true}
+add_subject(Selector, {subject, _, Tag}) ->
+    Selector#{Tag => true}
 
 new_selector() -> #{}.
 ```
@@ -1007,7 +1011,7 @@ Single -> multiple
 
 **CLICK** New selector type: map of references
 
-**CLICK** Select function selective receives messages with ref in map
+**CLICK** Select function selective receives messages with tag in map
 
 Problem: all subjects have same type
 
@@ -1018,19 +1022,19 @@ We want to receive different types at once
 ---
 ## Different message types
 
-```erlang {all|1|5-7}
+```erlang {all|1|4-7}
 -opaque selector(Msg) :: #{reference() => fun(term()) -> Msg}
 
 select(Selector, Timeout) ->
     receive
-        {Ref, Msg} when is_map_key(Ref, Selector) ->
-            Transformer = maps:get(Ref, Selector),
+        {Tag, Msg} when is_map_key(Tag, Selector) ->
+            Transformer = maps:get(Tag, Selector),
             Transformer(Msg)
     after Timeout -> none
     end.
 
-add_subject(Selector, {subject, _, Ref}, Transformer) ->
-    Selector#{Ref => Transformer}
+add_subject(Selector, {subject, _, Tag}, Transformer) ->
+    Selector#{Tag => Transformer}
 
 new_selector() -> #{}.
 ```
